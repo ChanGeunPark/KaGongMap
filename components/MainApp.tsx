@@ -3,13 +3,7 @@
 import { cls } from "@/lib/utils";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Cafe,
-  FilterVariant,
-  LayoutVariant,
-  MapTransform,
-  SortBy,
-} from "@/types/cafe";
+import { Cafe, FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
 import { KG_CAFES, KG_FILTERS } from "@/lib/data";
 import TopNav from "@/components/layout/TopNav";
 import FilterBar from "@/components/layout/FilterBar";
@@ -18,7 +12,6 @@ import BottomSheet from "@/components/layout/BottomSheet";
 import { FloatingCard } from "@/components/cafe/CafePreviewCard";
 import MapCanvas from "@/components/map/MapCanvas";
 import MonoLabel from "@/components/ui/MonoLabel";
-import CafeCard from "@/components/cafe/CafeCard";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeSidebar from "./layout/CafeSidebar";
 
@@ -38,17 +31,6 @@ const DEFAULT_TWEAKS: Tweaks = {
 };
 
 const POINT_COLORS = ["#F5A524", "#E86A33", "#E33F5F", "#8B5CF6", "#18E299"];
-
-function MapCtrlBtn({ icon, onClick }: { icon: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-10 h-10 rounded-xl bg-bg border border-border-subtle inline-flex items-center justify-center cursor-pointer text-fg-2 shadow-card"
-    >
-      <KGIcon name={icon} size={16} stroke={2} />
-    </button>
-  );
-}
 
 function TweaksPanel({
   tweaks,
@@ -182,12 +164,6 @@ export default function MainApp() {
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [transform, setTransform] = useState<MapTransform>({
-    x: -180,
-    y: -140,
-    s: 0.62,
-    animated: false,
-  });
 
   const mapRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -280,55 +256,8 @@ export default function MainApp() {
         ?.getBoundingClientRect();
       if (rect) {
         const s = 0.82;
-        setTransform({
-          x: rect.width / 2 - c.x * s,
-          y: rect.height / 2 - c.y * s,
-          s,
-          animated: true,
-        });
-        setTimeout(() => setTransform((t) => ({ ...t, animated: false })), 400);
       }
     }
-  };
-
-  const openDetail = (id?: string) => {
-    router.push(`/cafes/${id ?? selectedId}`);
-  };
-
-  // Map drag
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (
-      (e.target as HTMLElement).tagName === "BUTTON" ||
-      (e.target as HTMLElement).closest("button")
-    )
-      return;
-    dragRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      tx: transform.x,
-      ty: transform.y,
-    };
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!dragRef.current) return;
-    setTransform((t) => ({
-      ...t,
-      x: dragRef.current!.tx + e.clientX - dragRef.current!.x,
-      y: dragRef.current!.ty + e.clientY - dragRef.current!.y,
-      animated: false,
-    }));
-  };
-  const onMouseUp = () => {
-    dragRef.current = null;
-  };
-
-  const zoom = (dir: number) => {
-    setTransform((t) => ({
-      ...t,
-      s: Math.max(0.4, Math.min(1.6, t.s + dir * 0.15)),
-      animated: true,
-    }));
-    setTimeout(() => setTransform((t) => ({ ...t, animated: false })), 400);
   };
 
   const preview = previewId
@@ -368,33 +297,15 @@ export default function MainApp() {
         <div
           id="kg-map-area"
           ref={mapRef}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
           className="flex-1 relative min-h-0 select-none"
         >
           <MapCanvas
             cafes={cafes}
             selectedId={selectedId}
             hoveredId={hoveredId}
-            onSelect={selectCafe}
             onHover={setHoveredId}
-            transform={transform}
+            onSelect={selectCafe}
           />
-
-          {/* Zoom controls */}
-          <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
-            <MapCtrlBtn onClick={() => zoom(1)} icon="plus" />
-            <MapCtrlBtn onClick={() => zoom(-1)} icon="minus" />
-            <div className="h-px bg-border-subtle" />
-            <MapCtrlBtn
-              onClick={() =>
-                setTransform({ x: 180, y: 80, s: 0.62, animated: true })
-              }
-              icon="locate"
-            />
-          </div>
 
           {/* Legend */}
           <div
@@ -434,7 +345,7 @@ export default function MainApp() {
                 setPreviewId(null);
                 setSelectedId(null);
               }}
-              onOpenDetail={() => openDetail(preview.id)}
+              onOpenDetail={() => {}}
             />
           )}
 
@@ -445,9 +356,9 @@ export default function MainApp() {
               selectedId={selectedId}
               setSelectedId={selectCafe}
               matchCount={cafes.length}
-              onOpenDetail={openDetail}
               sortBy={sortBy}
               setSortBy={setSortBy}
+              onOpenDetail={() => {}}
             />
           )}
         </div>

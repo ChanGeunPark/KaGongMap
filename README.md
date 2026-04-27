@@ -62,6 +62,8 @@
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=your_naver_map_client_id
+NAVER_MAP_CLIENT_SECRET=your_naver_map_client_secret
+KAKAO_REST_API_KEY=your_kakao_rest_api_key
 ```
 
 ### 설치 및 실행

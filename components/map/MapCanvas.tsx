@@ -1,47 +1,41 @@
-import { Cafe, MapTransform } from '@/types/cafe';
-import CafePin from './CafePin';
+"use client";
 
-const ROADS = [
-  { d: 'M 0 450 L 1600 450',   w: 28, label: '테헤란로',  labelX: 780,  labelY: 444 },
-  { d: 'M 340 0 L 340 1000',   w: 28, label: '강남대로',  labelX: 356,  labelY: 140, rotate: 90 },
-  { d: 'M 1100 0 L 1100 1000', w: 22, label: '논현로',    labelX: 1116, labelY: 160, rotate: 90 },
-  { d: 'M 720 0 L 720 1000',   w: 20, label: '언주로',    labelX: 736,  labelY: 180, rotate: 90 },
-  { d: 'M 0 780 L 1600 780',   w: 22, label: '영동대로',  labelX: 1100, labelY: 774 },
-  { d: 'M 0 220 L 1600 220',   w: 18, label: '학동로',    labelX: 420,  labelY: 214 },
-  { d: 'M 0 640 L 1600 640',   w: 16, label: '선릉로',    labelX: 1200, labelY: 634 },
-];
+import { Cafe } from "@/types/cafe";
+import { useCallback, useEffect, useRef, useState } from "react";
+import KGIcon from "../ui/KGIcon";
+import { toast } from "react-toastify";
 
-const BLOCKS = [
-  [60, 80, 260, 130], [380, 260, 320, 170], [760, 260, 320, 170],
-  [1140, 260, 420, 170], [60, 490, 260, 130], [380, 490, 320, 130],
-  [760, 490, 320, 130], [1140, 490, 420, 130], [60, 680, 260, 260],
-  [380, 680, 320, 80], [760, 680, 320, 80], [1140, 680, 120, 80],
-  [380, 820, 320, 140], [760, 820, 320, 140],
-];
+function scoreColor(score: number) {
+  if (score >= 85) return "#22c55e";
+  if (score >= 65) return "#f5a524";
+  return "#ef4444";
+}
 
-const PARKS = [
-  { x: 1280, y: 820, w: 260, h: 140, label: '선릉 공원' },
-  { x: 60,   y: 80,  w: 180, h: 100, label: '역삼 근린공원' },
-];
-
-const DISTRICTS = [
-  { x: 180,  y: 340, label: '역삼동', size: 18 },
-  { x: 880,  y: 340, label: '논현동', size: 18 },
-  { x: 540,  y: 840, label: '삼성동', size: 18 },
-  { x: 1260, y: 560, label: '대치동', size: 18 },
-  { x: 1380, y: 180, label: '청담동', size: 16 },
-];
-
-const SUBWAY = [
-  { x: 340,  y: 450, label: '강남',    color: '#3c7be0' },
-  { x: 720,  y: 450, label: '역삼',    color: '#3c7be0' },
-  { x: 1100, y: 450, label: '선릉',    color: '#3c7be0' },
-  { x: 720,  y: 780, label: '삼성중앙', color: '#946ae3' },
-];
-
-const minorStreets: string[] = [];
-for (let y = 100; y < 1000; y += 90) minorStreets.push(`M 0 ${y} L 1600 ${y}`);
-for (let x = 120; x < 1600; x += 110) minorStreets.push(`M ${x} 0 L ${x} 1000`);
+function pinHtml(cafe: Cafe, active: boolean) {
+  const color = scoreColor(cafe.score);
+  // const size = active ? 52 : 42;
+  // const fontSize = active ? 13 : 11;
+  return `
+    <div
+            id="overlay_${cafe.id}"
+            class="overlay_content"
+            style="transform:translateY(-20px) ;width:100%; cursor:pointer; padding-left:4px; padding-top:2px; padding-bottom:2px; padding-right:12px; display:flex; align-items:center; border:none; border-radius:999px; background-color:white; border:2px solid ${color}; box-shadow:0 2px 7px rgba(0,0,0,0.2); position:relative;"
+            >
+            <figure style="height: 24px; width: 0; overflow:hidden; transition: all 0.3s ease;">
+              <img
+                style="height: 24px; width:24px; object-fit: cover; border-radius: 50%; pointer-events: none; "
+                src="https://picsum.photos/id/103/300/300"
+              />
+            </figure>
+            <p style="padding:0; margin:0; margin-left:12px; font-size:12px; font-weight:700; pointer-events: none;">
+            ${cafe.name}
+            </p>
+            <div style="position:absolute; left:50%; bottom:-1px; transform: translateX(-50%) translateY(50%); pointer-events:none;">
+            <div class="overlay_content_point" style="border-radius:0 0 3px 0; width:8px; height:8px; transform:rotate(45deg); background-color:white; pointer-events:none; border-right:2px solid ${color}; border-bottom:2px solid ${color};"/>
+            </div>
+          </div>
+  `;
+}
 
 interface MapCanvasProps {
   cafes: Cafe[];
@@ -49,159 +43,223 @@ interface MapCanvasProps {
   hoveredId: string | null;
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
-  transform: MapTransform;
 }
+
+type LocationPermission =
+  | "checking" // 위치 권한 확인 중
+  | "granted" // 위치 권한 허용
+  | "prompt" // 위치 권한 요청필요 (사용자가 위치 권한을 허용해야 함)
+  | "denied" // 위치 권한 거절
+  | "unsupported"; // 위치 권한 지원 안 됨 (브라우저가 위치 권한을 지원하지 않음)
 
 export default function MapCanvas({
   cafes,
   selectedId,
-  hoveredId,
   onSelect,
-  onHover,
-  transform,
 }: MapCanvasProps) {
+  const mapInstance = useRef<naver.maps.Map | null>(null);
+  const markers = useRef<Map<string, naver.maps.Marker>>(new Map());
+  const initialized = useRef(false);
+  const [locationPermission, setLocationPermission] =
+    useState<LocationPermission>(() => {
+      if (typeof window === "undefined") return "checking";
+      if (!navigator.geolocation) return "unsupported";
+      if (!navigator.permissions?.query) return "prompt";
+      return "checking";
+    });
+  const isLocationEnabled = locationPermission === "granted";
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !navigator.geolocation ||
+      !navigator.permissions?.query
+    ) {
+      toast.error(
+        "위치 권한을 허용해주세요. 브라우저가 위치 권한을 지원하지 않습니다.",
+      );
+      return;
+    }
+
+    let permissionStatus: PermissionStatus | null = null;
+    let cancelled = false;
+
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((status) => {
+        if (cancelled) return;
+
+        permissionStatus = status;
+        setLocationPermission(status.state);
+        status.onchange = () => setLocationPermission(status.state);
+      })
+      .catch(() => {
+        if (!cancelled) setLocationPermission("prompt");
+      });
+
+    return () => {
+      cancelled = true;
+      if (permissionStatus) permissionStatus.onchange = null;
+    };
+  }, []);
+
+  const moveToCurrentLocation = useCallback(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationPermission("unsupported");
+      toast.error("브라우저가 위치 권한을 지원하지 않습니다.");
+      return;
+    }
+
+    if (locationPermission === "denied") {
+      toast.error("위치 권한이 꺼져 있습니다.");
+      return;
+    }
+
+    if (locationPermission === "prompt") {
+      toast.error("위치 권한을 허용해주세요.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocationPermission("granted");
+        mapInstance.current?.setCenter(
+          new naver.maps.LatLng(coords.latitude, coords.longitude),
+        );
+        mapInstance.current?.setZoom(16);
+      },
+      (error) => {
+        setLocationPermission(
+          error.code === error.PERMISSION_DENIED ? "denied" : "prompt",
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 60_000,
+        timeout: 10_000,
+      },
+    );
+  }, []);
+
+  useEffect(() => {
+    function initMap() {
+      if (initialized.current) return;
+      initialized.current = true;
+
+      const center = new naver.maps.LatLng(37.5005, 127.038);
+      mapInstance.current = new naver.maps.Map("naver-map", {
+        center,
+        zoom: 15,
+        minZoom: 12,
+        maxZoom: 19,
+      });
+
+      cafes.forEach((cafe) => {
+        if (cafe.lat == null || cafe.lng == null) return;
+
+        const marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(cafe.lat, cafe.lng),
+          map: mapInstance.current!,
+          icon: {
+            content: pinHtml(cafe, false),
+            anchor: new naver.maps.Point(21, 21),
+          },
+          title: cafe.name,
+        });
+
+        naver.maps.Event.addListener(marker, "click", () => onSelect(cafe.id));
+        markers.current.set(cafe.id, marker);
+      });
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      (window as Window & { naver?: typeof naver }).naver?.maps
+    ) {
+      initMap();
+    } else {
+      const interval = setInterval(() => {
+        if ((window as Window & { naver?: typeof naver }).naver?.maps) {
+          clearInterval(interval);
+          initMap();
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!initialized.current) return;
+    markers.current.forEach((marker, id) => {
+      const cafe = cafes.find((c) => c.id === id);
+      if (!cafe) return;
+      marker.setIcon({
+        content: pinHtml(cafe, id === selectedId),
+        anchor: new naver.maps.Point(21, 21),
+      });
+    });
+  }, [selectedId, cafes]);
+
   return (
-    <div
-      className="absolute inset-0 overflow-hidden cursor-grab"
-      style={{ background: 'var(--map-bg)' }}
-    >
-      <div
-        className="absolute left-0 top-0"
-        style={{
-          width: 1600,
-          height: 1000,
-          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.s})`,
-          transformOrigin: '0 0',
-          transition: transform.animated ? 'transform 360ms var(--ease-out)' : 'none',
-        }}
-      >
-        <svg width="1600" height="1000" viewBox="0 0 1600 1000" className="block">
-          {/* Block fills */}
-          <g>
-            {BLOCKS.map((b, i) => (
-              <rect key={i} x={b[0]} y={b[1]} width={b[2]} height={b[3]} fill="var(--map-block)" rx="4" />
-            ))}
-          </g>
-
-          {/* Parks */}
-          {PARKS.map((p, i) => (
-            <g key={i}>
-              <rect x={p.x} y={p.y} width={p.w} height={p.h} fill="var(--map-park)" rx="8" />
-              <text
-                x={p.x + p.w / 2}
-                y={p.y + p.h / 2 + 4}
-                textAnchor="middle"
-                style={{ fontSize: 12, fill: '#6a8a4e', fontFamily: 'var(--font-sans)', fontWeight: 500 }}
-              >
-                {p.label}
-              </text>
-            </g>
-          ))}
-
-          {/* Minor streets */}
-          <g stroke="var(--map-road-sub)" strokeWidth="6" opacity="0.7">
-            {minorStreets.map((d, i) => <path key={i} d={d} />)}
-          </g>
-          <g stroke="var(--map-road-edge)" strokeWidth="0.8" opacity="0.5">
-            {minorStreets.map((d, i) => <path key={i} d={d} />)}
-          </g>
-
-          {/* Major roads — outline */}
-          <g stroke="var(--map-road-edge)" fill="none" strokeLinecap="square">
-            {ROADS.map((r, i) => <path key={i} d={r.d} strokeWidth={r.w + 2} />)}
-          </g>
-          <g stroke="var(--map-road)" fill="none" strokeLinecap="square">
-            {ROADS.map((r, i) => <path key={i} d={r.d} strokeWidth={r.w} />)}
-          </g>
-
-          {/* Dashed centerlines */}
-          <g stroke="#CFD6DF" fill="none" strokeDasharray="8 8" strokeWidth="1.2">
-            <path d="M 0 450 L 1600 450" />
-            <path d="M 340 0 L 340 1000" />
-          </g>
-
-          {/* Road labels */}
-          <g style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fill: 'var(--map-label)', fontWeight: 500 }}>
-            {ROADS.map((r, i) => (
-              <text
-                key={i}
-                x={r.labelX}
-                y={r.labelY}
-                transform={r.rotate ? `rotate(${r.rotate} ${r.labelX} ${r.labelY})` : undefined}
-                textAnchor="middle"
-              >
-                {r.label}
-              </text>
-            ))}
-          </g>
-
-          {/* District labels */}
-          <g style={{ fontFamily: 'var(--font-sans)', fill: '#3a4150', fontWeight: 600, letterSpacing: '1.5px' }}>
-            {DISTRICTS.map((d, i) => (
-              <text key={i} x={d.x} y={d.y} textAnchor="middle" style={{ fontSize: d.size, opacity: 0.4 }}>
-                {d.label}
-              </text>
-            ))}
-          </g>
-
-          {/* Subway stations */}
-          {SUBWAY.map((s, i) => (
-            <g key={i} transform={`translate(${s.x} ${s.y})`}>
-              <circle r="10" fill="#fff" stroke={s.color} strokeWidth="3" />
-              <text y="-16" textAnchor="middle" style={{ fontSize: 11, fill: '#3a4150', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
-                {s.label}
-              </text>
-            </g>
-          ))}
-        </svg>
-
-        {/* Cafe pins */}
-        {cafes.map((cafe) => {
-          const sel = cafe.id === selectedId;
-          const hov = cafe.id === hoveredId;
-          return (
-            <CafePin
-              key={cafe.id}
-              cafe={cafe}
-              prominent={sel || hov}
-              selected={sel}
-              onClick={() => onSelect(cafe.id)}
-              onMouseEnter={() => onHover(cafe.id)}
-              onMouseLeave={() => onHover(null)}
-            />
-          );
-        })}
-      </div>
-
-      {/* You-are-here */}
-      <div
-        className="absolute pointer-events-none z-[5]"
-        style={{
-          left: 760 * transform.s + transform.x,
-          top: 480 * transform.s + transform.y,
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
-        <div
-          className="rounded-full border-[3px] border-white"
-          style={{
-            width: 18,
-            height: 18,
-            background: '#3772cf',
-            boxShadow: '0 0 0 6px rgba(55,114,207,0.2), 0 2px 4px rgba(0,0,0,0.2)',
+    <>
+      <div id="naver-map" className="absolute inset-0 w-full h-full" />;
+      {/* Zoom controls */}
+      <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
+        <MapCtrlBtn
+          onClick={() => {
+            if (mapInstance.current) {
+              mapInstance.current.setZoom(mapInstance.current.getZoom() + 1);
+            }
           }}
+          icon="plus"
         />
-        <div
-          className="absolute top-[-26px] left-1/2 -translate-x-1/2 text-white rounded-full text-[11px] font-semibold whitespace-nowrap"
-          style={{
-            background: '#3772cf',
-            padding: '3px 8px',
-            letterSpacing: '-0.2px',
+        <MapCtrlBtn
+          onClick={() => {
+            if (mapInstance.current) {
+              mapInstance.current.setZoom(mapInstance.current.getZoom() - 1);
+            }
           }}
-        >
-          내 위치
-        </div>
+          icon="minus"
+        />
+        <div className="h-px bg-border-subtle" />
+        <MapCtrlBtn
+          onClick={moveToCurrentLocation}
+          icon="locate"
+          active={isLocationEnabled}
+          title={
+            locationPermission === "denied"
+              ? "위치 권한이 꺼져 있습니다"
+              : "현재 위치로 이동"
+          }
+        />
       </div>
-    </div>
+    </>
+  );
+}
+
+function MapCtrlBtn({
+  icon,
+  onClick,
+  active = false,
+  title,
+}: {
+  icon: string;
+  onClick: () => void;
+  active?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`w-8 h-8 rounded-xl border inline-flex items-center justify-center cursor-pointer shadow-card ${
+        active
+          ? "bg-brand text-white border-accent"
+          : "bg-bg text-fg-2 border-border-subtle"
+      }`}
+    >
+      <KGIcon name={icon} size={16} stroke={2} />
+    </button>
   );
 }

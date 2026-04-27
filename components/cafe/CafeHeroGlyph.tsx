@@ -1,4 +1,4 @@
-import { HeroKind } from '@/types/cafe';
+import { HeroKind } from "@/types/cafe";
 
 interface CafeHeroGlyphProps {
   kind: HeroKind;
@@ -7,8 +7,8 @@ interface CafeHeroGlyphProps {
 export default function CafeHeroGlyph({ kind }: CafeHeroGlyphProps) {
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center"
-      style={{ opacity: 0.22, color: kind === 'dark' ? '#fff' : '#3a2a16' }}
+      className="absolute inset-0 flex items-center justify-center opacity-22"
+      style={{ color: kind === "dark" ? "#fff" : "#3a2a16" }}
     >
       <svg
         width="48"

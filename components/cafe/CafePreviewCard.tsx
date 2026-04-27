@@ -176,11 +176,7 @@ interface FloatingCardProps {
   onOpenDetail: () => void;
 }
 
-export function FloatingCard({
-  cafe,
-  onClose,
-  onOpenDetail,
-}: FloatingCardProps) {
+export function FloatingCard({ cafe, onClose }: FloatingCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -198,11 +194,7 @@ export function FloatingCard({
         "p-5",
       )}
     >
-      <CafePreviewInner
-        cafe={cafe}
-        onClose={onClose}
-        onOpenDetail={onOpenDetail}
-      />
+      <CafePreviewInner cafe={cafe} onClose={onClose} onOpenDetail={() => {}} />
     </motion.div>
   );
 }

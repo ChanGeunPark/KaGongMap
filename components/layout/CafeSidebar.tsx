@@ -29,11 +29,11 @@ export default function CafeSidebar({
 }: CafeSidebarProps) {
   return (
     <motion.aside
-      initial={{ width: 420 }}
-      animate={{ width: isOpen ? 420 : 0 }}
+      initial={{ width: "100vw" }}
+      animate={{ width: isOpen ? "100vw" : 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cls(
-        "relative z-20 h-[calc(100vh-128px)] max-lg:absolute max-lg:top-0 max-lg:left-0 max-lg:bottom-0 max-lg:w-full",
+        "relative z-20 h-[calc(100vh-128px)] max-lg:absolute max-lg:top-0 max-lg:left-0 max-lg:bottom-0 max-lg:w-full max-w-[420px]",
       )}
     >
       {/* Sidebar toggle button */}
@@ -49,7 +49,7 @@ export default function CafeSidebar({
 
       {isOpen && (
         <div className="relative w-full h-[calc(100vh-128px)] overflow-scroll">
-          <div className="re w-[420px] overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
+          <div className="re max-w-[420px] w-full mx-auto overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
             <div className="border-b border-border-subtle flex items-center justify-between py-[14px] px-[20px]">
               <div>
                 <div className="text-btn font-semibold tracking-[-0.2px]">

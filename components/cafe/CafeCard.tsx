@@ -64,7 +64,7 @@ export default function CafeCard({
 
         {/* Level bars — hidden in compact */}
         {!compact && (
-          <div className="flex gap-3.5 text-[11px] text-fg-3 mt-auto">
+          <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-[11px] text-fg-3 mt-auto">
             <span className="inline-flex items-center gap-1">
               <TbPlug size={11} strokeWidth={2} />
               <LevelBar value={cafe.levels.power} />

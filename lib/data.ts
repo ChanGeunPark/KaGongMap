@@ -1,4 +1,4 @@
-import { Cafe, FilterItem } from '@/types/cafe';
+import { Cafe, FilterItem, Review } from '@/types/cafe';
 
 export const KG_CAFES: Cafe[] = [
   {
@@ -8,6 +8,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 역삼동',
     addr: '서울 강남구 테헤란로 152',
     x: 420, y: 420,
+    lat: 37.5008, lng: 127.0299,
     distance: 0.18,
     hours: '매일 07:30 - 22:00',
     phone: '02-123-4567',
@@ -36,6 +37,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 역삼동',
     addr: '서울 강남구 테헤란로 221',
     x: 790, y: 380,
+    lat: 37.5011, lng: 127.0404,
     distance: 0.32,
     hours: '평일 08:00 - 23:00 · 주말 09:00 - 22:00',
     priceLevel: 2,
@@ -62,6 +64,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 역삼동',
     addr: '서울 강남구 논현로 508',
     x: 1150, y: 560,
+    lat: 37.4995, lng: 127.0506,
     distance: 0.54,
     hours: '매일 09:00 - 22:00',
     priceLevel: 3,
@@ -88,6 +91,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 삼성동',
     addr: '서울 강남구 영동대로 416',
     x: 520, y: 680,
+    lat: 37.4984, lng: 127.0327,
     distance: 0.71,
     hours: '매일 24시간',
     priceLevel: 2,
@@ -114,6 +118,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 대치동',
     addr: '서울 강남구 선릉로 428',
     x: 980, y: 720,
+    lat: 37.4981, lng: 127.0458,
     distance: 0.84,
     hours: '매일 08:00 - 21:00',
     priceLevel: 1,
@@ -140,6 +145,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 역삼동',
     addr: '서울 강남구 강남대로 398',
     x: 260, y: 560,
+    lat: 37.4995, lng: 127.0253,
     distance: 0.22,
     hours: '평일 07:00 - 24:00 · 주말 10:00 - 22:00',
     priceLevel: 3,
@@ -167,6 +173,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 논현동',
     addr: '서울 강남구 학동로 225',
     x: 720, y: 220,
+    lat: 37.5026, lng: 127.0384,
     distance: 0.46,
     hours: '매일 08:00 - 22:00',
     priceLevel: 2,
@@ -193,6 +200,7 @@ export const KG_CAFES: Cafe[] = [
     neigh: '강남구 역삼동',
     addr: '서울 강남구 테헤란로 87길 46',
     x: 1260, y: 320,
+    lat: 37.5017, lng: 127.0538,
     distance: 0.62,
     hours: '평일 09:00 - 22:00',
     priceLevel: 2,
@@ -224,3 +232,56 @@ export const KG_FILTERS: FilterItem[] = [
   { id: 'notebook', label: '노트북 OK',   icon: 'laptop' },
   { id: 'cheap',    label: '5천원 이하',  icon: 'coin' },
 ];
+
+const BASE_REVIEWS: Review[] = [
+  {
+    initials: '지수',
+    name: '지수',
+    avatarBg: '#F5A524',
+    stars: 5,
+    date: '3일 전',
+    visits: 7,
+    text: '취준생 기준 최고의 장소. 콘센트 자리 거의 전석 확보됐고 오전 9시에 가면 1층 창가 자리 잡을 수 있어요. 화장실도 깔끔해서 장기체류 가능.',
+    tags: ['콘센트많음', '장기체류', '조용함'],
+    badge: '카공 단골',
+  },
+  {
+    initials: '민준',
+    name: '민준',
+    avatarBg: '#3772cf',
+    stars: 4,
+    date: '1주 전',
+    visits: 3,
+    text: '화상회의 하기 좋았어요. 와이파이 속도 측정해봤는데 업/다운 모두 200Mbps 넘음. 다만 오후 3시 이후로는 옆자리랑 가까워서 통화는 복도에서 하는 게 좋아요.',
+    tags: ['와이파이빠름', '화상회의OK'],
+    badge: '프리랜서',
+  },
+  {
+    initials: '유진',
+    name: '유진',
+    avatarBg: '#0fa76e',
+    stars: 5,
+    date: '2주 전',
+    visits: 12,
+    text: '대학원생인데 논문 쓸 때 여기 자주 옵니다. 사장님도 눈치 안 주시고 5시간 넘게 있어도 편해요. 커피값이 좀 있는 편이긴 한데 환경값이라고 생각하면 납득.',
+    tags: ['장기체류OK', '눈치없음'],
+    badge: '대학원생',
+  },
+];
+
+export function getReviewsForCafe(cafe: Cafe): Review[] {
+  const reviews = [...BASE_REVIEWS];
+  if (cafe.cons.includes('오후 2~5시 혼잡')) {
+    reviews.push({
+      initials: '준호',
+      name: '준호',
+      avatarBg: '#8B5CF6',
+      stars: 3,
+      date: '5일 전',
+      visits: 2,
+      text: '오전엔 최고인데 오후 2시 넘어가면 단체 손님 오면서 갑자기 시끄러워짐. 타이밍 잘 맞추면 좋은 곳.',
+      tags: ['시간대주의'],
+    });
+  }
+  return reviews;
+}
