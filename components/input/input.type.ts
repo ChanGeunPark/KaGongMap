@@ -25,7 +25,7 @@ export interface InputProps {
   onBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
 
   //state
   showToggle?: boolean;
@@ -33,6 +33,7 @@ export interface InputProps {
   optional?: boolean;
   unableEdit?: boolean;
   tooltip?: string;
+  rest?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
 export interface TextAreaInputProps {
@@ -42,6 +43,7 @@ export interface TextAreaInputProps {
   placeholder?: string;
   require?: boolean;
   errors?: string;
+  errorText?: string;
   name?: string;
   disabled?: boolean;
   parentClassName?: string;
@@ -55,9 +57,12 @@ export interface TextAreaInputProps {
   className?: string;
   onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
 
+  // controlled component support (Controller + field)
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
+
   //state
   important?: boolean;
   optional?: boolean;
   unableEdit?: boolean;
-  [key: string]: unknown;
 }

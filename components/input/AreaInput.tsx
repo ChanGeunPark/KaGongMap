@@ -1,29 +1,55 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { cls } from "@/lib/utils";
 import { TextAreaInputProps } from "./input.type";
 
 function AreaInput(props: TextAreaInputProps) {
-  const { showMaxLength = true } = props;
+  const {
+    label,
+    footnote,
+    register,
+    placeholder,
+    errors,
+    name,
+    disabled,
+    parentClassName,
+    descriptionLength,
+    defaultValue,
+    maxLength,
+    showMaxLength = true,
+    onInput,
+    onKeyDown,
+    onBlur,
+    className,
+    important,
+    optional,
+    unableEdit,
+    value,
+    onChange,
+    errorText,
+  } = props;
 
-  let remainingText = props.maxLength || 0;
-  if (props.maxLength && props.descriptionLength) {
-    remainingText = Number(props.maxLength) - Number(props.descriptionLength);
+  let remainingText = maxLength || 0;
+  if (maxLength && descriptionLength) {
+    remainingText = maxLength - descriptionLength;
   }
 
+  const displayError = errors || errorText;
+
   return (
-    <div className={cls("flex flex-col w-full", props.parentClassName)}>
-      {props.label ? (
-        <label className="w-full px-1" htmlFor={props.name}>
-          <h5 className="relative inline-block">{props.label}</h5>
-          {props.optional && (
-            <span className=" text-gray-300 dark:text-gray-700 ml-1 body3">
+    <div className={cls("flex flex-col w-full", parentClassName)}>
+      {label ? (
+        <label
+          className="text-label font-semibold text-fg-2 mb-1"
+          htmlFor={name}
+        >
+          <h5 className="relative inline-block">{label}</h5>
+          {optional && (
+            <span className="text-gray-300 dark:text-gray-700 ml-1 body3">
               (선택)
             </span>
           )}
-          {props.important ? (
-            <span className="text-alertMain ml-0.5">*</span>
-          ) : null}
-          {props.unableEdit ? (
+          {important ? <span className="text-alertMain ml-0.5">*</span> : null}
+          {unableEdit ? (
             <span className="text-gray-400 ml-1 body3 dark:text-gray-500">
               (수정불가)
             </span>
@@ -32,45 +58,41 @@ function AreaInput(props: TextAreaInputProps) {
       ) : null}
 
       <textarea
-        {...props.register}
+        {...register}
+        value={register ? undefined : value}
+        onChange={register ? undefined : onChange}
         onInput={
-          props.onInput as
-            | React.InputEventHandler<HTMLTextAreaElement>
-            | undefined
+          onInput as React.FormEventHandler<HTMLTextAreaElement> | undefined
         }
-        onKeyDown={props.onKeyDown}
-        onBlur={props.onBlur}
+        onKeyDown={onKeyDown}
+        onBlur={onBlur}
         className={cls(
-          "body1-400 w-full h-28 placeholder:body2-400 rounded-xl outline-none resize-none border-2 border-solid focus:ring-0 p-4",
+          "body1-400 w-full h-28 placeholder:body2-400 rounded-md outline-none resize-none border-2 border-solid focus:ring-0 p-4",
           "text-gray-800 placeholder:text-gray-300 dark:placeholder:text-gray-500 dark:text-gray-200 dark:bg-gray-800 bg-white focus:border-primaryDark dark:focus:border-primaryDark",
-          props.errors
+          displayError
             ? "border-alertMain focus:!border-alertMain"
             : "border-gray-50 dark:border-gray-700",
-
-          props.label ? "mt-1" : "",
-
-          `${props.className}`,
+          label ? "mt-1" : "",
+          className ?? "",
         )}
         autoComplete="off"
-        defaultValue={props.defaultValue}
-        placeholder={props.placeholder}
-        readOnly={props.disabled}
-        maxLength={props.maxLength}
-        {...(props.rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
-      ></textarea>
+        defaultValue={register ? defaultValue : undefined}
+        placeholder={placeholder}
+        readOnly={disabled}
+        maxLength={maxLength}
+        name={name}
+      />
 
       <div className="w-full flex justify-between items-center">
-        {!props.errors && !props.footnote && <span></span>}
-        {props.errors && (
-          <p className="text-alertMain body3-400 mt-1">{props.errors}</p>
+        {!displayError && !footnote && <span></span>}
+        {displayError && (
+          <p className="text-alertMain body3-400 mt-1">{displayError}</p>
         )}
-        {props.footnote && (
-          <p className="body3-400 mt-1 text-gray-500">{props.footnote}</p>
-        )}
-        {props.maxLength && (
+        {footnote && <p className="body3-400 mt-1 text-gray-500">{footnote}</p>}
+        {maxLength && showMaxLength && (
           <span
             className={cls(
-              "body3-400 text-gray-500",
+              "font-mono text-[11px] text-fg-4 mt-2",
               remainingText <= 0 ? "!text-alertMain" : "text-gray-500",
             )}
           >
@@ -81,5 +103,4 @@ function AreaInput(props: TextAreaInputProps) {
     </div>
   );
 }
-
 export default AreaInput;

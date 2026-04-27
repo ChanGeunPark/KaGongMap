@@ -2,9 +2,11 @@
 
 import { cls } from "@/lib/utils";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Cafe, FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
-import { KG_CAFES, KG_FILTERS } from "@/lib/data";
+import { FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
+import { CafeMarker, CafeTag } from "@/types/db";
+import { KG_FILTERS } from "@/lib/data";
+import { useCafeMarkers } from "@/hooks/useCafeMarkers";
+import { useCafeDetail } from "@/hooks/useCafeDetail";
 import TopNav from "@/components/layout/TopNav";
 import FilterBar from "@/components/layout/FilterBar";
 import FilterDrawer from "@/components/layout/FilterDrawer";
@@ -152,8 +154,18 @@ function SegButtons({
   );
 }
 
+// 필터 ID → CafeTag 매핑
+const FILTER_TAG_MAP: Record<string, CafeTag> = {
+  power: "콘센트_있음",
+  wifi: "와이파이_있음",
+  quiet: "조용함",
+  open24: "24시간",
+  noLimit: "시간제한없음",
+  notebook: "노트북_허용",
+  space: "혼잡도_낮음",
+};
+
 export default function MainApp() {
-  const router = useRouter();
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS);
   const [tweaksOn, setTweaksOn] = useState(false);
   const [query, setQuery] = useState("");
@@ -166,12 +178,13 @@ export default function MainApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{
-    x: number;
-    y: number;
-    tx: number;
-    ty: number;
-  } | null>(null);
+
+  // Tier 1: 지도 전체 마커 로딩
+  const { data: allCafes = [], isLoading } = useCafeMarkers();
+
+  // Tier 2: 선택된 카페 상세 (핀 클릭 시 1건만 온디맨드)
+  const { data: selectedDetail, isLoading: detailLoading } =
+    useCafeDetail(selectedId);
 
   // Edit mode postMessage protocol
   useEffect(() => {
@@ -196,7 +209,6 @@ export default function MainApp() {
     });
   };
 
-  // Apply point color CSS var
   useEffect(() => {
     document.documentElement.style.setProperty("--kg-amber", tweaks.pointColor);
   }, [tweaks.pointColor]);
@@ -213,59 +225,53 @@ export default function MainApp() {
     });
   };
 
-  // Filter + sort
-  const cafes = useMemo<Cafe[]>(() => {
-    let list = [...KG_CAFES];
+  // 필터 + 검색 + 정렬
+  const cafes = useMemo<CafeMarker[]>(() => {
+    let list = [...allCafes];
+
     if (query) {
       const q = query.toLowerCase();
       list = list.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
-          c.shortName.toLowerCase().includes(q) ||
-          c.neigh.includes(query) ||
-          c.tags.some((t) => t.includes(query)),
+          c.tags.some((tag) => tag.includes(query)),
       );
     }
-    for (const f of activeFilters) {
-      if (f === "power") list = list.filter((c) => c.levels.power >= 3);
-      if (f === "wifi") list = list.filter((c) => c.levels.wifi >= 3);
-      if (f === "quiet") list = list.filter((c) => c.levels.quiet >= 3);
-      if (f === "space") list = list.filter((c) => c.levels.space >= 3);
-      if (f === "open24")
-        list = list.filter((c) => c.tags.some((t) => t.includes("24시간")));
-      if (f === "noLimit") list = list.filter((c) => c.limits.length === 0);
-      if (f === "notebook")
-        list = list.filter((c) => !c.limits.some((l) => l.includes("노트북")));
-      if (f === "cheap") list = list.filter((c) => c.priceLevel <= 1);
+
+    for (const filterId of activeFilters) {
+      const tag = FILTER_TAG_MAP[filterId];
+      if (tag) list = list.filter((c) => c.tags.includes(tag));
     }
-    const cmp: Record<string, (a: Cafe, b: Cafe) => number> = {
-      stars: (a, b) => b.stars - a.stars,
-      reviews: (a, b) => b.reviewCount - a.reviewCount,
-    };
-    list.sort(cmp[sortBy]);
+
+    if (sortBy === "score" || sortBy === "stars") {
+      list.sort((a, b) => b.avg_rating - a.avg_rating);
+    }
+
     return list;
-  }, [query, activeFilters, sortBy]);
+  }, [allCafes, query, activeFilters, sortBy]);
 
   const selectCafe = (id: string) => {
     setSelectedId(id);
     setPreviewId(id);
-    const c = KG_CAFES.find((x) => x.id === id);
-    if (c && tweaks.layoutVariant === "sidebar") {
-      const rect = document
-        .getElementById("kg-map-area")
-        ?.getBoundingClientRect();
-      if (rect) {
-        const s = 0.82;
-      }
-    }
   };
 
-  const preview = previewId
-    ? (KG_CAFES.find((c) => c.id === previewId) ?? null)
+  // FloatingCard는 Tier 1 데이터로 즉시 표시, 상세 로딩 후 교체
+  const previewMarker = previewId
+    ? (allCafes.find((c) => c.id === previewId) ?? null)
     : null;
-  const useSidebar = tweaks.layoutVariant === "sidebar";
-  const useFloating = tweaks.layoutVariant === "floating";
+
   const useSheet = tweaks.layoutVariant === "sheet";
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-bg">
+        <div className="flex flex-col items-center gap-3 text-fg-3">
+          <KGIcon name="loader" size={28} stroke={1.5} />
+          <span className="text-mono text-sm">카페 정보를 불러오는 중…</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-bg">
@@ -310,7 +316,7 @@ export default function MainApp() {
           {/* Legend */}
           <div
             className={cls(
-              "absolute z-20 left-[20px] rounded-xl border border-border-subtle",
+              "absolute z-20 right-[20px] rounded-xl border border-border-subtle",
               "py-[10px] px-[14px] bg-white/95 backdrop-blur-sm shadow-card",
               useSheet ? "top-[20px] bottom-auto" : "bottom-[20px] top-auto",
             )}
@@ -337,10 +343,12 @@ export default function MainApp() {
             </div>
           </div>
 
-          {/* Floating preview */}
-          {preview && (
+          {/* Floating preview — Tier 1로 즉시 표시, Tier 2 로딩 완료 시 상세 반영 */}
+          {previewMarker && (
             <FloatingCard
-              cafe={preview}
+              cafe={previewMarker}
+              detail={selectedDetail ?? null}
+              detailLoading={detailLoading}
               onClose={() => {
                 setPreviewId(null);
                 setSelectedId(null);

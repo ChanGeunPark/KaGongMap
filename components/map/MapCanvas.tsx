@@ -1,44 +1,50 @@
 "use client";
 
-import { Cafe } from "@/types/cafe";
+import { CafeMarker } from "@/types/db";
 import { useCallback, useEffect, useRef, useState } from "react";
 import KGIcon from "../ui/KGIcon";
 import { toast } from "react-toastify";
 
-function scoreColor(score: number) {
-  if (score >= 85) return "#22c55e";
-  if (score >= 65) return "#f5a524";
+function scoreColor(avgRating: number) {
+  if (avgRating >= 4.2) return "#22c55e";
+  if (avgRating >= 3.3) return "#f5a524";
   return "#ef4444";
 }
 
-function pinHtml(cafe: Cafe, active: boolean) {
-  const color = scoreColor(cafe.score);
-  // const size = active ? 52 : 42;
-  // const fontSize = active ? 13 : 11;
+function pinHtml(cafe: CafeMarker, active: boolean) {
+  const color = scoreColor(cafe.avg_rating);
   return `
     <div
-            id="overlay_${cafe.id}"
-            class="overlay_content"
-            style="transform:translateY(-20px) ;width:100%; cursor:pointer; padding-left:4px; padding-top:2px; padding-bottom:2px; padding-right:12px; display:flex; align-items:center; border:none; border-radius:999px; background-color:white; border:2px solid ${color}; box-shadow:0 2px 7px rgba(0,0,0,0.2); position:relative;"
-            >
-            <figure style="height: 24px; width: 0; overflow:hidden; transition: all 0.3s ease;">
-              <img
-                style="height: 24px; width:24px; object-fit: cover; border-radius: 50%; pointer-events: none; "
-                src="https://picsum.photos/id/103/300/300"
-              />
-            </figure>
-            <p style="padding:0; margin:0; margin-left:12px; font-size:12px; font-weight:700; pointer-events: none;">
-            ${cafe.name}
-            </p>
-            <div style="position:absolute; left:50%; bottom:-1px; transform: translateX(-50%) translateY(50%); pointer-events:none;">
-            <div class="overlay_content_point" style="border-radius:0 0 3px 0; width:8px; height:8px; transform:rotate(45deg); background-color:white; pointer-events:none; border-right:2px solid ${color}; border-bottom:2px solid ${color};"/>
-            </div>
-          </div>
+      id="overlay_${cafe.id}"
+      style="
+        display:inline-flex; align-items:center; position:relative;
+        transform:translateX(-50%) translateY(-20px);
+        cursor:pointer;
+        padding:2px 12px 2px 4px;
+        border-radius:999px;
+        background-color:white;
+        border:2px solid ${color};
+        box-shadow:0 2px 7px rgba(0,0,0,0.2);
+      "
+    >
+      <figure style="height:24px; width:0; overflow:hidden; transition:all 0.3s ease; margin:0;">
+        <img
+          style="height:24px; width:24px; object-fit:cover; border-radius:50%; pointer-events:none;"
+          src="https://picsum.photos/id/103/300/300"
+        />
+      </figure>
+      <p style="padding:0; margin:0; margin-left:12px; font-size:12px; font-weight:700; pointer-events:none; white-space:nowrap;">
+        ${cafe.name}
+      </p>
+      <div style="position:absolute; left:50%; bottom:-1px; transform:translateX(-50%) translateY(50%); pointer-events:none;">
+        <div style="border-radius:0 0 3px 0; width:8px; height:8px; transform:rotate(45deg); background-color:white; border-right:2px solid ${color}; border-bottom:2px solid ${color};"></div>
+      </div>
+    </div>
   `;
 }
 
 interface MapCanvasProps {
-  cafes: Cafe[];
+  cafes: CafeMarker[];
   selectedId: string | null;
   hoveredId: string | null;
   onSelect: (id: string) => void;
@@ -61,23 +67,17 @@ export default function MapCanvas({
   const markers = useRef<Map<string, naver.maps.Marker>>(new Map());
   const initialized = useRef(false);
   const [locationPermission, setLocationPermission] =
-    useState<LocationPermission>(() => {
-      if (typeof window === "undefined") return "checking";
-      if (!navigator.geolocation) return "unsupported";
-      if (!navigator.permissions?.query) return "prompt";
-      return "checking";
-    });
+    useState<LocationPermission>("checking");
   const isLocationEnabled = locationPermission === "granted";
 
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !navigator.geolocation ||
-      !navigator.permissions?.query
-    ) {
-      toast.error(
-        "위치 권한을 허용해주세요. 브라우저가 위치 권한을 지원하지 않습니다.",
-      );
+    if (!navigator.geolocation) {
+      setTimeout(() => setLocationPermission("unsupported"), 0);
+      return;
+    }
+
+    if (!navigator.permissions?.query) {
+      setTimeout(() => setLocationPermission("prompt"), 0);
       return;
     }
 
@@ -139,20 +139,33 @@ export default function MapCanvas({
         timeout: 10_000,
       },
     );
-  }, []);
+  }, [locationPermission]);
 
   useEffect(() => {
     function initMap() {
       if (initialized.current) return;
       initialized.current = true;
 
-      const center = new naver.maps.LatLng(37.5005, 127.038);
+      const defaultCenter = new naver.maps.LatLng(37.5005, 127.038);
       mapInstance.current = new naver.maps.Map("naver-map", {
-        center,
+        center: defaultCenter,
         zoom: 15,
         minZoom: 12,
         maxZoom: 19,
       });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          ({ coords }) => {
+            mapInstance.current?.setCenter(
+              new naver.maps.LatLng(coords.latitude, coords.longitude),
+            );
+            mapInstance.current?.setZoom(16);
+          },
+          () => {}, // 위치 거절 시 기본 중심 유지
+          { enableHighAccuracy: false, maximumAge: 60_000, timeout: 5_000 },
+        );
+      }
 
       cafes.forEach((cafe) => {
         if (cafe.lat == null || cafe.lng == null) return;
@@ -162,7 +175,7 @@ export default function MapCanvas({
           map: mapInstance.current!,
           icon: {
             content: pinHtml(cafe, false),
-            anchor: new naver.maps.Point(21, 21),
+            anchor: new naver.maps.Point(0, 14),
           },
           title: cafe.name,
         });
@@ -196,7 +209,7 @@ export default function MapCanvas({
       if (!cafe) return;
       marker.setIcon({
         content: pinHtml(cafe, id === selectedId),
-        anchor: new naver.maps.Point(21, 21),
+        anchor: new naver.maps.Point(0, 14),
       });
     });
   }, [selectedId, cafes]);

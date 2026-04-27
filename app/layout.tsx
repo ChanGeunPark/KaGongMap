@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import QueryProvider from "@/providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: "카공맵",
@@ -14,13 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full">
+    <html lang="ko" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Script
           src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`}
           strategy="afterInteractive"
         />
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <ToastContainer
           position="top-right"
           autoClose={3000}

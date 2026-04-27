@@ -30,9 +30,9 @@ function TextInput(props: TextAreaInputProps) {
       id={props.name}
       placeholder={props.placeholder ? props.placeholder : ""}
       defaultValue={props.defaultValue ? props.defaultValue : ""}
-      readOnly={props.readOnly as boolean}
+      readOnly={props.disabled as boolean}
       autoComplete="off"
-      rows={props.rows as number}
+      rows={1}
       onInput={
         props.onInput as
           | React.InputEventHandler<HTMLTextAreaElement>

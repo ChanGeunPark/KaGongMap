@@ -6,6 +6,8 @@ import { cls } from "@/lib/utils";
 import { toast } from "react-toastify";
 import type { PlaceSearchResult } from "@/types/kakao";
 import type { ApiResponse } from "@/types/api";
+import KaGongButton from "../button/KaGongButton";
+import BasicInput from "../input/BasicInput";
 
 interface AddressSearchProps {
   value: PlaceSearchResult | null;
@@ -32,6 +34,7 @@ export default function AddressSearch({
       );
       const data = (await response.json()) as ApiResponse<PlaceSearchResult[]>;
 
+      console.log(data);
       if (data.ok) {
         setResults(data.data);
         if (data.data.length === 0) toast.info("검색 결과가 없습니다.");
@@ -48,9 +51,12 @@ export default function AddressSearch({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <input
+        <BasicInput
+          name="address"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setQuery((e.target as HTMLInputElement).value)
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -59,27 +65,26 @@ export default function AddressSearch({
           }}
           type="text"
           placeholder="카페명을 검색하세요"
-          className={cls(
-            "flex-1 rounded-xl border px-3.5 py-2.5 text-body bg-bg text-fg",
-            "placeholder:text-fg-4 focus:outline-none transition-colors",
-            error
-              ? "border-error/70 focus:border-error"
-              : "border-border-medium focus:border-kg-amber",
-          )}
+          // className={cls(
+          //   "flex-1 rounded-xl border px-3.5 py-2.5 text-body bg-bg text-fg",
+          //   "placeholder:text-fg-4 focus:outline-none transition-colors",
+          //   error
+          //     ? "border-error/70 focus:border-error"
+          //     : "border-border-medium focus:border-kg-amber",
+          // )}
         />
-        <button
-          type="button"
-          disabled={isSearching || !query.trim()}
+        <KaGongButton
+          buttonStyle="SECONDARY"
           onClick={handleSearch}
-          className="shrink-0 flex items-center gap-1.5 rounded-xl border border-border-medium bg-bg px-3.5 py-2.5 text-small font-medium text-fg-2 hover:bg-gray-50 hover:border-border-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="shrink-0 flex items-center gap-1.5 rounded-xl border border-border-medium bg-bg px-3.5 py-2.5 "
         >
           <TbSearch size={14} strokeWidth={2} />
           {isSearching ? "검색 중…" : "검색"}
-        </button>
+        </KaGongButton>
       </div>
 
       {results.length > 0 && (
-        <div className="flex flex-col gap-1 max-h-60 overflow-y-auto rounded-xl border border-border-medium bg-bg p-1.5">
+        <div className="flex flex-col gap-1 max-h-60 overflow-y-auto rounded-md border border-border-medium bg-bg p-1.5">
           {results.map((place) => {
             const address = place.roadAddress || place.address;
             const isSelected = value?.id === place.id;

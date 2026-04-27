@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { cls } from "@/lib/utils";
 import { InputProps } from "./input.type";
 import { TbEye, TbEyeOff } from "react-icons/tb";
+import FieldError from "./FieldError";
 
 function BasicInput(props: InputProps) {
   const [inputType, setInputType] = useState<string>(
@@ -31,7 +32,10 @@ function BasicInput(props: InputProps) {
     <div className={cls("w-full", props.className ? props.className : "")}>
       {/* ============== TITLE ============== */}
       {props.label ? (
-        <label className="w-full px-1" htmlFor={props.name}>
+        <label
+          className="text-label font-semibold text-fg-2"
+          htmlFor={props.name}
+        >
           <h5 className="relative inline-block">{props.label}</h5>
           {props.optional && (
             <span className=" text-gray-300 dark:text-gray-700 ml-1 body3">
@@ -39,7 +43,7 @@ function BasicInput(props: InputProps) {
             </span>
           )}
           {props.important ? (
-            <span className="text-alertMain ml-0.5">*</span>
+            <span className="text-error ml-0.5">*</span>
           ) : null}
           {props.unableEdit ? (
             <span className="text-gray-400 ml-1 body3 dark:text-gray-500">
@@ -106,7 +110,7 @@ function BasicInput(props: InputProps) {
           disabled={props.disabled}
           //style
           className={cls(
-            "w-full min-h-[48px] bg-white dark:bg-gray-800 rounded-xl border-gray-50 border-solid border-2 p-3",
+            "w-full min-h-[48px] bg-white dark:bg-gray-800 rounded-md border-gray-50 border-solid border-2 p-3",
             "body2-400 text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:body2-500", //text
             props.errorText ? "border-alertMain" : "border-gray-50",
             props.readOnly
@@ -116,6 +120,8 @@ function BasicInput(props: InputProps) {
               ? "bg-gray-50 dark:bg-gray-850 dark:placeholder:text-gray-600"
               : "",
           )}
+          onChange={props.onChange}
+          {...props.rest}
         />
 
         {/*  비밀번호 확인 버튼  */}
@@ -146,7 +152,7 @@ function BasicInput(props: InputProps) {
       ) : null}
 
       {props.errorText ? (
-        <p className="body3-400 mt-2 text-red-500">{props.errorText}</p>
+        <FieldError message={props.errorText} className="mt-2" />
       ) : null}
     </div>
   );

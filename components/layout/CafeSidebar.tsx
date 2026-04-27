@@ -1,13 +1,13 @@
 "use client";
 
-import { Cafe } from "@/types/cafe";
+import { CafeMarker } from "@/types/db";
 import CafeCard from "../cafe/CafeCard";
 import { cls } from "@/lib/utils";
 import { IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
 
 interface CafeSidebarProps {
-  cafes: Cafe[]; // 카페 목록
+  cafes: CafeMarker[]; // 카페 목록
   selectedId: string | null; // 선택된 카페 ID
   hoveredId: string | null; // 호버된 카페 ID
   setHoveredId: (id: string) => void; // 호버된 카페 ID 설정
@@ -29,11 +29,11 @@ export default function CafeSidebar({
 }: CafeSidebarProps) {
   return (
     <motion.aside
-      initial={{ width: "100vw" }}
+      initial={false}
       animate={{ width: isOpen ? "100vw" : 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cls(
-        "relative z-20 h-[calc(100vh-128px)] max-lg:absolute max-lg:top-0 max-lg:left-0 max-lg:bottom-0 max-lg:w-full max-w-[420px]",
+        "z-20 h-full absolute top-0 left-0 bottom-0 w-full max-w-[420px] bg-white",
       )}
     >
       {/* Sidebar toggle button */}
@@ -48,7 +48,7 @@ export default function CafeSidebar({
       </button>
 
       {isOpen && (
-        <div className="relative w-full h-[calc(100vh-128px)] overflow-scroll">
+        <div className="relative w-full h-full overflow-scroll">
           <div className="re max-w-[420px] w-full mx-auto overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
             <div className="border-b border-border-subtle flex items-center justify-between py-[14px] px-[20px]">
               <div>

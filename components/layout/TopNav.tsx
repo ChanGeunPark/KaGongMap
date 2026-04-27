@@ -137,7 +137,7 @@ export default function TopNav({ query, setQuery }: TopNavProps) {
         showModal={showModal}
         showModalToggler={setShowModal}
       >
-        <CafeInfoForm />
+        <CafeInfoForm onClose={handleHideModal} />
       </KagongMapModal>
     </>
   );

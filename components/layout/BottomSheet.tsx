@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Cafe, SortBy } from '@/types/cafe';
+import { CafeMarker } from '@/types/db';
+import { SortBy } from '@/types/cafe';
 import CafeCard from '@/components/cafe/CafeCard';
 
 interface BottomSheetProps {
-  cafes: Cafe[];
+  cafes: CafeMarker[];
   selectedId: string | null;
   setSelectedId: (id: string) => void;
   matchCount: number;
