@@ -1,8 +1,15 @@
+"use client";
+
 import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
 import KagongMapModal from "../modal/KagongMapModal";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CafeInfoForm from "../cafe/CafeInfoForm";
+import { signOut, useSession } from "next-auth/react";
+import KaGongButton from "../button/KaGongButton";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
+import Image from "next/image";
 
 const NAV_ITEMS = [
   { label: "지도", on: true },
@@ -18,6 +25,31 @@ interface TopNavProps {
 
 export default function TopNav({ query, setQuery }: TopNavProps) {
   const [showModal, setShowModal] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const { dbUser } = useUserStore();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    if (isUserMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -107,11 +139,58 @@ export default function TopNav({ query, setQuery }: TopNavProps) {
               <KGIcon name="plus" size={14} stroke={2.2} /> 카페 제보
             </button>
 
-            {/* 아바타 */}
-            <div className="w-8 h-8 rounded-full bg-gray-100 inline-flex items-center justify-center text-[13px] font-semibold text-fg-2 shrink-0">
-              Y
-            </div>
+            {session ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                  className="relative w-[40px] h-[40px] rounded-full bg-gray-100 inline-flex items-center justify-center text-[16px] font-semibold text-fg-2 shrink-0 cursor-pointer"
+                >
+                  {dbUser?.avatar_url ? (
+                    <Image
+                      src={dbUser.avatar_url}
+                      alt={session?.user?.name ?? "User"}
+                      width={40}
+                      height={40}
+                      objectFit="contain"
+                      className="rounded-full object-cover absolute top-0 left-0 w-full h-full"
+                    />
+                  ) : (
+                    (session?.user?.name?.charAt(0) ?? "U")
+                  )}
+                </button>
 
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[160px] rounded-xl border border-border-medium bg-white shadow-lg p-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        router.push("/mypage");
+                      }}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-fg-2 hover:bg-gray-50 cursor-pointer"
+                    >
+                      나의 정보
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-500 hover:bg-red-50 cursor-pointer"
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <KaGongButton
+                buttonStyle="OUTLINED"
+                buttonSize="MEDIUM"
+                onClick={() => router.push("/login")}
+              >
+                로그인
+              </KaGongButton>
+            )}
             {/* 햄버거 — lg 미만 */}
             <button className="lg:hidden w-8 h-8 rounded-full bg-gray-50 border border-border-medium inline-flex items-center justify-center text-fg-2">
               <KGIcon name="menu" size={18} />

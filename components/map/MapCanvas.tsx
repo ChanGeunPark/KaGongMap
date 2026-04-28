@@ -49,6 +49,10 @@ interface MapCanvasProps {
   hoveredId: string | null;
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
+  onBoundsChange?: (bounds: {
+    ne: naver.maps.LatLng;
+    sw: naver.maps.LatLng;
+  }) => void;
 }
 
 type LocationPermission =
@@ -62,6 +66,7 @@ export default function MapCanvas({
   cafes,
   selectedId,
   onSelect,
+  onBoundsChange,
 }: MapCanvasProps) {
   const mapInstance = useRef<naver.maps.Map | null>(null);
   const markers = useRef<Map<string, naver.maps.Marker>>(new Map());
@@ -167,6 +172,15 @@ export default function MapCanvas({
         );
       }
 
+      naver.maps.Event.addListener(mapInstance.current, "idle", () => {
+        const b = (
+          mapInstance.current as unknown as {
+            getBounds(): naver.maps.LatLngBounds;
+          }
+        ).getBounds();
+        onBoundsChange?.({ ne: b.getNE(), sw: b.getSW() });
+      });
+
       cafes.forEach((cafe) => {
         if (cafe.lat == null || cafe.lng == null) return;
 
@@ -216,7 +230,7 @@ export default function MapCanvas({
 
   return (
     <>
-      <div id="naver-map" className="absolute inset-0 w-full h-full" />;
+      <div id="naver-map" className="absolute inset-0 w-full h-full" />
       {/* Zoom controls */}
       <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
         <MapCtrlBtn

@@ -13,7 +13,7 @@ export type SubmissionStatus = "pending" | "approved" | "rejected";
 
 export interface DbUser {
   id: string;
-  email: string;
+  user_id: string;
   nickname: string;
   avatar_url: string | null;
   created_at: string;

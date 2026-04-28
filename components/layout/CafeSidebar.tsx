@@ -39,12 +39,23 @@ export default function CafeSidebar({
       {/* Sidebar toggle button */}
       <button
         className={cls(
-          "absolute z-20 top-4 size-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
-          isOpen ? "rotate-0 right-4" : "rotate-180 -right-14",
+          "absolute z-20 top-4 h-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
+          isOpen
+            ? "rotate-0 right-4 w-8"
+            : "left-[calc(100%+10px)] w-max gap-2 pl-4 pr-2",
         )}
         onClick={() => setSidebarOpen(!isOpen)}
       >
-        <IoIosArrowBack size={24} className="text-zinc-500" />
+        {!isOpen && (
+          <div className="text-btn font-semibold tracking-[-0.2px]">
+            <span className="text-amber-700">근처</span> {cafes.length}개 발견
+          </div>
+        )}
+
+        <IoIosArrowBack
+          size={24}
+          className={cls("text-zinc-500", isOpen ? "rotate-0" : "rotate-180")}
+        />
       </button>
 
       {isOpen && (

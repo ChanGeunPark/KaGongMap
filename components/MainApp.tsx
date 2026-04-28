@@ -16,6 +16,10 @@ import MapCanvas from "@/components/map/MapCanvas";
 import MonoLabel from "@/components/ui/MonoLabel";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeSidebar from "./layout/CafeSidebar";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCreateUser, useUser } from "@/hooks/useUser";
+import { useUserStore } from "@/stores/userStore";
 
 interface Tweaks {
   // 트윅 설정
@@ -175,7 +179,74 @@ export default function MainApp() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bounds, setBounds] = useState<{
+    ne: naver.maps.LatLng;
+    sw: naver.maps.LatLng;
+  } | null>(null);
+
+  const { data: session, status } = useSession();
+  const userId = (session?.user as { id?: string })?.id ?? null;
+  const {
+    data: dbUser,
+    isLoading: isUserLoading,
+    isSuccess: isUserFetchSuccess,
+    isError: isUserFetchError,
+  } = useUser(userId);
+  const { mutate: createUser } = useCreateUser();
+  const setDbUser = useUserStore((state) => state.setDbUser);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const createUserRef = useRef(createUser);
+  const createAttemptedForUserId = useRef<string | null>(null);
+  const prevUserIdForBootstrap = useRef<string | null>(null);
+
+  const profileNickname = session?.user?.name ?? "카공유저";
+  const profileImage = session?.user?.image ?? null;
+
+  useEffect(() => {
+    createUserRef.current = createUser;
+  }, [createUser]);
+
+  useEffect(() => {
+    if (prevUserIdForBootstrap.current === userId) return;
+    createAttemptedForUserId.current = null;
+    prevUserIdForBootstrap.current = userId;
+  }, [userId]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !userId) {
+      clearUser();
+    }
+  }, [status, userId, clearUser]);
+
+  useEffect(() => {
+    setDbUser(dbUser ?? null);
+  }, [dbUser, setDbUser]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !userId) return;
+    if (isUserLoading || !isUserFetchSuccess) return;
+    if (isUserFetchError) return;
+    if (dbUser !== null) return;
+
+    if (createAttemptedForUserId.current === userId) return;
+    createAttemptedForUserId.current = userId;
+
+    createUserRef.current({
+      userId,
+      nickname: profileNickname,
+      avatar_url: profileImage,
+    });
+  }, [
+    status,
+    userId,
+    dbUser,
+    isUserLoading,
+    isUserFetchSuccess,
+    isUserFetchError,
+    profileNickname,
+    profileImage,
+  ]);
 
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +321,18 @@ export default function MainApp() {
     return list;
   }, [allCafes, query, activeFilters, sortBy]);
 
+  // bounds 필터: 현재 지도 화면에 보이는 카페만
+  const visibleCafes = useMemo<CafeMarker[]>(() => {
+    if (!bounds) return cafes;
+    return cafes.filter(
+      (c) =>
+        c.lat >= bounds.sw.lat() &&
+        c.lat <= bounds.ne.lat() &&
+        c.lng >= bounds.sw.lng() &&
+        c.lng <= bounds.ne.lng(),
+    );
+  }, [cafes, bounds]);
+
   const selectCafe = (id: string) => {
     setSelectedId(id);
     setPreviewId(id);
@@ -261,6 +344,8 @@ export default function MainApp() {
     : null;
 
   const useSheet = tweaks.layoutVariant === "sheet";
+
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -283,14 +368,14 @@ export default function MainApp() {
         sortBy={sortBy}
         setSortBy={setSortBy}
         openDrawer={() => setDrawerOpen(true)}
-        matchCount={cafes.length}
+        matchCount={visibleCafes.length}
       />
 
       <div className="relative flex-1 flex min-h-0">
         {/* Sidebar */}
 
         <CafeSidebar
-          cafes={cafes}
+          cafes={visibleCafes}
           selectedId={selectedId}
           hoveredId={hoveredId}
           setHoveredId={setHoveredId}
@@ -311,6 +396,7 @@ export default function MainApp() {
             hoveredId={hoveredId}
             onHover={setHoveredId}
             onSelect={selectCafe}
+            onBoundsChange={setBounds}
           />
 
           {/* Legend */}
@@ -353,7 +439,9 @@ export default function MainApp() {
                 setPreviewId(null);
                 setSelectedId(null);
               }}
-              onOpenDetail={() => {}}
+              onOpenDetail={() => {
+                router.push(`/cafes/${previewMarker.id}`);
+              }}
             />
           )}
 
@@ -363,7 +451,7 @@ export default function MainApp() {
               cafes={cafes}
               selectedId={selectedId}
               setSelectedId={selectCafe}
-              matchCount={cafes.length}
+              matchCount={visibleCafes.length}
               sortBy={sortBy}
               setSortBy={setSortBy}
               onOpenDetail={() => {}}

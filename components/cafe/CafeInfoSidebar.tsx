@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Cafe } from "@/types/cafe";
 import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
+import { CafeWithDetail } from "@/types/db";
 
-function SidebarMap({ cafe }: { cafe: Cafe }) {
+function SidebarMap({ cafe }: { cafe: CafeWithDetail }) {
   return (
     <div className="h-[220px] rounded-2xl overflow-hidden border border-border-subtle relative bg-[var(--map-bg)]">
       <svg width="100%" height="100%" viewBox="0 0 400 220">
@@ -45,9 +46,9 @@ function SidebarMap({ cafe }: { cafe: Cafe }) {
       </svg>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full flex items-center gap-1.5 bg-fg text-kg-amber px-3 py-[5px] rounded-full border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] text-xs font-bold">
         <span className="w-5 h-5 rounded-full bg-kg-amber text-fg inline-flex items-center justify-center text-[10px] font-extrabold">
-          {cafe.score}
+          {cafe.avg_rating}
         </span>
-        {cafe.shortName}
+        {cafe.name}
       </div>
     </div>
   );
@@ -77,7 +78,7 @@ function InfoRow({
   );
 }
 
-export default function CafeInfoSidebar({ cafe }: { cafe: Cafe }) {
+export default function CafeInfoSidebar({ cafe }: { cafe: CafeWithDetail }) {
   const [saved, setSaved] = useState(false);
 
   return (
@@ -110,18 +111,20 @@ export default function CafeInfoSidebar({ cafe }: { cafe: Cafe }) {
         <div className="flex flex-col gap-3.5 mt-4.5 text-[13.5px]">
           <InfoRow icon="clock" label="영업시간">
             <div className="text-fg font-medium">{cafe.hours}</div>
-            {cafe.openNow && (
-              <div className="text-xs text-score-good mt-0.5">● 영업중</div>
+            {cafe.hours && (
+              <div className="text-xs text-score-good mt-0.5">
+                ● 영업시간 {cafe.hours}
+              </div>
             )}
           </InfoRow>
           <InfoRow icon="pin" label="주소">
-            <div className="text-fg font-medium">{cafe.addr}</div>
+            <div className="text-fg font-medium">{cafe.address}</div>
           </InfoRow>
           <InfoRow icon="coin" label="평균 가격">
-            <div className="text-fg font-medium">{cafe.avgPrice}</div>
+            <div className="text-fg font-medium">0</div>
           </InfoRow>
           <InfoRow icon="users" label="좌석 수">
-            <div className="text-fg font-medium">약 {cafe.capacity}석</div>
+            <div className="text-fg font-medium">0</div>
           </InfoRow>
         </div>
 
