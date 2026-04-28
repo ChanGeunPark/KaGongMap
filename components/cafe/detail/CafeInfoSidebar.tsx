@@ -120,8 +120,12 @@ export default function CafeInfoSidebar({ cafe }: { cafe: CafeWithDetail }) {
           <InfoRow icon="pin" label="주소">
             <div className="text-fg font-medium">{cafe.address}</div>
           </InfoRow>
-          <InfoRow icon="coin" label="평균 가격">
-            <div className="text-fg font-medium">0</div>
+          <InfoRow icon="coin" label="최소 주문 금액">
+            <div className="text-fg font-medium">
+              {cafe.min_order_amount != null
+                ? `${cafe.min_order_amount.toLocaleString("ko-KR")}원`
+                : "정보 없음"}
+            </div>
           </InfoRow>
           <InfoRow icon="users" label="좌석 수">
             <div className="text-fg font-medium">0</div>

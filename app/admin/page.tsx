@@ -10,6 +10,8 @@ import {
 } from "@/lib/api/cafes";
 import type { CafeSubmission, SubmissionStatus } from "@/types/db";
 import { toast } from "react-toastify";
+import Image from "next/image";
+import { getCloudflareImageUrl } from "@/lib/utils";
 
 const STATUS_LABEL: Record<SubmissionStatus, string> = {
   pending: "대기 중",
@@ -73,10 +75,14 @@ export default function AdminPage() {
   });
 
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
-  const approvedCount = submissions.filter((s) => s.status === "approved").length;
+  const approvedCount = submissions.filter(
+    (s) => s.status === "approved",
+  ).length;
 
   const filtered =
-    filter === "all" ? submissions : submissions.filter((s) => s.status === filter);
+    filter === "all"
+      ? submissions
+      : submissions.filter((s) => s.status === filter);
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
@@ -101,13 +107,30 @@ export default function AdminPage() {
         {/* 통계 카드 */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: "전체 제보", value: submissions.length, color: "text-gray-800" },
-            { label: "승인 대기", value: pendingCount, color: "text-amber-600" },
-            { label: "승인 완료", value: approvedCount, color: "text-emerald-600" },
+            {
+              label: "전체 제보",
+              value: submissions.length,
+              color: "text-gray-800",
+            },
+            {
+              label: "승인 대기",
+              value: pendingCount,
+              color: "text-amber-600",
+            },
+            {
+              label: "승인 완료",
+              value: approvedCount,
+              color: "text-emerald-600",
+            },
           ].map(({ label, value, color }) => (
-            <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+            <div
+              key={label}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4"
+            >
               <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`text-3xl font-bold ${color}`}>{isLoading ? "—" : value}</p>
+              <p className={`text-3xl font-bold ${color}`}>
+                {isLoading ? "—" : value}
+              </p>
             </div>
           ))}
         </div>
@@ -124,7 +147,11 @@ export default function AdminPage() {
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
               }`}
             >
-              {tab === "pending" ? "대기 중" : tab === "approved" ? "승인됨" : "전체"}
+              {tab === "pending"
+                ? "대기 중"
+                : tab === "approved"
+                  ? "승인됨"
+                  : "전체"}
             </button>
           ))}
         </div>
@@ -133,7 +160,10 @@ export default function AdminPage() {
         {isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse"
+              >
                 <div className="flex gap-3 mb-3">
                   <div className="h-5 w-12 bg-gray-100 rounded-full" />
                   <div className="h-5 w-40 bg-gray-100 rounded-lg" />
@@ -161,7 +191,9 @@ export default function AdminPage() {
           <div className="flex flex-col items-center py-24 text-gray-400">
             <span className="text-4xl mb-3">📭</span>
             <p className="text-sm">
-              {filter === "pending" ? "대기 중인 제보가 없습니다." : "항목이 없습니다."}
+              {filter === "pending"
+                ? "대기 중인 제보가 없습니다."
+                : "항목이 없습니다."}
             </p>
           </div>
         )}
@@ -174,8 +206,14 @@ export default function AdminPage() {
               submission={submission}
               onApprove={() => approveMutation.mutate(submission.id)}
               onDelete={() => deleteMutation.mutate(submission.id)}
-              isApproving={approveMutation.isPending && approveMutation.variables === submission.id}
-              isDeleting={deleteMutation.isPending && deleteMutation.variables === submission.id}
+              isApproving={
+                approveMutation.isPending &&
+                approveMutation.variables === submission.id
+              }
+              isDeleting={
+                deleteMutation.isPending &&
+                deleteMutation.variables === submission.id
+              }
             />
           ))}
         </div>
@@ -211,7 +249,9 @@ function SubmissionCard({
           <div className="flex-1 min-w-0">
             {/* 이름 + 상태 배지 */}
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[submission.status]}`}>
+              <span
+                className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[submission.status]}`}
+              >
                 {STATUS_LABEL[submission.status]}
               </span>
               <h2 className="text-sm font-bold text-gray-900 truncate">
@@ -243,12 +283,25 @@ function SubmissionCard({
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-400">
               {submission.hours && (
                 <span className="flex items-center gap-1">
-                  <span>🕐</span>{submission.hours}
+                  <span>🕐</span>
+                  {submission.hours}
                 </span>
               )}
-              <span>제보 {new Date(submission.submitted_at).toLocaleDateString("ko-KR")}</span>
+              {submission.min_order_amount != null && (
+                <span className="flex items-center gap-1">
+                  <span>💰</span>
+                  최소 {submission.min_order_amount.toLocaleString("ko-KR")}원
+                </span>
+              )}
+              <span>
+                제보{" "}
+                {new Date(submission.submitted_at).toLocaleDateString("ko-KR")}
+              </span>
               {submission.reviewed_at && (
-                <span>검토 {new Date(submission.reviewed_at).toLocaleDateString("ko-KR")}</span>
+                <span>
+                  검토{" "}
+                  {new Date(submission.reviewed_at).toLocaleDateString("ko-KR")}
+                </span>
               )}
             </div>
 
@@ -262,12 +315,13 @@ function SubmissionCard({
             {/* 이미지 */}
             {submission.images.length > 0 && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                {submission.images.map((url, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                {submission.images.map((id, i) => (
+                  <Image
                     key={i}
-                    src={url}
+                    src={getCloudflareImageUrl(id, "middle")}
                     alt={`제보 이미지 ${i + 1}`}
+                    width={100}
+                    height={100}
                     className="h-20 w-20 object-cover rounded-xl shrink-0 border border-gray-100"
                   />
                 ))}

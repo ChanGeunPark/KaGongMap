@@ -5,21 +5,21 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
 import { CafeMarker, CafeTag } from "@/types/db";
 import { KG_FILTERS } from "@/lib/data";
-import { useCafeMarkers } from "@/hooks/useCafeMarkers";
-import { useCafeDetail } from "@/hooks/useCafeDetail";
+import { useCafeDetail, useCafeMarkers } from "@/lib/api/cafes";
 import TopNav from "@/components/layout/TopNav";
 import FilterBar from "@/components/layout/FilterBar";
 import FilterDrawer from "@/components/layout/FilterDrawer";
 import BottomSheet from "@/components/layout/BottomSheet";
-import { FloatingCard } from "@/components/cafe/CafePreviewCard";
 import MapCanvas from "@/components/map/MapCanvas";
 import MonoLabel from "@/components/ui/MonoLabel";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeSidebar from "./layout/CafeSidebar";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useCreateUser, useUser } from "@/hooks/useUser";
+import { useCreateUser, useUser } from "@/lib/api/user";
 import { useUserStore } from "@/stores/userStore";
+import BottomSheetModal from "./modal/BottomSheetModal";
+import { CafeModalDetail } from "./cafe/detail/CafeModalDetail";
 
 interface Tweaks {
   // 트윅 설정
@@ -430,7 +430,37 @@ export default function MainApp() {
           </div>
 
           {/* Floating preview — Tier 1로 즉시 표시, Tier 2 로딩 완료 시 상세 반영 */}
-          {previewMarker && (
+
+          <BottomSheetModal
+            content={{
+              title: "카페 정보",
+              content: "카페 정보를 확인해주세요.",
+              actions: [{ label: "확인", onClick: () => {} }],
+            }}
+            widthThreshold={2000}
+            showModal={previewMarker !== null}
+            showModalToggler={(next) => {
+              setPreviewId(null);
+              setSelectedId(null);
+            }}
+          >
+            {previewMarker && (
+              <CafeModalDetail
+                cafe={previewMarker}
+                detail={selectedDetail ?? null}
+                detailLoading={detailLoading}
+                onOpenDetail={() => {
+                  router.push(`/cafes/${previewMarker.id}`);
+                }}
+                onClose={() => {
+                  setPreviewId(null);
+                  setSelectedId(null);
+                }}
+              />
+            )}
+          </BottomSheetModal>
+
+          {/* {previewMarker && (
             <FloatingCard
               cafe={previewMarker}
               detail={selectedDetail ?? null}
@@ -443,7 +473,7 @@ export default function MainApp() {
                 router.push(`/cafes/${previewMarker.id}`);
               }}
             />
-          )}
+          )} */}
 
           {/* Bottom sheet */}
           {useSheet && (

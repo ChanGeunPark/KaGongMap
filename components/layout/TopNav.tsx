@@ -4,7 +4,7 @@ import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
 import KagongMapModal from "../modal/KagongMapModal";
 import { useEffect, useRef, useState } from "react";
-import CafeInfoForm from "../cafe/CafeInfoForm";
+import CafeInfoForm from "../cafe/form/CafeInfoForm/CafeInfoForm";
 import { signOut, useSession } from "next-auth/react";
 import KaGongButton from "../button/KaGongButton";
 import { useRouter } from "next/navigation";

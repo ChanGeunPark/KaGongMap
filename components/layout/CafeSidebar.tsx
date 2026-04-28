@@ -1,7 +1,7 @@
 "use client";
 
 import { CafeMarker } from "@/types/db";
-import CafeCard from "../cafe/CafeCard";
+import CafeCard from "../cafe/card/CafeCard";
 import { cls } from "@/lib/utils";
 import { IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";

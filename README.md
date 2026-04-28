@@ -59,11 +59,22 @@
 프로젝트 루트에 `.env.local` 파일을 생성하고 아래 값을 입력합니다.
 
 ```bash
+NEXTAUTH_URL=your_domain
+NEXTAUTH_SECRET=your_secret
+
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
 NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=your_naver_map_client_id
 NAVER_MAP_CLIENT_SECRET=your_naver_map_client_secret
+
 KAKAO_REST_API_KEY=your_kakao_rest_api_key
+KAKAO_CLIENT_SECRET=your_kakao_client_secret
+
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_IMAGES_API_TOKEN=your_cloudflare_images_api_token
 ```
 
 ### 설치 및 실행

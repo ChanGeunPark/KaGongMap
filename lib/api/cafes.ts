@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type {
   CafeMarker,
@@ -24,7 +25,7 @@ export async function fetchCafeMarkers(): Promise<CafeMarker[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("cafe_markers")
-    .select("id, name, lat, lng, avg_rating, tags");
+    .select("id, name, lat, lng, avg_rating, min_order_amount, tags");
 
   if (error) throw new Error(error.message);
   return (data ?? []) as CafeMarker[];
@@ -59,6 +60,7 @@ export async function createSubmission(
       lat: payload.lat,
       lng: payload.lng,
       hours: payload.hours ?? null,
+      min_order_amount: payload.min_order_amount ?? null,
       images: payload.images,
       description: payload.description ?? null,
       tags: payload.tags,
@@ -109,4 +111,52 @@ export async function deleteSubmission(id: string): Promise<void> {
     const { message } = await res.json();
     throw new Error(message ?? "삭제 중 오류가 발생했습니다.");
   }
+}
+
+// ── React Query Hooks ───────────────────────────────────────────────────────
+
+export function useCafeMarkers() {
+  return useQuery({
+    queryKey: cafeKeys.markers(),
+    queryFn: fetchCafeMarkers,
+  });
+}
+
+export function useCafeDetail(id: string | null) {
+  return useQuery({
+    queryKey: cafeKeys.detail(id ?? ""),
+    queryFn: () => fetchCafeDetail(id!),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useSubmissions() {
+  return useQuery({
+    queryKey: submissionKeys.list(),
+    queryFn: fetchSubmissions,
+  });
+}
+
+export function useApproveSubmission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: approveSubmission,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: submissionKeys.list() });
+      queryClient.invalidateQueries({ queryKey: cafeKeys.markers() });
+    },
+  });
+}
+
+export function useDeleteSubmission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteSubmission,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: submissionKeys.list() });
+    },
+  });
 }

@@ -1,20 +1,14 @@
 "use client";
 import { use } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { KG_CAFES, getReviewsForCafe } from "@/lib/data";
 import KGIcon from "@/components/ui/KGIcon";
-import MonoLabel from "@/components/ui/MonoLabel";
 import StarRating from "@/components/ui/StarRating";
 import ScoreDiscDark from "@/components/ui/ScoreDiscDark";
-import HeroGallery from "@/components/cafe/HeroGallery";
-import CafeEnvironmentSection from "@/components/cafe/CafeEnvironmentSection";
-import ProsCons from "@/components/cafe/ProsCons";
-import CrowdChart from "@/components/cafe/CrowdChart";
-import CafeReviews from "@/components/cafe/CafeReviews";
-import CafeInfoSidebar from "@/components/cafe/CafeInfoSidebar";
+import HeroGallery from "@/components/cafe/detail/HeroGallery";
+import CafeEnvironmentSection from "@/components/cafe/detail/CafeEnvironmentSection";
+import CafeInfoSidebar from "@/components/cafe/detail/CafeInfoSidebar";
 import TopNav from "@/components/layout/TopNav";
-import { useCafeDetail } from "@/hooks/useCafeDetail";
+import { useCafeDetail } from "@/lib/api/cafes";
 
 export default function CafeDetailPage({
   params,

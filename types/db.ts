@@ -27,6 +27,7 @@ export interface CafeMarker {
   lat: number;
   lng: number;
   avg_rating: number;
+  min_order_amount: number | null;
   tags: CafeTag[];
 }
 
@@ -40,6 +41,7 @@ export interface CafeWithDetail {
   lat: number;
   lng: number;
   hours: string | null;
+  min_order_amount: number | null;
   images: string[];
   description: string | null;
   created_at: string;
@@ -57,6 +59,7 @@ export interface CafeSubmission {
   lat: number;
   lng: number;
   hours: string | null;
+  min_order_amount: number | null;
   images: string[];
   description: string | null;
   tags: CafeTag[];
@@ -71,6 +74,7 @@ export interface CreateSubmissionPayload {
   lat: number;
   lng: number;
   hours?: string;
+  min_order_amount?: number;
   images: string[];
   description?: string;
   tags: CafeTag[];

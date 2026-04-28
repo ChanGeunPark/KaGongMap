@@ -18,9 +18,9 @@ interface CrowdChartProps {
 export default function CrowdChart({ peakHours, crowd }: CrowdChartProps) {
   const [nowHour, setNowHour] = useState(-1);
 
-  useEffect(() => {
-    setNowHour(new Date().getHours());
-  }, []);
+  // useEffect(() => {
+  //   setNowHour(new Date().getHours());
+  // }, []);
 
   const crowdLabel = crowd < 0.4 ? "여유" : crowd < 0.7 ? "보통" : "혼잡";
 
@@ -28,11 +28,12 @@ export default function CrowdChart({ peakHours, crowd }: CrowdChartProps) {
     <section className="mb-9">
       <div className="flex items-end justify-between mb-3.5">
         <div>
-          <h2 className="text-[22px] font-semibold tracking-[-0.24px] mb-1.5">시간대별 혼잡도</h2>
+          <h2 className="text-[22px] font-semibold tracking-[-0.24px] mb-1.5">
+            시간대별 혼잡도
+          </h2>
           <p className="text-[13px] text-fg-3">
-            지금은{" "}
-            <span className="text-fg font-semibold">{crowdLabel}</span>
-            {" "}· {Math.round(crowd * 100)}%
+            지금은 <span className="text-fg font-semibold">{crowdLabel}</span> ·{" "}
+            {Math.round(crowd * 100)}%
           </p>
         </div>
         <MonoLabel>평일 기준</MonoLabel>

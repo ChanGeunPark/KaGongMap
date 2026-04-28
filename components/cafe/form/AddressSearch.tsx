@@ -6,8 +6,8 @@ import { cls } from "@/lib/utils";
 import { toast } from "react-toastify";
 import type { PlaceSearchResult } from "@/types/kakao";
 import type { ApiResponse } from "@/types/api";
-import KaGongButton from "../button/KaGongButton";
-import BasicInput from "../input/BasicInput";
+import KaGongButton from "../../button/KaGongButton";
+import BasicInput from "../../input/BasicInput";
 
 interface AddressSearchProps {
   value: PlaceSearchResult | null;
