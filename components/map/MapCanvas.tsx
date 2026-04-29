@@ -5,14 +5,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import KGIcon from "../ui/KGIcon";
 import { toast } from "react-toastify";
 
-function scoreColor(avgRating: number) {
-  if (avgRating >= 4.2) return "#22c55e";
-  if (avgRating >= 3.3) return "#f5a524";
+// 태그 개수 기준: 7+ 우수(녹색), 4+ 양호(앰버), 그 외(레드)
+function scoreColor(tagCount: number) {
+  if (tagCount >= 7) return "#22c55e";
+  if (tagCount >= 4) return "#f5a524";
   return "#ef4444";
 }
 
 function pinHtml(cafe: CafeMarker, active: boolean) {
-  const color = scoreColor(cafe.avg_rating);
+  const color = scoreColor(cafe.tags.length);
   return `
     <div
       id="overlay_${cafe.id}"
@@ -282,7 +283,7 @@ function MapCtrlBtn({
       title={title}
       className={`w-8 h-8 rounded-xl border inline-flex items-center justify-center cursor-pointer shadow-card ${
         active
-          ? "bg-brand text-white border-accent"
+          ? "bg-main text-white border-accent"
           : "bg-bg text-fg-2 border-border-subtle"
       }`}
     >

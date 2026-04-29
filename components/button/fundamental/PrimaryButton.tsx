@@ -33,7 +33,7 @@ function PrimaryButton(props: ButtonProps) {
 
   const primaryButtonStyle = cls(
     getDefaultStyle(
-      "text-gray-800 bg-brand lg:hover:bg-brand-deep font-bold",
+      "text-gray-800 bg-main lg:hover:bg-main-deep font-bold",
       rounded,
       disabled,
     ),

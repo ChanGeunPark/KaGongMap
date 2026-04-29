@@ -11,12 +11,7 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import Image from "next/image";
 
-const NAV_ITEMS = [
-  { label: "지도", on: true },
-  { label: "랭킹" },
-  { label: "카공팁" },
-  { label: "카페 등록" },
-];
+const NAV_ITEMS = [{ label: "지도", on: true }];
 
 interface TopNavProps {
   query: string;

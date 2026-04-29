@@ -85,7 +85,9 @@ function BasicInput(props: InputProps) {
           {...props.register}
           placeholder={props.placeholder ? props.placeholder : ""}
           type={inputType}
-          defaultValue={props.defaultValue ? props.defaultValue : ""}
+          {...(props.value !== undefined
+            ? { value: props.value }
+            : { defaultValue: props.defaultValue ?? "" })}
           readOnly={props.readOnly}
           autoComplete="off"
           onInput={

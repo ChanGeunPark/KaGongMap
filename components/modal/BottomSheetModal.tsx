@@ -80,7 +80,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
         transition={{ duration: 0.3, damping: 100, stiffness: 100 }}
         className={cls(
           "z-99 fixed",
-          `h-fit  left-0 max-h-[75vh] overflow-y-auto min-w-[calc(100%-32px)] w-full shadow-elevation03 scrollbar-default`,
+          `h-fit left-0 max-h-[75vh] overflow-y-auto min-w-[calc(100%-32px)] w-full shadow-elevation03 scrollbar-default`,
           "bottom-0 rounded-tr-xl rounded-tl-xl",
         )}
         style={isDown ? { bottom: `-${downwardWalkY}px` } : {}}
@@ -97,7 +97,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
             // size
             `h-fit max-h-[75vh] overflow-y-auto scrollbar-hide w-full shadow-elevation03 `,
             // position
-            "rounded-tr-xl rounded-tl-xl",
+            "rounded-tr-xl rounded-tl-xl mx-auto",
           )}
         >
           {/**

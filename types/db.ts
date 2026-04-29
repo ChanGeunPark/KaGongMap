@@ -7,7 +7,12 @@ export type CafeTag =
   | "24시간"
   | "시간제한없음"
   | "노트북_허용"
-  | "혼잡도_낮음";
+  | "혼잡도_낮음"
+  | "늦은영업"
+  | "가성비_좋음"
+  | "자연채광"
+  | "야외테라스"
+  | "반려동물_가능";
 
 export type SubmissionStatus = "pending" | "approved" | "rejected";
 
@@ -26,7 +31,7 @@ export interface CafeMarker {
   name: string;
   lat: number;
   lng: number;
-  avg_rating: number;
+  like_count: number;
   min_order_amount: number | null;
   tags: CafeTag[];
 }
@@ -45,7 +50,7 @@ export interface CafeWithDetail {
   images: string[];
   description: string | null;
   created_at: string;
-  avg_rating: number;
+  like_count: number;
   review_count: number;
   tags: CafeTag[];
 }
@@ -96,4 +101,62 @@ export interface DbBookmark {
   cafe_id: string;
   user_id: string;
   created_at: string;
+}
+
+// ── cafe_image_submissions 테이블 ────────────────────────────────────────────
+// 기존 카페에 추가 이미지 제보. 비로그인도 제보 가능, 로그인 시 user_id 기록.
+// 승인 시 cafes.images 배열에 append.
+export interface CafeImageSubmission {
+  id: string;
+  cafe_id: string;
+  user_id: string | null;
+  images: string[];
+  caption: string | null;
+  status: SubmissionStatus;
+  submitted_at: string;
+  reviewed_at: string | null;
+  cafe_name?: string;
+  cafe_address?: string;
+}
+
+export interface CreateCafeImageSubmissionPayload {
+  cafe_id: string;
+  images: string[];
+  caption?: string;
+  user_id?: string | null;
+}
+
+// ── cafe_edit_submissions 테이블 ─────────────────────────────────────────────
+// 기존 카페의 텍스트 정보(이름·주소·시간·태그 등) 수정 제안. 이미지는 변경 불가.
+// 비로그인도 가능, 로그인 시 user_id(NextAuth oauthId) 기록.
+export interface CafeEditSubmission {
+  id: string;
+  cafe_id: string;
+  user_id: string | null;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  hours: string | null;
+  min_order_amount: number | null;
+  description: string | null;
+  tags: CafeTag[];
+  status: SubmissionStatus;
+  submitted_at: string;
+  reviewed_at: string | null;
+  cafe_name?: string;
+  cafe_address?: string;
+}
+
+export interface CreateCafeEditSubmissionPayload {
+  cafe_id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  hours?: string;
+  min_order_amount?: number;
+  description?: string;
+  tags: CafeTag[];
+  user_id?: string | null;
 }

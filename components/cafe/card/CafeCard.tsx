@@ -1,6 +1,10 @@
+"use client";
+
 import { CafeMarker } from "@/types/db";
-import StarRating from "@/components/ui/StarRating";
 import { cls } from "@/lib/utils";
+import { useLikes } from "@/hooks/useLikes";
+import { TbHeart, TbHeartFilled } from "react-icons/tb";
+import LikeButton from "@/components/button/LikeButton";
 
 interface CafeCardProps {
   cafe: CafeMarker;
@@ -17,6 +21,9 @@ export default function CafeCard({
   onHover,
   onClick,
 }: CafeCardProps) {
+  const { isLiked, toggle } = useLikes();
+  const liked = isLiked(cafe.id);
+
   return (
     <div
       onMouseEnter={onHover}
@@ -29,28 +36,14 @@ export default function CafeCard({
         "p-4",
       )}
     >
-      {/* Thumbnail placeholder */}
-      {/* <div
-        className={cls(
-          "relative rounded-lg overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center transition-transform duration-160 group-hover:scale-[1.03]",
-          compact ? "size-20" : "size-28",
-        )}
-      >
-        <TbCoffee size={compact ? 24 : 32} className="text-gray-300" strokeWidth={1.5} />
-      </div> */}
-
-      {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-2">
-        {/* Name + rating */}
         <div className="flex items-start gap-2">
           <div className="flex-1 min-w-0">
             <h4 className="text-caption font-semibold tracking-[-0.2px] text-fg truncate m-0 leading-snug">
               {cafe.name}
             </h4>
             <div className="flex items-center gap-1.5 text-[11px] text-fg-3 mt-[3px]">
-              <StarRating value={cafe.avg_rating} size={11} />
-              <span className="text-fg-4">·</span>
-              <span>{cafe.avg_rating.toFixed(1)}</span>
+              <span>좋아요 {cafe.like_count}</span>
               {cafe.min_order_amount != null && (
                 <>
                   <span className="text-fg-4">·</span>
@@ -61,9 +54,10 @@ export default function CafeCard({
               )}
             </div>
           </div>
+
+          <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
         </div>
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-[5px] items-center mt-auto">
           {cafe.tags.slice(0, compact ? 2 : 3).map((t) => (
             <span
@@ -74,6 +68,15 @@ export default function CafeCard({
               {t.replace(/_/g, " ")}
             </span>
           ))}
+
+          {cafe.tags.length > 3 && (
+            <span
+              className="text-[10.5px] rounded-full font-medium text-fg-2 bg-gray-100"
+              style={{ padding: "2px 7px" }}
+            >
+              +{cafe.tags.length - 3}
+            </span>
+          )}
         </div>
       </div>
     </div>

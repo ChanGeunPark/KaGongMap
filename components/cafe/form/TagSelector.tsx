@@ -17,11 +17,11 @@ const CAFE_TAGS = [
     desc: "와이파이 제공",
   },
   { id: "조용함", label: "조용함", emoji: "🤫", desc: "집중하기 좋은 분위기" },
-  { id: "24시간", label: "24시간", emoji: "🌙", desc: "24시간 운영" },
+  { id: "24시간", label: "24시간", emoji: "🕐", desc: "24시간 운영" },
   {
     id: "시간제한없음",
     label: "시간제한없음",
-    emoji: "⏰",
+    emoji: "♾️",
     desc: "무제한 착석",
   },
   {
@@ -35,6 +35,36 @@ const CAFE_TAGS = [
     label: "혼잡도 낮음",
     emoji: "🪑",
     desc: "자리 잡기 여유로움",
+  },
+  {
+    id: "늦은영업",
+    label: "늦은영업",
+    emoji: "🌙",
+    desc: "23시 이후까지 영업",
+  },
+  {
+    id: "가성비_좋음",
+    label: "가성비 좋음",
+    emoji: "💸",
+    desc: "음료 가격 합리적",
+  },
+  {
+    id: "자연채광",
+    label: "자연채광",
+    emoji: "☀️",
+    desc: "햇빛 잘 들어옴",
+  },
+  {
+    id: "야외테라스",
+    label: "야외테라스",
+    emoji: "🌿",
+    desc: "야외 좌석 있음",
+  },
+  {
+    id: "반려동물_가능",
+    label: "반려동물 가능",
+    emoji: "🐶",
+    desc: "강아지·고양이 동반 OK",
   },
 ] as const;
 

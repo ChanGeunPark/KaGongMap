@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Cafe } from "@/types/cafe";
 import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
 import { CafeWithDetail } from "@/types/db";
@@ -46,7 +45,7 @@ function SidebarMap({ cafe }: { cafe: CafeWithDetail }) {
       </svg>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full flex items-center gap-1.5 bg-fg text-kg-amber px-3 py-[5px] rounded-full border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] text-xs font-bold">
         <span className="w-5 h-5 rounded-full bg-kg-amber text-fg inline-flex items-center justify-center text-[10px] font-extrabold">
-          {cafe.avg_rating}
+          {cafe.tags.length}
         </span>
         {cafe.name}
       </div>

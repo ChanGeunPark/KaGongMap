@@ -1,14 +1,18 @@
-import StarRating from "@/components/ui/StarRating";
-import { cls } from "@/lib/utils";
+"use client";
+
+import Badge from "@/components/badge/Badge";
+import KaGongButton from "@/components/button/KaGongButton";
+import KGIcon from "@/components/ui/KGIcon";
+import ImageSubmitModal from "@/components/cafe/detail/ImageSubmitModal";
+import CafeEditModal from "@/components/cafe/detail/CafeEditModal";
+import { cls, getCloudflareImageUrl } from "@/lib/utils";
+import { useImageModalStore } from "@/stores/modalStore";
 import { CafeMarker, CafeWithDetail } from "@/types/db";
-import {
-  TbArrowRight,
-  TbBookmark,
-  TbClock,
-  TbCoffee,
-  TbMapPin,
-  TbX,
-} from "react-icons/tb";
+import { useLikes } from "@/hooks/useLikes";
+import Image from "next/image";
+import { useState } from "react";
+import { TbClock, TbHeart, TbHeartFilled, TbMapPin } from "react-icons/tb";
+import LikeButton from "@/components/button/LikeButton";
 
 interface CafeModalDetailProps {
   cafe: CafeMarker;
@@ -22,116 +26,195 @@ export function CafeModalDetail({
   cafe,
   detail,
   detailLoading,
-  onClose,
-  onOpenDetail,
 }: CafeModalDetailProps) {
+  const { setImageUrl, setShowImageModal } = useImageModalStore();
+  const [showImageSubmit, setShowImageSubmit] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const { isLiked, toggle } = useLikes();
+  const liked = isLiked(cafe.id);
+
+  const images = detail?.images ?? [];
+  const visibleImages = images.slice(0, 5);
+  const hasDetailInfo = !!(
+    detail &&
+    (detail.address || detail.hours || detail.description)
+  );
+
+  const TAG_LABELS: Record<string, string> = {
+    콘센트_있음: "🔌 콘센트",
+    와이파이_있음: "📶 와이파이",
+    조용함: "🤫 조용함",
+    "24시간": "🕐 24시간",
+    시간제한없음: "♾️ 시간제한 없음",
+    노트북_허용: "💻 노트북 허용",
+    혼잡도_낮음: "🟢 혼잡도 낮음",
+    늦은영업: "🌙 늦은영업",
+    가성비_좋음: "💸 가성비 좋음",
+    자연채광: "☀️ 자연채광",
+    야외테라스: "🌿 야외테라스",
+    반려동물_가능: "🐶 반려동물 가능",
+  };
+
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* ── Header ── */}
-      <div className="flex gap-4">
-        {/* Thumbnail */}
-        <div className="size-[80px] rounded-xl shrink-0 bg-gray-100 flex items-center justify-center">
-          <TbCoffee size={28} className="text-gray-300" strokeWidth={1.5} />
-        </div>
+    <div className="flex flex-col gap-5 p-5">
+      {/* ── Image Gallery ── */}
+      {(images.length > 0 || !detailLoading) && (
+        <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2">
+            {visibleImages.map((img, idx) => (
+              <button
+                key={`${img}-${idx}`}
+                type="button"
+                onClick={() => {
+                  setImageUrl(getCloudflareImageUrl(img, "public"));
+                  setShowImageModal(true);
+                }}
+                className={cls(
+                  "relative size-[84px] rounded-lg overflow-hidden shrink-0",
+                  "ring-1 ring-black/5 hover:ring-black/15",
+                  "transition-all active:scale-[0.97] cursor-pointer",
+                )}
+              >
+                <Image
+                  src={getCloudflareImageUrl(img, "middle")}
+                  alt={`${cafe.name} ${idx + 1}`}
+                  width={84}
+                  height={84}
+                  className="size-full object-cover"
+                />
+              </button>
+            ))}
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="text-btn font-semibold tracking-[-0.3px] text-fg m-0 truncate leading-snug flex-1">
-              {cafe.name}
-            </h4>
-          </div>
-
-          <div className="flex items-center gap-2 mt-1">
-            <StarRating value={cafe.avg_rating} size={12} />
-            <span className="text-[11px] text-fg-4">
-              {cafe.avg_rating.toFixed(1)}
-            </span>
-            {cafe.min_order_amount != null && (
-              <>
-                <span className="text-[11px] text-fg-4">·</span>
-                <span className="text-[11px] text-fg-3">
-                  최소 {cafe.min_order_amount.toLocaleString("ko-KR")}원
+            {visibleImages.length < 5 && (
+              <button
+                type="button"
+                onClick={() => setShowImageSubmit(true)}
+                className={cls(
+                  "size-[84px] rounded-lg shrink-0 cursor-pointer",
+                  "border border-dashed border-zinc-300 bg-gray-50/60",
+                  "flex flex-col items-center justify-center gap-1",
+                  "text-zinc-400 hover:text-zinc-500",
+                  "hover:border-zinc-400 hover:bg-gray-50 transition-colors",
+                )}
+              >
+                <KGIcon name="plus" size={20} stroke={2.2} />
+                <span className="text-[10px] font-medium tracking-tight">
+                  사진 제보
                 </span>
-              </>
+              </button>
             )}
           </div>
+        </div>
+      )}
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {cafe.tags.slice(0, 3).map((t) => (
-              <span
-                key={t}
-                className="text-[10.5px] font-medium text-fg-3 bg-gray-100 rounded-full px-2 py-px"
-              >
-                {t.replace(/_/g, " ")}
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-1.5">
+        <h4 className="text-[17px] font-bold tracking-[-0.4px] text-fg m-0 leading-tight truncate">
+          {cafe.name}
+        </h4>
+
+        <div className="flex items-center gap-1.5 text-sm text-fg-3">
+          <span>좋아요 {cafe.like_count}</span>
+          {cafe.min_order_amount != null && (
+            <>
+              <span className="text-fg-4">·</span>
+              <span>
+                최소금액 {cafe.min_order_amount.toLocaleString("ko-KR")}원
               </span>
+            </>
+          )}
+        </div>
+
+        {/* Tags */}
+        {cafe.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-1.5">
+            {cafe.tags.map((t) => (
+              <Badge key={t} BadgeStyle="OUTLINED" BadgeSize="SMALL">
+                {TAG_LABELS[t]}
+              </Badge>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* ── Tier 2 상세 정보 (로딩 후 표시) ── */}
-      {detailLoading && <div className="h-px bg-border-subtle" />}
-      {detail && !detailLoading && (
-        <>
-          <div className="h-px bg-border-subtle" />
-          <div className="flex flex-col gap-1.5 text-mono text-fg-3">
-            {detail.address && (
-              <span className="inline-flex items-center gap-1.5">
-                <TbMapPin
-                  size={13}
-                  strokeWidth={2}
-                  className="shrink-0 text-fg-4"
-                />
-                {detail.address}
-              </span>
-            )}
-            {detail.hours && (
-              <span className="inline-flex items-center gap-1.5">
-                <TbClock
-                  size={13}
-                  strokeWidth={2}
-                  className="shrink-0 text-fg-4"
-                />
-                {detail.hours}
-              </span>
-            )}
-            {detail.description && (
-              <p className="text-fg-3 text-[11.5px] line-clamp-2 mt-0.5">
-                {detail.description}
-              </p>
-            )}
-          </div>
-        </>
+      {/* ── Tier 2 상세 정보 ── */}
+      {detailLoading && (
+        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50">
+          <div className="h-3 bg-gray-200 rounded w-4/5 animate-pulse" />
+          <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse" />
+        </div>
+      )}
+      {!detailLoading && hasDetailInfo && (
+        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50">
+          {detail?.address && (
+            <div className="flex items-start gap-2 text-[12px] text-fg-2">
+              <TbMapPin
+                size={14}
+                strokeWidth={2}
+                className="shrink-0 text-fg-4 mt-[2px]"
+              />
+              <span className="leading-snug">{detail.address}</span>
+            </div>
+          )}
+          {detail?.hours && (
+            <div className="flex items-start gap-2 text-memo text-fg-2">
+              <TbClock
+                size={14}
+                strokeWidth={2}
+                className="shrink-0 text-fg-4 mt-1"
+              />
+              <span className="leading-snug">{detail.hours}</span>
+            </div>
+          )}
+          {detail?.description && (
+            <p className="text-fg-3 text-memo line-clamp-2 leading-snug  border-t border-black/5 mt-0.5 pt-2">
+              {detail.description}
+            </p>
+          )}
+        </div>
       )}
 
       {/* ── Actions ── */}
-      <div className="flex gap-2">
-        <button
-          onClick={onOpenDetail}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 justify-end">
+          <KaGongButton
+            buttonStyle="OUTLINED"
+            buttonSize="LARGE"
+            onClick={() => detail && setShowEditModal(true)}
+            disabled={!detail || detailLoading}
+          >
+            수정하기
+          </KaGongButton>
+          <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+        </div>
+        {/* <button
+          type="button"
+          onClick={() => setShowImageSubmit(true)}
           className={cls(
-            "flex-1 inline-flex items-center justify-center gap-1.5",
-            "py-[10px] px-[18px] rounded-full border-none cursor-pointer",
-            "font-semibold text-[13.5px] bg-fg text-bg",
-            "hover:opacity-90 transition-opacity",
+            "flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl",
+            "text-[13px] font-semibold text-fg-2",
+            "bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors",
           )}
         >
-          상세 보기
-          <TbArrowRight size={15} strokeWidth={2.2} />
-        </button>
-        <button
-          className={cls(
-            "inline-flex items-center gap-1.5",
-            "py-[10px] px-4 rounded-full cursor-pointer border border-border-medium",
-            "font-medium text-[13.5px] bg-bg text-fg-2",
-            "hover:bg-gray-50 transition-colors",
-          )}
-        >
-          <TbBookmark size={15} strokeWidth={2} />
-          저장
-        </button>
+          <TbCamera size={15} strokeWidth={2.2} />
+          사진 제보하기
+        </button> */}
       </div>
+
+      <ImageSubmitModal
+        cafeId={cafe.id}
+        cafeName={cafe.name}
+        showModal={showImageSubmit}
+        onClose={() => setShowImageSubmit(false)}
+      />
+
+      {detail && (
+        <CafeEditModal
+          cafe={detail}
+          showModal={showEditModal}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import QueryProvider from "@/providers/QueryProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+import ImageDetailModal from "@/components/modal/ImageDetailModal";
 
 export const metadata: Metadata = {
   title: "카공맵",
@@ -41,6 +41,7 @@ export default function RootLayout({
           pauseOnHover
           theme="light"
         />
+        <ImageDetailModal />
       </body>
     </html>
   );

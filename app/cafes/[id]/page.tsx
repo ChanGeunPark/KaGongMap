@@ -2,13 +2,13 @@
 import { use } from "react";
 import Link from "next/link";
 import KGIcon from "@/components/ui/KGIcon";
-import StarRating from "@/components/ui/StarRating";
-import ScoreDiscDark from "@/components/ui/ScoreDiscDark";
 import HeroGallery from "@/components/cafe/detail/HeroGallery";
 import CafeEnvironmentSection from "@/components/cafe/detail/CafeEnvironmentSection";
 import CafeInfoSidebar from "@/components/cafe/detail/CafeInfoSidebar";
 import TopNav from "@/components/layout/TopNav";
 import { useCafeDetail } from "@/lib/api/cafes";
+import { TbHeart, TbHeartFilled } from "react-icons/tb";
+import { useLikes } from "@/hooks/useLikes";
 
 export default function CafeDetailPage({
   params,
@@ -21,6 +21,8 @@ export default function CafeDetailPage({
   // if (!cafe) notFound();
 
   const { data: cafe, isLoading } = useCafeDetail(id);
+  const { isLiked, toggle } = useLikes();
+  const liked = cafe ? isLiked(cafe.id) : false;
 
   // const reviews = getReviewsForCafe(cafe);
 
@@ -85,29 +87,55 @@ export default function CafeDetailPage({
                 {cafe?.name}
               </h1>
               <div className="flex items-center gap-3.5 text-sm text-fg-3 flex-wrap">
-                <StarRating value={cafe?.avg_rating ?? 0} size={14} />
-                <span>후기 {cafe?.review_count ?? 0}개</span>
+                <button
+                  type="button"
+                  onClick={() => cafe && toggle(cafe.id)}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1 transition-colors cursor-pointer " +
+                    (liked
+                      ? "bg-red-50 text-red-500 hover:bg-red-100"
+                      : "bg-gray-50 text-fg-2 hover:bg-gray-100")
+                  }
+                >
+                  {liked ? (
+                    <TbHeartFilled size={14} />
+                  ) : (
+                    <TbHeart size={14} strokeWidth={2.2} />
+                  )}
+                  <span className="font-semibold">{cafe?.like_count ?? 0}</span>
+                </button>
                 <span className="w-[3px] h-[3px] rounded-full bg-fg-4" />
                 <span className="hidden sm:inline">{cafe?.address}</span>
               </div>
             </div>
 
-            {/* 스코어 요약 */}
+            {/* 카공 적합도 요약 (태그 개수 기반) */}
             <div className="flex items-center gap-5 p-6 rounded-[20px] bg-fg text-white mb-7">
-              <ScoreDiscDark value={cafe?.avg_rating ?? 0} />
+              <div className="flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-kg-amber text-fg shrink-0">
+                <span className="text-[26px] font-extrabold leading-none">
+                  {cafe?.tags.length ?? 0}
+                </span>
+                <span className="text-[10px] font-semibold mt-1 tracking-[0.4px] uppercase">
+                  Tags
+                </span>
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="font-mono text-[11px] font-semibold tracking-[0.6px] uppercase text-kg-amber mb-1.5">
-                  카공 적합도 스코어
+                  카공 적합도
                 </div>
                 <div className="text-[18px] sm:text-[22px] font-semibold tracking-[-0.3px] mb-1">
-                  {cafe?.avg_rating ?? 0}
+                  {(cafe?.tags.length ?? 0) >= 7
+                    ? "우수"
+                    : (cafe?.tags.length ?? 0) >= 4
+                      ? "양호"
+                      : "정보 부족"}
                 </div>
                 <div
                   className="text-[13px] leading-relaxed"
                   style={{ color: "rgba(255,255,255,0.65)" }}
                 >
-                  콘센트 · 와이파이 · 조용함 · 공간여유 · 이용시간 · 혼잡도를
-                  종합한 점수. 카공족 {cafe?.review_count ?? 0}명의 후기 기반.
+                  콘센트 · 와이파이 · 조용함 등 카공 친화 태그 개수 기준. 7개
+                  이상 우수, 4개 이상 양호.
                 </div>
               </div>
             </div>

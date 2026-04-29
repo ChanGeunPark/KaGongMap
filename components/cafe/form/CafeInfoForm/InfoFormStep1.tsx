@@ -11,33 +11,15 @@ export default function InfoFormStep1({
   control,
   errors,
   descriptionLength,
+  setNameValue,
 }: {
   control: Control<CafeFormValues>;
   errors: FieldErrors<CafeFormValues>;
   descriptionLength: number;
+  setNameValue: (name: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-5">
-      {/* 카페명 */}
-      <div className="flex flex-col gap-1.5">
-        <Controller
-          name="name"
-          control={control}
-          rules={{ required: "카페명을 입력해주세요" }}
-          render={({ field }) => (
-            <BasicInput
-              {...field}
-              important
-              label="카페명"
-              name="name"
-              type="text"
-              placeholder="카페 이름을 입력하세요"
-              errorText={errors.name?.message}
-            />
-          )}
-        />
-      </div>
-
       {/* 주소 */}
       <div className="flex flex-col gap-1.5">
         <label className="text-label font-semibold text-fg-2">
@@ -52,12 +34,36 @@ export default function InfoFormStep1({
           render={({ field }) => (
             <AddressSearch
               value={field.value}
-              onChange={field.onChange}
+              onChange={(place) => {
+                field.onChange(place);
+                setNameValue(place.name);
+              }}
               error={errors.place?.message}
             />
           )}
         />
         <FieldError message={errors.place?.message} />
+      </div>
+
+      {/* 카페명 */}
+      <div className="flex flex-col gap-1.5">
+        <Controller
+          name="name"
+          control={control}
+          rules={{ required: "카페명을 입력해주세요" }}
+          render={({ field }) => (
+            <BasicInput
+              {...field}
+              important
+              readOnly
+              label="카페명"
+              name="name"
+              type="text"
+              placeholder="카페 이름을 입력하세요"
+              errorText={errors.name?.message}
+            />
+          )}
+        />
       </div>
 
       {/* 영업시간 */}

@@ -315,7 +315,12 @@ export default function MainApp() {
     }
 
     if (sortBy === "score" || sortBy === "stars") {
-      list.sort((a, b) => b.avg_rating - a.avg_rating);
+      // 1순위: 좋아요 수, 2순위: 태그 개수
+      list.sort((a, b) => {
+        const likeDiff = b.like_count - a.like_count;
+        if (likeDiff !== 0) return likeDiff;
+        return b.tags.length - a.tags.length;
+      });
     }
 
     return list;
@@ -412,9 +417,9 @@ export default function MainApp() {
             </div>
             <div className="flex gap-3 text-[11.5px] text-fg-2">
               {[
-                { colorClass: "bg-score-good", label: "85+ 우수" },
-                { colorClass: "bg-kg-amber", label: "65-84 양호" },
-                { colorClass: "bg-score-low", label: "<65" },
+                { colorClass: "bg-score-good", label: "태그 7+ 우수" },
+                { colorClass: "bg-kg-amber", label: "태그 4+ 양호" },
+                { colorClass: "bg-score-low", label: "태그 3개 이하" },
               ].map(({ colorClass, label }) => (
                 <span
                   key={label}

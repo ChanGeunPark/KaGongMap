@@ -14,6 +14,17 @@ export async function GET(request: Request) {
       },
     },
   );
+
+  if (!response.ok) {
+    return Response.json(
+      {
+        ok: false,
+        message: "카카오 주소 검색에 실패했습니다.",
+      },
+      { status: response.status },
+    );
+  }
+
   const data = (await response.json()) as KakaoKeywordSearchResponse;
 
   const places: PlaceSearchResult[] = data.documents.map((place) => ({

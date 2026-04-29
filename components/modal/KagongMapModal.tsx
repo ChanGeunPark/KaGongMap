@@ -66,7 +66,7 @@ export default function KagongMapModal(props: KagongMapModalProps) {
           )}
         >
           {isCloseButton && (
-            <div className="w-full flex justify-between items-center px-4 pt-4 sticky top-0 bg-white">
+            <div className="w-full flex justify-between items-center px-4 py-3 sticky top-0 bg-white z-50">
               {title && typeof title === "string" && (
                 <h4 className="text-xl font-semibold">{title}</h4>
               )}

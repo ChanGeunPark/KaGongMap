@@ -25,7 +25,10 @@ export default function AddressSearch({
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      toast.error("카페명을 입력해주세요.");
+      return;
+    }
 
     try {
       setIsSearching(true);
@@ -34,7 +37,6 @@ export default function AddressSearch({
       );
       const data = (await response.json()) as ApiResponse<PlaceSearchResult[]>;
 
-      console.log(data);
       if (data.ok) {
         setResults(data.data);
         if (data.data.length === 0) toast.info("검색 결과가 없습니다.");
@@ -65,13 +67,6 @@ export default function AddressSearch({
           }}
           type="text"
           placeholder="카페명을 검색하세요"
-          // className={cls(
-          //   "flex-1 rounded-xl border px-3.5 py-2.5 text-body bg-bg text-fg",
-          //   "placeholder:text-fg-4 focus:outline-none transition-colors",
-          //   error
-          //     ? "border-error/70 focus:border-error"
-          //     : "border-border-medium focus:border-kg-amber",
-          // )}
         />
         <KaGongButton
           buttonStyle="SECONDARY"
