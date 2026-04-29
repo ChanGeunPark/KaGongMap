@@ -11,8 +11,9 @@ import { CafeMarker, CafeWithDetail } from "@/types/db";
 import { useLikes } from "@/hooks/useLikes";
 import Image from "next/image";
 import { useState } from "react";
-import { TbClock, TbHeart, TbHeartFilled, TbMapPin } from "react-icons/tb";
+import { TbClock, TbHeart, TbMapPin } from "react-icons/tb";
 import LikeButton from "@/components/button/LikeButton";
+import CafeReviewSection from "@/components/cafe/detail/CafeReviewSection";
 
 interface CafeModalDetailProps {
   cafe: CafeMarker;
@@ -109,20 +110,25 @@ export function CafeModalDetail({
 
       {/* ── Header ── */}
       <div className="flex flex-col gap-1.5">
-        <h4 className="text-[17px] font-bold tracking-[-0.4px] text-fg m-0 leading-tight truncate">
-          {cafe.name}
-        </h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-[17px] font-bold tracking-[-0.4px] text-fg m-0 leading-tight truncate">
+            {cafe.name}
+          </h4>
 
-        <div className="flex items-center gap-1.5 text-sm text-fg-3">
-          <span>좋아요 {cafe.like_count}</span>
-          {cafe.min_order_amount != null && (
-            <>
-              <span className="text-fg-4">·</span>
-              <span>
-                최소금액 {cafe.min_order_amount.toLocaleString("ko-KR")}원
-              </span>
-            </>
-          )}
+          <div className="flex items-center gap-1.5 text-sm text-fg-3">
+            <div className="flex items-center gap-1 text-sm font-bold text-zinc-400 py-1">
+              <TbHeart size={15} strokeWidth={2.2} />
+              <span>{cafe.like_count}</span>
+            </div>
+            {cafe.min_order_amount != null && (
+              <>
+                <span className="text-fg-4">·</span>
+                <span>
+                  최소금액 {cafe.min_order_amount.toLocaleString("ko-KR")}원
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Tags */}
@@ -187,6 +193,8 @@ export function CafeModalDetail({
           </KaGongButton>
           <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
         </div>
+
+        <CafeReviewSection cafeId={cafe.id} />
         {/* <button
           type="button"
           onClick={() => setShowImageSubmit(true)}

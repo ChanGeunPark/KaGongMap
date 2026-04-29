@@ -86,14 +86,53 @@ export interface CreateSubmissionPayload {
 }
 
 // ── reviews ─────────────────────────────────────────────────────────────────
+// 별점/UNIQUE 제약 없음. 비로그인은 password_hash, 로그인은 user_id로 소유 식별.
 export interface DbReview {
   id: string;
   cafe_id: string;
-  user_id: string;
-  rating: number;
-  content: string | null;
+  user_id: string | null;
+  nickname: string;
+  content: string;
   created_at: string;
-  user?: Pick<DbUser, "nickname" | "avatar_url">;
+}
+
+export interface CreateReviewPayload {
+  content: string;
+  // 로그인 유저는 둘 다 보내지 않음 (서버에서 세션으로 식별)
+  nickname?: string;
+  password?: string; // 4자리 숫자 PIN (비로그인만)
+}
+
+// ── review_reports ──────────────────────────────────────────────────────────
+export type ReviewReportReason =
+  | "spam"
+  | "abuse"
+  | "inappropriate"
+  | "irrelevant"
+  | "other";
+
+export type ReviewReportStatus = "pending" | "dismissed" | "resolved";
+
+export interface ReviewReport {
+  id: string;
+  review_id: string;
+  reporter_id: string | null;
+  reason: ReviewReportReason;
+  detail: string | null;
+  status: ReviewReportStatus;
+  created_at: string;
+}
+
+// 어드민 화면용 — 후기 단위로 신고 묶음
+export interface ReviewReportGroup {
+  review: DbReview;
+  pending_count: number;
+  reports: ReviewReport[];
+}
+
+export interface CreateReviewReportPayload {
+  reason: ReviewReportReason;
+  detail?: string;
 }
 
 export interface DbBookmark {
