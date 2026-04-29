@@ -29,6 +29,8 @@ import type {
 import { toast } from "react-toastify";
 import Image from "next/image";
 import { getCloudflareImageUrl } from "@/lib/utils";
+import { useAdminReviewReports } from "@/lib/api/reviewReports";
+import ReviewReportsTab from "@/app/admin/_components/ReviewReportsTab";
 
 const STATUS_LABEL: Record<SubmissionStatus, string> = {
   pending: "대기 중",
@@ -63,7 +65,7 @@ const TAG_LABELS: Record<string, string> = {
   반려동물_가능: "🐶 반려동물 가능",
 };
 
-type FilterTab = "pending" | "registered" | "images" | "edits";
+type FilterTab = "pending" | "registered" | "images" | "edits" | "reports";
 
 export default function AdminPage() {
   const [filter, setFilter] = useState<FilterTab>("pending");
@@ -104,6 +106,8 @@ export default function AdminPage() {
     queryKey: editSubmissionKeys.list(),
     queryFn: fetchEditSubmissions,
   });
+
+  const { data: reportGroups = [] } = useAdminReviewReports();
 
   const approveMutation = useMutation({
     mutationFn: approveSubmission,
@@ -178,6 +182,10 @@ export default function AdminPage() {
   const registeredCount = cafes.length;
   const imageSubmissionCount = imageSubmissions.length;
   const editSubmissionCount = editSubmissions.length;
+  const reportCount = reportGroups.reduce(
+    (sum, g) => sum + g.pending_count,
+    0,
+  );
 
   const isLoading =
     filter === "pending"
@@ -248,6 +256,12 @@ export default function AdminPage() {
               color: "text-purple-600",
               loading: isEditsLoading,
             },
+            {
+              label: "후기 신고",
+              value: reportCount,
+              color: "text-red-600",
+              loading: false,
+            },
           ].map(({ label, value, color, loading }) => (
             <div
               key={label}
@@ -263,31 +277,58 @@ export default function AdminPage() {
 
         {/* 탭 */}
         <div className="flex gap-1 mb-5 bg-white border border-gray-200 rounded-xl p-1 w-fit shadow-sm">
-          {(["pending", "registered", "images", "edits"] as FilterTab[]).map(
-            (tab) => (
+          {(
+            [
+              "pending",
+              "registered",
+              "images",
+              "edits",
+              "reports",
+            ] as FilterTab[]
+          ).map((tab) => {
+            const label =
+              tab === "pending"
+                ? "대기 중"
+                : tab === "registered"
+                  ? "등록됨"
+                  : tab === "images"
+                    ? "사진 제보"
+                    : tab === "edits"
+                      ? "수정 제보"
+                      : "후기 신고";
+            const badge = tab === "reports" ? reportCount : 0;
+            return (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 inline-flex items-center gap-1.5 ${
                   filter === tab
                     ? "bg-gray-900 text-white shadow-sm"
                     : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
-                {tab === "pending"
-                  ? "대기 중"
-                  : tab === "registered"
-                    ? "등록됨"
-                    : tab === "images"
-                      ? "사진 제보"
-                      : "수정 제보"}
+                {label}
+                {badge > 0 && (
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      filter === tab
+                        ? "bg-white text-gray-900"
+                        : "bg-red-500 text-white"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                )}
               </button>
-            ),
-          )}
+            );
+          })}
         </div>
 
+        {/* 후기 신고 탭 — 자체 컴포넌트가 로딩/빈상태/에러 처리 */}
+        {filter === "reports" && <ReviewReportsTab />}
+
         {/* 로딩 */}
-        {isLoading && (
+        {filter !== "reports" && isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div
@@ -309,7 +350,7 @@ export default function AdminPage() {
         )}
 
         {/* 에러 */}
-        {isError && (
+        {filter !== "reports" && isError && (
           <div className="flex flex-col items-center py-24 text-gray-400">
             <span className="text-4xl mb-3">⚠️</span>
             <p className="text-sm">데이터를 불러오지 못했습니다.</p>
@@ -317,7 +358,8 @@ export default function AdminPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoading &&
+        {filter !== "reports" &&
+          !isLoading &&
           !isError &&
           (filter === "pending"
             ? filteredSubmissions.length === 0
