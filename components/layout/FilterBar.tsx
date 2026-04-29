@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useRef, useState, useEffect } from 'react';
-import { FilterItem, FilterVariant, SortBy } from '@/types/cafe';
-import { KG_FILTERS } from '@/lib/data';
-import KGIcon from '@/components/ui/KGIcon';
-import Chip from '@/components/ui/Chip';
+import { useRef, useState, useEffect } from "react";
+import { FilterItem, FilterVariant, SortBy } from "@/types/cafe";
+import { KG_FILTERS } from "@/lib/data";
+import KGIcon from "@/components/ui/KGIcon";
+import Chip from "@/components/ui/Chip";
 
 interface FilterBarProps {
   variant: FilterVariant;
@@ -17,23 +17,34 @@ interface FilterBarProps {
 }
 
 export default function FilterBar(props: FilterBarProps) {
-  if (props.variant === 'dropdowns') return <FilterDropdowns {...props} />;
-  if (props.variant === 'bottomSheet') return <FilterCompact {...props} />;
+  if (props.variant === "dropdowns") return <FilterDropdowns {...props} />;
+  if (props.variant === "bottomSheet") return <FilterCompact {...props} />;
   return <FilterChips {...props} />;
 }
 
-function FilterChips({ activeFilters, toggle, sortBy, setSortBy }: FilterBarProps) {
+function FilterChips({
+  activeFilters,
+  toggle,
+  sortBy,
+  setSortBy,
+}: FilterBarProps) {
   return (
     <div
       className="flex items-center gap-2 px-6 border-b border-border-subtle bg-bg overflow-x-auto whitespace-nowrap kg-scroll"
       style={{ paddingTop: 14, paddingBottom: 14 }}
     >
-      <Chip icon="sliders">
-        <span className="mr-0.5">필터</span>
-      </Chip>
+      <div className="flex items-center gap-1.5 mr-0.5 t">
+        <KGIcon name={"sliders"} size={14} stroke={2} />
+        <span className="ext-sm font-semibold text-zinc-500">필터</span>
+      </div>
       <div className="w-px h-5 bg-border-subtle mx-1" />
       {KG_FILTERS.map((f) => (
-        <Chip key={f.id} active={activeFilters.has(f.id)} onClick={() => toggle(f.id)} icon={f.icon}>
+        <Chip
+          key={f.id}
+          active={activeFilters.has(f.id)}
+          onClick={() => toggle(f.id)}
+          icon={f.icon}
+        >
           {f.label}
         </Chip>
       ))}
@@ -48,7 +59,7 @@ function FilterChips({ activeFilters, toggle, sortBy, setSortBy }: FilterBarProp
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
           className="text-[13px] font-medium rounded-full border border-border-medium bg-bg text-fg cursor-pointer"
-          style={{ padding: '6px 10px', fontFamily: 'var(--font-sans)' }}
+          style={{ padding: "6px 10px", fontFamily: "var(--font-sans)" }}
         >
           <option value="score">카공 적합도순</option>
           <option value="distance">가까운 순</option>
@@ -60,11 +71,16 @@ function FilterChips({ activeFilters, toggle, sortBy, setSortBy }: FilterBarProp
   );
 }
 
-function FilterDropdowns({ activeFilters, toggle, sortBy, setSortBy }: FilterBarProps) {
+function FilterDropdowns({
+  activeFilters,
+  toggle,
+  sortBy,
+  setSortBy,
+}: FilterBarProps) {
   const GROUPS = [
-    { label: '시설',  ids: ['power', 'wifi', 'notebook'] },
-    { label: '분위기', ids: ['quiet', 'space'] },
-    { label: '운영',  ids: ['open24', 'noLimit', 'cheap'] },
+    { label: "시설", ids: ["power", "wifi", "notebook"] },
+    { label: "분위기", ids: ["quiet", "space"] },
+    { label: "운영", ids: ["open24", "noLimit", "cheap"] },
   ];
 
   return (
@@ -97,7 +113,7 @@ function FilterDropdowns({ activeFilters, toggle, sortBy, setSortBy }: FilterBar
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
           className="text-[13px] font-medium rounded-full border border-border-medium bg-bg text-fg cursor-pointer"
-          style={{ padding: '6px 10px', fontFamily: 'var(--font-sans)' }}
+          style={{ padding: "6px 10px", fontFamily: "var(--font-sans)" }}
         >
           <option value="score">카공 적합도순</option>
           <option value="distance">가까운 순</option>
@@ -116,16 +132,23 @@ interface DropdownButtonProps {
   toggle: (id: string) => void;
 }
 
-function DropdownButton({ label, count, items, activeFilters, toggle }: DropdownButtonProps) {
+function DropdownButton({
+  label,
+  count,
+  items,
+  activeFilters,
+  toggle,
+}: DropdownButtonProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
-    document.addEventListener('click', h);
-    return () => document.removeEventListener('click', h);
+    document.addEventListener("click", h);
+    return () => document.removeEventListener("click", h);
   }, []);
 
   return (
@@ -134,11 +157,11 @@ function DropdownButton({ label, count, items, activeFilters, toggle }: Dropdown
         onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-1.5 rounded-full cursor-pointer text-[13px] font-medium border"
         style={{
-          padding: '7px 12px 7px 14px',
-          background: count ? 'var(--fg)' : 'var(--bg)',
-          color: count ? 'var(--bg)' : 'var(--fg-2)',
-          borderColor: count ? 'var(--fg)' : 'var(--border-medium)',
-          fontFamily: 'var(--font-sans)',
+          padding: "7px 12px 7px 14px",
+          background: count ? "var(--fg)" : "var(--bg)",
+          color: count ? "var(--bg)" : "var(--fg-2)",
+          borderColor: count ? "var(--fg)" : "var(--border-medium)",
+          fontFamily: "var(--font-sans)",
         }}
       >
         {label}
@@ -146,9 +169,9 @@ function DropdownButton({ label, count, items, activeFilters, toggle }: Dropdown
           <span
             className="font-mono text-[10.5px] font-bold rounded-full"
             style={{
-              padding: '1px 6px',
-              background: 'var(--kg-amber)',
-              color: 'var(--fg)',
+              padding: "1px 6px",
+              background: "var(--kg-amber)",
+              color: "var(--fg)",
             }}
           >
             {count}
@@ -161,7 +184,7 @@ function DropdownButton({ label, count, items, activeFilters, toggle }: Dropdown
         <div
           className="absolute top-[calc(100%+6px)] left-0 min-w-[180px] bg-bg border border-border-medium rounded-xl z-40"
           style={{
-            boxShadow: 'var(--shadow-overlay)',
+            boxShadow: "var(--shadow-overlay)",
             padding: 6,
           }}
         >
@@ -170,15 +193,17 @@ function DropdownButton({ label, count, items, activeFilters, toggle }: Dropdown
               key={f.id}
               className="flex items-center gap-2.5 rounded-lg cursor-pointer text-[13px]"
               style={{
-                padding: '8px 10px',
-                background: activeFilters.has(f.id) ? 'var(--gray-100)' : 'transparent',
+                padding: "8px 10px",
+                background: activeFilters.has(f.id)
+                  ? "var(--gray-100)"
+                  : "transparent",
               }}
             >
               <input
                 type="checkbox"
                 checked={activeFilters.has(f.id)}
                 onChange={() => toggle(f.id)}
-                style={{ accentColor: 'var(--kg-amber)' }}
+                style={{ accentColor: "var(--kg-amber)" }}
               />
               <KGIcon name={f.icon} size={14} />
               <span>{f.label}</span>
@@ -190,7 +215,11 @@ function DropdownButton({ label, count, items, activeFilters, toggle }: Dropdown
   );
 }
 
-function FilterCompact({ openDrawer, activeFilters, matchCount }: FilterBarProps) {
+function FilterCompact({
+  openDrawer,
+  activeFilters,
+  matchCount,
+}: FilterBarProps) {
   return (
     <div
       className="flex items-center gap-3 px-6 border-b border-border-subtle bg-bg"
@@ -200,11 +229,11 @@ function FilterCompact({ openDrawer, activeFilters, matchCount }: FilterBarProps
         onClick={openDrawer}
         className="inline-flex items-center gap-2 rounded-full cursor-pointer text-[13px] font-semibold border"
         style={{
-          padding: '9px 18px',
-          background: 'var(--fg)',
-          color: 'var(--bg)',
-          borderColor: 'var(--fg)',
-          fontFamily: 'var(--font-sans)',
+          padding: "9px 18px",
+          background: "var(--fg)",
+          color: "var(--bg)",
+          borderColor: "var(--fg)",
+          fontFamily: "var(--font-sans)",
         }}
       >
         <KGIcon name="sliders" size={14} stroke={2.2} />
@@ -213,9 +242,9 @@ function FilterCompact({ openDrawer, activeFilters, matchCount }: FilterBarProps
           <span
             className="font-mono text-[10.5px] font-bold rounded-full"
             style={{
-              padding: '1px 6px',
-              background: 'var(--kg-amber)',
-              color: 'var(--fg)',
+              padding: "1px 6px",
+              background: "var(--kg-amber)",
+              color: "var(--fg)",
             }}
           >
             {activeFilters.size}
@@ -223,7 +252,7 @@ function FilterCompact({ openDrawer, activeFilters, matchCount }: FilterBarProps
         )}
       </button>
       <div className="flex gap-2">
-        {['콘센트', '조용함', '24시간'].map((q) => (
+        {["콘센트", "조용함", "24시간"].map((q) => (
           <Chip key={q}>{q}</Chip>
         ))}
       </div>

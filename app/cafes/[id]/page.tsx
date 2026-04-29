@@ -16,24 +16,9 @@ export default function CafeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-
-  // const cafe = KG_CAFES.find((c) => c.id === id);
-  // if (!cafe) notFound();
-
   const { data: cafe, isLoading } = useCafeDetail(id);
   const { isLiked, toggle } = useLikes();
   const liked = cafe ? isLiked(cafe.id) : false;
-
-  // const reviews = getReviewsForCafe(cafe);
-
-  // const scoreLabel =
-  //   cafe.score >= 90
-  //     ? "카공하기에 최적의 장소예요"
-  //     : cafe.score >= 75
-  //       ? "카공하기 좋은 편이에요"
-  //       : cafe.score >= 60
-  //         ? "카공 가능하지만 조건을 확인하세요"
-  //         : "카공에는 적합하지 않을 수 있어요";
 
   if (isLoading) {
     return (
