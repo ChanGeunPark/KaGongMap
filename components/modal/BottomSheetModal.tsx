@@ -80,8 +80,8 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
         transition={{ duration: 0.3, damping: 100, stiffness: 100 }}
         className={cls(
           "z-99 fixed",
-          `h-fit left-0 max-h-[75vh] overflow-y-auto min-w-[calc(100%-32px)] w-full shadow-elevation03 scrollbar-default`,
-          "bottom-0 rounded-tr-xl rounded-tl-xl",
+          `h-fit max-h-[75vh] overflow-y-auto max-w-[520px] w-full shadow-elevation03 scrollbar-default left-1/2 -translate-x-1/2 `,
+          "bottom-0 rounded-tr-xl rounded-tl-xl shadow-lg",
         )}
         style={isDown ? { bottom: `-${downwardWalkY}px` } : {}}
       >
@@ -93,7 +93,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
           }}
           className={cls(
             className ? className : "",
-            "bg-white dark:bg-gray-850 dark:text-white relative max-w-[520px]",
+            "bg-white dark:bg-gray-850 dark:text-white relative ",
             // size
             `h-fit max-h-[75vh] overflow-y-auto scrollbar-hide w-full shadow-elevation03 `,
             // position
@@ -134,7 +134,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
        * Drawer - dim
        */}
       <div
-        className="z-30 fixed w-screen h-screen top-0 left-0 bg-black"
+        className="z-98 fixed w-screen h-screen top-0 left-0 bg-black"
         style={{
           touchAction: "none",
           opacity: 0.4 * (1 - Math.max(0, downwardWalkY - 50) / 100),

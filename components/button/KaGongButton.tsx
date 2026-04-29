@@ -17,15 +17,15 @@ export const getSizeStyle = (buttonSize?: ButtonSizeType) => {
     case "FULL":
       return "!w-full py-[12px] px-[24px] h5";
     case "LARGE":
-      return "lg:h-[48px] h-[44px] px-[24px] h5";
+      return "h-[48px] px-[24px] h5";
     case "MEDIUM":
-      return "lg:h-[40px] h-[32px] px-[16px] h6";
+      return "h-[40px] px-[16px] h6";
     case "SMALL":
-      return "h-[28px] px-[12px] h6";
+      return "h-[28px] px-[12px] text-[12px] font-bold";
     case "X-SMALL":
-      return "h-[24px] px-[8px] h6 dark:body3-400";
+      return "h-[24px] px-[8px] h6";
     default:
-      return "lg:h-[48px] h-[44px] px-[24px] h5";
+      return "h-[48px] px-[24px] h5";
   }
 };
 
