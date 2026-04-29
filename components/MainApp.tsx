@@ -3,8 +3,8 @@
 import { cls } from "@/lib/utils";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
-import { CafeMarker, CafeTag } from "@/types/db";
-import { KG_FILTERS } from "@/lib/data";
+import { CafeMarker } from "@/types/db";
+import { KG_FILTERS, FILTER_TAG_MAP } from "@/lib/data";
 import { useCafeDetail, useCafeMarkers } from "@/lib/api/cafes";
 import TopNav from "@/components/layout/TopNav";
 import FilterBar from "@/components/layout/FilterBar";
@@ -158,17 +158,6 @@ function SegButtons({
   );
 }
 
-// 필터 ID → CafeTag 매핑
-const FILTER_TAG_MAP: Record<string, CafeTag> = {
-  power: "콘센트_있음",
-  wifi: "와이파이_있음",
-  quiet: "조용함",
-  open24: "24시간",
-  noLimit: "시간제한없음",
-  notebook: "노트북_허용",
-  space: "혼잡도_낮음",
-};
-
 export default function MainApp() {
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS);
   const [tweaksOn, setTweaksOn] = useState(false);
@@ -200,7 +189,6 @@ export default function MainApp() {
   const createAttemptedForUserId = useRef<string | null>(null);
   const prevUserIdForBootstrap = useRef<string | null>(null);
 
-  const profileNickname = session?.user?.name ?? "카공유저";
   const profileImage = session?.user?.image ?? null;
 
   useEffect(() => {
@@ -234,7 +222,6 @@ export default function MainApp() {
 
     createUserRef.current({
       userId,
-      nickname: profileNickname,
       avatar_url: profileImage,
     });
   }, [
@@ -244,7 +231,6 @@ export default function MainApp() {
     isUserLoading,
     isUserFetchSuccess,
     isUserFetchError,
-    profileNickname,
     profileImage,
   ]);
 
@@ -465,21 +451,6 @@ export default function MainApp() {
             )}
           </BottomSheetModal>
 
-          {/* {previewMarker && (
-            <FloatingCard
-              cafe={previewMarker}
-              detail={selectedDetail ?? null}
-              detailLoading={detailLoading}
-              onClose={() => {
-                setPreviewId(null);
-                setSelectedId(null);
-              }}
-              onOpenDetail={() => {
-                router.push(`/cafes/${previewMarker.id}`);
-              }}
-            />
-          )} */}
-
           {/* Bottom sheet */}
           {useSheet && (
             <BottomSheet
@@ -501,6 +472,7 @@ export default function MainApp() {
         activeFilters={activeFilters}
         toggle={toggleFilter}
         filters={KG_FILTERS}
+        onReset={() => setActiveFilters(new Set())}
       />
 
       {tweaksOn && <TweaksPanel tweaks={tweaks} update={updateTweak} />}

@@ -22,15 +22,15 @@ export async function fetchUser(userId: string) {
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
+// 닉네임은 서버에서 랜덤 생성. 신규 유저면 INSERT, 있으면 avatar_url만 갱신.
 export async function createUser(
   userId: string,
-  nickname: string,
   avatar_url: string | null,
 ) {
   const res = await fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, nickname, avatar_url }),
+    body: JSON.stringify({ userId, avatar_url }),
   });
 
   if (!res.ok) {
@@ -48,21 +48,18 @@ export async function createUser(
   return null;
 }
 
-export async function updateUser(
-  userId: string,
-  nickname: string,
-  avatar_url: string | null,
-) {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("users")
-    .update({ nickname, avatar_url })
-    .eq("user_id", userId)
-    .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data ?? null;
+export async function updateNickname(nickname: string): Promise<DbUser> {
+  const res = await fetch("/api/users/me/nickname", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname }),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}) as { message?: string });
+    throw new Error(json.message ?? "닉네임 변경 중 오류가 발생했습니다.");
+  }
+  const json = (await res.json()) as { user: DbUser };
+  return json.user;
 }
 
 export async function deleteUser(userId: string) {
@@ -75,9 +72,8 @@ export async function deleteUser(userId: string) {
 
 // ── React Query Hooks ───────────────────────────────────────────────────────
 
-interface UpsertUserPayload {
+interface CreateUserPayload {
   userId: string;
-  nickname: string;
   avatar_url: string | null;
 }
 
@@ -93,8 +89,8 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, nickname, avatar_url }: UpsertUserPayload) =>
-      createUser(userId, nickname, avatar_url),
+    mutationFn: ({ userId, avatar_url }: CreateUserPayload) =>
+      createUser(userId, avatar_url),
     retry: 0,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -104,16 +100,13 @@ export function useCreateUser() {
   });
 }
 
-export function useUpdateUser() {
+export function useUpdateNickname() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, nickname, avatar_url }: UpsertUserPayload) =>
-      updateUser(userId, nickname, avatar_url),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: userKeys.detail(variables.userId),
-      });
+    mutationFn: (nickname: string) => updateNickname(nickname),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
   });
 }

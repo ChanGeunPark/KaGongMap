@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { generateRandomNickname } from "@/lib/randomNickname";
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { userId?: string; nickname?: string; avatar_url?: string | null };
+  let body: { userId?: string; avatar_url?: string | null };
   try {
     body = await req.json();
   } catch {
@@ -34,11 +35,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { userId, nickname, avatar_url } = body;
+  const { userId, avatar_url } = body;
 
-  if (!userId || !nickname) {
+  if (!userId) {
     return NextResponse.json(
-      { message: "userId, nickname은 필수입니다." },
+      { message: "userId는 필수입니다." },
       { status: 400 },
     );
   }
@@ -52,13 +53,33 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  const { error } = await supabase.from("users").upsert(
-    { user_id: userId, nickname, avatar_url: avatar_url ?? null },
-    { onConflict: "user_id" },
-  );
+  // 이미 있으면 닉네임 유지(중복 생성 시 덮어쓰지 않음). 신규일 때만 랜덤 닉네임 부여.
+  const { data: existing } = await supabase
+    .from("users")
+    .select("id, nickname")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("users")
+      .update({ avatar_url: avatar_url ?? null })
+      .eq("user_id", userId);
+    if (error) {
+      console.error("[POST /api/users update] supabase error:", error);
+      return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, created: false });
+  }
+
+  const { error } = await supabase.from("users").insert({
+    user_id: userId,
+    nickname: generateRandomNickname(),
+    avatar_url: avatar_url ?? null,
+  });
 
   if (error) {
-    console.error("[POST /api/users] supabase error:", error);
+    console.error("[POST /api/users insert] supabase error:", error);
     return NextResponse.json({ message: error.message, code: error.code }, { status: 500 });
   }
 
