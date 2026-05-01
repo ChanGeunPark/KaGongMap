@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import QueryProvider from "@/providers/QueryProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import { Session } from "next-auth";
-import ImageDetailModal from "@/components/modal/ImageDetailModal";
+import GlobalModal from "@/components/modal/GlobalModal";
 
 export const metadata: Metadata = {
   title: "카공맵",
@@ -27,7 +27,10 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
         <AuthProvider session={session}>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            <GlobalModal />
+          </QueryProvider>
         </AuthProvider>
         <ToastContainer
           position="top-right"
@@ -41,7 +44,6 @@ export default function RootLayout({
           pauseOnHover
           theme="light"
         />
-        <ImageDetailModal />
       </body>
     </html>
   );

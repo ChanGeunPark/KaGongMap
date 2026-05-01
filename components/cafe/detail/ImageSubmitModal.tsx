@@ -88,7 +88,7 @@ export default function ImageSubmitModal({
             placeholder="예: 콘센트 위치, 좌석 분위기 등"
             maxLength={200}
             rows={3}
-            className="w-full rounded-xl border border-border-medium px-3 py-2 text-sm resize-none focus:outline-none focus:border-kg-amber"
+            className="w-full rounded-md border border-border-medium px-3 py-2 text-sm resize-none focus:outline-none focus:border-kg-amber"
           />
           <span className="text-[11px] text-fg-4 self-end">
             {caption.length}/200

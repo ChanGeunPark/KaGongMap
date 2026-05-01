@@ -37,7 +37,7 @@
 
 | 레이어          | 기술                               |
 | --------------- | ---------------------------------- |
-| Frontend        | Next.js 14 (App Router)            |
+| Frontend        | Next.js 16 (App Router)            |
 | Styling         | Tailwind CSS                       |
 | 지도            | 네이버 지도 API                    |
 | Backend & Auth  | Supabase (PostgreSQL + Auth + RLS) |

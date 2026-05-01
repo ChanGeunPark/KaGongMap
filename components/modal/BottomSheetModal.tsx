@@ -81,7 +81,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
         className={cls(
           "z-99 fixed",
           `h-fit max-h-[75vh] overflow-y-auto max-w-[520px] w-full shadow-elevation03 scrollbar-default left-1/2 -translate-x-1/2 `,
-          "bottom-0 rounded-tr-xl rounded-tl-xl shadow-lg",
+          "bottom-0 rounded-tr-xl rounded-tl-xl shadow-lg bg-white",
         )}
         style={isDown ? { bottom: `-${downwardWalkY}px` } : {}}
       >

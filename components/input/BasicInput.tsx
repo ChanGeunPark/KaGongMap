@@ -14,20 +14,6 @@ function BasicInput(props: InputProps) {
 
   const [isFocus, setIsFocus] = useState(false);
 
-  const onFocusCustom = (e: React.FocusEvent<HTMLInputElement, Element>) => {
-    if (props.type === "number") {
-      e.target.addEventListener(
-        "wheel",
-        function (e) {
-          e.preventDefault();
-        },
-        { passive: false },
-      );
-    }
-
-    props.onFocus && props.onFocus;
-  };
-
   return (
     <div className={cls("w-full", props.className ? props.className : "")}>
       {/* ============== TITLE ============== */}

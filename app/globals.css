@@ -295,3 +295,46 @@ a:hover {
     opacity: 1;
   }
 }
+
+@keyframes kgPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* User location marker — centered on the geo coordinate */
+.kg-user-marker {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+.kg-user-marker__pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #3772cf;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  animation: kgPulse 1.6s ease-out infinite;
+}
+.kg-user-marker__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3772cf;
+  border: 2.5px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+}

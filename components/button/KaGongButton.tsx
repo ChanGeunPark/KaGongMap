@@ -15,17 +15,17 @@ import { cls } from "@/lib/utils";
 export const getSizeStyle = (buttonSize?: ButtonSizeType) => {
   switch (buttonSize) {
     case "FULL":
-      return "!w-full py-[12px] px-[24px] h5";
+      return "!w-full py-[12px] px-[24px] h5 font-semibold";
     case "LARGE":
-      return "h-[48px] px-[24px] h5";
+      return "h-[48px] px-[24px] h5 font-semibold";
     case "MEDIUM":
-      return "h-[40px] px-[16px] h6";
+      return "h-[40px] px-[16px] h6 font-semibold";
     case "SMALL":
-      return "h-[28px] px-[12px] text-[12px] font-bold";
+      return "h-[28px] px-[12px] text-[12px] font-semibold";
     case "X-SMALL":
-      return "h-[24px] px-[8px] h6";
+      return "h-[24px] px-[8px] h6 font-semibold";
     default:
-      return "h-[48px] px-[24px] h5";
+      return "h-[48px] px-[24px] h5 font-semibold";
   }
 };
 

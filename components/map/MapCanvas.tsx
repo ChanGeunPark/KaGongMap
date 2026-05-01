@@ -12,6 +12,25 @@ function scoreColor(tagCount: number) {
   return "#ef4444";
 }
 
+// naver.maps 타입 정의에 빠진 애니메이션 메서드 보강
+type MapWithMorph = naver.maps.Map & {
+  morph(
+    latlng: naver.maps.Coord,
+    zoom?: number,
+    options?: { duration: number; easing?: string },
+  ): void;
+};
+const TRANSITION = { duration: 100, easing: "easeOutCubic" };
+
+function userPinHtml() {
+  return `
+    <div style="position:relative; width:16px; height:16px; pointer-events:none;">
+      <div class="kg-user-marker__pulse"></div>
+      <div style="position:absolute; left:50%; top:50%; width:14px; height:14px; border-radius:50%; background:#3772cf; border:2.5px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); transform:translate(-50%,-50%);"></div>
+    </div>
+  `;
+}
+
 function pinHtml(cafe: CafeMarker, active: boolean) {
   const color = scoreColor(cafe.tags.length);
   return `
@@ -71,9 +90,16 @@ export default function MapCanvas({
 }: MapCanvasProps) {
   const mapInstance = useRef<naver.maps.Map | null>(null);
   const markers = useRef<Map<string, naver.maps.Marker>>(new Map());
+  const userMarker = useRef<naver.maps.Marker | null>(null);
+  const userCircle = useRef<naver.maps.Circle | null>(null);
   const initialized = useRef(false);
   const [locationPermission, setLocationPermission] =
     useState<LocationPermission>("checking");
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+  } | null>(null);
   const isLocationEnabled = locationPermission === "granted";
 
   useEffect(() => {
@@ -109,6 +135,25 @@ export default function MapCanvas({
     };
   }, []);
 
+  // 권한 허용 시 위치를 실시간으로 추적해 마커만 갱신 (카메라는 그대로)
+  useEffect(() => {
+    if (locationPermission !== "granted" || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        setUserLocation({
+          lat: coords.latitude,
+          lng: coords.longitude,
+          accuracy: coords.accuracy,
+        });
+      },
+      () => {}, // 단발 실패는 무시 — 다음 틱에 복구되면 됨
+      { enableHighAccuracy: true, maximumAge: 5_000, timeout: 15_000 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [locationPermission]);
+
   const moveToCurrentLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       setLocationPermission("unsupported");
@@ -129,10 +174,16 @@ export default function MapCanvas({
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         setLocationPermission("granted");
-        mapInstance.current?.setCenter(
+        setUserLocation({
+          lat: coords.latitude,
+          lng: coords.longitude,
+          accuracy: coords.accuracy,
+        });
+        (mapInstance.current as MapWithMorph | null)?.morph(
           new naver.maps.LatLng(coords.latitude, coords.longitude),
+          16,
+          TRANSITION,
         );
-        mapInstance.current?.setZoom(16);
       },
       (error) => {
         setLocationPermission(
@@ -163,6 +214,11 @@ export default function MapCanvas({
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           ({ coords }) => {
+            setUserLocation({
+              lat: coords.latitude,
+              lng: coords.longitude,
+              accuracy: coords.accuracy,
+            });
             mapInstance.current?.setCenter(
               new naver.maps.LatLng(coords.latitude, coords.longitude),
             );
@@ -229,6 +285,46 @@ export default function MapCanvas({
     });
   }, [selectedId, cafes]);
 
+  useEffect(() => {
+    if (!initialized.current || !mapInstance.current || !userLocation) return;
+
+    const position = new naver.maps.LatLng(userLocation.lat, userLocation.lng);
+
+    if (userMarker.current) {
+      (
+        userMarker.current as unknown as {
+          setPosition(p: naver.maps.LatLng): void;
+        }
+      ).setPosition(position);
+    } else {
+      userMarker.current = new naver.maps.Marker({
+        position,
+        map: mapInstance.current,
+        icon: {
+          content: userPinHtml(),
+          anchor: new naver.maps.Point(8, 8),
+        },
+        zIndex: 1000,
+      });
+    }
+
+    if (userCircle.current) {
+      userCircle.current.setCenter(position);
+      userCircle.current.setRadius(userLocation.accuracy);
+    } else {
+      userCircle.current = new naver.maps.Circle({
+        map: mapInstance.current,
+        center: position,
+        radius: userLocation.accuracy,
+        fillColor: "#3772cf",
+        fillOpacity: 0.1,
+        strokeColor: "#3772cf",
+        strokeOpacity: 0.35,
+        strokeWeight: 1,
+      });
+    }
+  }, [userLocation]);
+
   return (
     <>
       <div id="naver-map" className="absolute inset-0 w-full h-full" />
@@ -236,17 +332,17 @@ export default function MapCanvas({
       <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
         <MapCtrlBtn
           onClick={() => {
-            if (mapInstance.current) {
-              mapInstance.current.setZoom(mapInstance.current.getZoom() + 1);
-            }
+            const map = mapInstance.current as MapWithMorph | null;
+            if (!map) return;
+            map.morph(map.getCenter(), map.getZoom() + 1, TRANSITION);
           }}
           icon="plus"
         />
         <MapCtrlBtn
           onClick={() => {
-            if (mapInstance.current) {
-              mapInstance.current.setZoom(mapInstance.current.getZoom() - 1);
-            }
+            const map = mapInstance.current as MapWithMorph | null;
+            if (!map) return;
+            map.morph(map.getCenter(), map.getZoom() - 1, TRANSITION);
           }}
           icon="minus"
         />

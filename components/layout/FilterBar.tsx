@@ -30,7 +30,7 @@ function FilterChips({
 }: FilterBarProps) {
   return (
     <div
-      className="flex items-center gap-2 px-6 border-b border-border-subtle bg-bg overflow-x-auto whitespace-nowrap kg-scroll"
+      className="container mx-auto px-4 flex items-center gap-2 border-b border-border-subtle bg-bg overflow-x-auto whitespace-nowrap kg-scroll"
       style={{ paddingTop: 14, paddingBottom: 14 }}
     >
       <div className="flex items-center gap-1.5 mr-0.5 t">
@@ -48,25 +48,6 @@ function FilterChips({
           {f.label}
         </Chip>
       ))}
-      <div className="ml-auto flex items-center gap-1.5 pr-1 shrink-0">
-        <span
-          className="text-mono text-fg-3 font-mono uppercase"
-          style={{ letterSpacing: 0.5 }}
-        >
-          정렬
-        </span>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="text-[13px] font-medium rounded-full border border-border-medium bg-bg text-fg cursor-pointer"
-          style={{ padding: "6px 10px", fontFamily: "var(--font-sans)" }}
-        >
-          <option value="score">카공 적합도순</option>
-          <option value="distance">가까운 순</option>
-          <option value="stars">별점순</option>
-          <option value="reviews">후기 많은 순</option>
-        </select>
-      </div>
     </div>
   );
 }

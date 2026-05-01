@@ -25,7 +25,7 @@ export default function KagongMapModal(props: KagongMapModalProps) {
     isCloseButton = true,
   } = props;
 
-  const z = zIndex ? zIndex : 99;
+  const z = zIndex ? zIndex : 200;
 
   useEffect(() => {
     if (showModal) {

@@ -12,7 +12,8 @@ const BASE_NICKNAMES = [
 ];
 
 export function generateRandomNickname(): string {
-  const base = BASE_NICKNAMES[Math.floor(Math.random() * BASE_NICKNAMES.length)];
+  const base =
+    BASE_NICKNAMES[Math.floor(Math.random() * BASE_NICKNAMES.length)];
   const suffix = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-  return `${base}_${suffix}`;
+  return `${base}${suffix}`;
 }

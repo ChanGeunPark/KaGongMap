@@ -22,7 +22,7 @@ export default function TopNav({ query, setQuery }: TopNavProps) {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border-subtle bg-white/80 backdrop-blur-xl">
-        <div className="px-4 h-14 md:h-16 flex items-center gap-3 md:gap-5">
+        <div className="container mx-auto px-4 h-14 md:h-16 flex items-center gap-3 md:gap-5">
           <Logo />
 
           <span
@@ -68,8 +68,8 @@ function Logo() {
       href="#"
       className="flex items-center gap-2 text-fg font-semibold text-[19px] tracking-[-0.3px] shrink-0 transition-opacity hover:opacity-80"
     >
-      <span className="inline-flex items-center justify-center w-[26px] h-[26px] rounded-xl bg-fg text-kg-amber shadow-button">
-        <svg
+      <span className="inline-flex items-center justify-center">
+        {/* <svg
           width="14"
           height="14"
           viewBox="0 0 24 24"
@@ -81,9 +81,16 @@ function Logo() {
         >
           <path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z" />
           <circle cx="12" cy="9" r="2.2" fill="currentColor" />
-        </svg>
+        </svg> */}
+
+        <Image
+          src="/images/logo.png"
+          alt="카공맵"
+          width={120}
+          height={50}
+          className="object-cover"
+        />
       </span>
-      카공맵
     </a>
   );
 }

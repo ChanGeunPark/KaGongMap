@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { TbFlag, TbTrash } from "react-icons/tb";
@@ -15,6 +15,8 @@ import type { DbReview } from "@/types/db";
 import AreaInput from "@/components/input/AreaInput";
 import KaGongButton from "@/components/button/KaGongButton";
 import ReviewReportModal from "@/components/cafe/detail/ReviewReportModal";
+import BasicInput from "@/components/input/BasicInput";
+import { generateRandomNickname } from "@/lib/randomNickname";
 
 interface CafeReviewSectionProps {
   cafeId: string;
@@ -107,20 +109,28 @@ function ReviewForm({ cafeId }: { cafeId: string }) {
     );
   };
 
+  useEffect(() => {
+    if (!isAuthed || !dbUser) {
+      setTimeout(() => {
+        setNickname(generateRandomNickname());
+      }, 0);
+    }
+  }, [isAuthed, dbUser]);
+
   return (
     <div className="flex flex-col gap-2 p-3 rounded-md bg-gray-50">
       {!isAuthed && (
         <div className="flex gap-2">
-          <input
+          <BasicInput
+            name="nickname"
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임"
             maxLength={20}
-            className="flex-1 px-3 py-2 rounded-md border border-border-medium bg-bg text-[12.5px]"
           />
-          <input
-            type="password"
+          <BasicInput
+            name="password"
             inputMode="numeric"
             pattern="\d{4}"
             value={password}
@@ -128,7 +138,6 @@ function ReviewForm({ cafeId }: { cafeId: string }) {
               setPassword(e.target.value.replace(/\D/g, "").slice(0, 4))
             }
             placeholder="비밀번호 4자리"
-            className="w-[110px] px-3 py-2 rounded-md border border-border-medium bg-bg text-[12.5px] tracking-widest"
           />
         </div>
       )}

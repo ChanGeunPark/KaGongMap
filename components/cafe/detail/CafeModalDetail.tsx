@@ -3,10 +3,12 @@
 import Badge from "@/components/badge/Badge";
 import KaGongButton from "@/components/button/KaGongButton";
 import KGIcon from "@/components/ui/KGIcon";
-import ImageSubmitModal from "@/components/cafe/detail/ImageSubmitModal";
-import CafeEditModal from "@/components/cafe/detail/CafeEditModal";
 import { cls, getCloudflareImageUrl } from "@/lib/utils";
-import { useImageModalStore } from "@/stores/modalStore";
+import {
+  useCafeEditModalStore,
+  useImageModalStore,
+  useImageSubmitModalStore,
+} from "@/stores/modalStore";
 import { CafeMarker, CafeWithDetail } from "@/types/db";
 import { useLikes } from "@/hooks/useLikes";
 import Image from "next/image";
@@ -29,8 +31,10 @@ export function CafeModalDetail({
   detailLoading,
 }: CafeModalDetailProps) {
   const { setImageUrl, setShowImageModal } = useImageModalStore();
-  const [showImageSubmit, setShowImageSubmit] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const { setShowImageSubmitModal, setCafeId, setCafeName } =
+    useImageSubmitModalStore();
+  const { setShowCafeEditModal, setCafe } = useCafeEditModalStore();
+
   const { isLiked, toggle } = useLikes();
   const liked = isLiked(cafe.id);
 
@@ -89,7 +93,11 @@ export function CafeModalDetail({
             {visibleImages.length < 5 && (
               <button
                 type="button"
-                onClick={() => setShowImageSubmit(true)}
+                onClick={() => {
+                  setCafeId(cafe.id);
+                  setCafeName(cafe.name);
+                  setShowImageSubmitModal(true);
+                }}
                 className={cls(
                   "size-[84px] rounded-lg shrink-0 cursor-pointer",
                   "border border-dashed border-zinc-300 bg-gray-50/60",
@@ -153,11 +161,11 @@ export function CafeModalDetail({
       {!detailLoading && hasDetailInfo && (
         <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50">
           {detail?.address && (
-            <div className="flex items-start gap-2 text-[12px] text-fg-2">
+            <div className="flex items-start gap-2 text-mono text-fg-2">
               <TbMapPin
                 size={14}
                 strokeWidth={2}
-                className="shrink-0 text-fg-4 mt-[2px]"
+                className="shrink-0 text-fg-4 mt-1"
               />
               <span className="leading-snug">{detail.address}</span>
             </div>
@@ -186,7 +194,12 @@ export function CafeModalDetail({
           <KaGongButton
             buttonStyle="OUTLINED"
             buttonSize="LARGE"
-            onClick={() => detail && setShowEditModal(true)}
+            onClick={() => {
+              if (detail) {
+                setShowCafeEditModal(true);
+                setCafe(detail);
+              }
+            }}
             disabled={!detail || detailLoading}
           >
             수정하기
@@ -208,21 +221,6 @@ export function CafeModalDetail({
           사진 제보하기
         </button> */}
       </div>
-
-      <ImageSubmitModal
-        cafeId={cafe.id}
-        cafeName={cafe.name}
-        showModal={showImageSubmit}
-        onClose={() => setShowImageSubmit(false)}
-      />
-
-      {detail && (
-        <CafeEditModal
-          cafe={detail}
-          showModal={showEditModal}
-          onClose={() => setShowEditModal(false)}
-        />
-      )}
     </div>
   );
 }
