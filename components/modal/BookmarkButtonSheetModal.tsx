@@ -6,6 +6,7 @@ import {
   fetchMyBookmarkedCafes,
   removeBookmark,
 } from "@/lib/api/bookmarks";
+import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import EmptyHolder from "../holder/EmptyHolder";
 import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
@@ -22,10 +23,12 @@ interface BookmarkButtonSheetModalProps {
 
 function BookmarkButtonSheetModal(props: BookmarkButtonSheetModalProps) {
   const { showBookmarkModal, setShowBookmarkModal } = props;
+  const { status } = useSession();
 
   const { data: cafes = [], isLoading } = useQuery({
     queryKey: bookmarkKeys.cafes(),
     queryFn: fetchMyBookmarkedCafes,
+    enabled: showBookmarkModal && status === "authenticated",
   });
 
   return (
