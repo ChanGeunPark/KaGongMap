@@ -1,0 +1,100 @@
+import { CafeMarker } from "@/types/db";
+
+type ClusterIcon = {
+  content: string;
+  anchor: naver.maps.Point;
+};
+
+function scoreColor(tagCount: number) {
+  if (tagCount >= 7) return "#22c55e";
+  if (tagCount >= 4) return "#f5a524";
+  return "#ef4444";
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export function userPinHtml() {
+  return `
+    <div class="kg-user-marker" aria-hidden="true">
+      <div class="kg-user-marker__pulse"></div>
+      <img
+        class="kg-user-marker__cat"
+        src="/images/marks/markDefaultCat.png"
+        alt=""
+      />
+    </div>
+  `;
+}
+
+function clusterHtml(count: number) {
+  const size = count >= 20 ? 56 : count >= 10 ? 50 : 44;
+  const bg = count >= 20 ? "#166534" : count >= 10 ? "#0f766e" : "#16a34a";
+  return `
+    <div
+      style="
+        width:${size}px; height:${size}px; border-radius:999px;
+        display:flex; align-items:center; justify-content:center;
+        cursor:pointer;
+        color:white; font-size:13px; font-weight:800;
+        background:${bg};
+        border:3px solid rgba(255,255,255,0.92);
+        box-shadow:0 8px 20px rgba(15,23,42,0.25);
+      "
+    >
+      ${count}
+    </div>
+  `;
+}
+
+export function clusterIcon(count: number): ClusterIcon {
+  const size = count >= 20 ? 56 : count >= 10 ? 50 : 44;
+  return {
+    content: clusterHtml(count),
+    anchor: new naver.maps.Point(size / 2, size / 2),
+  };
+}
+
+export function cafePinHtml(cafe: CafeMarker, active: boolean) {
+  const color = scoreColor(cafe.tags.length);
+  const borderWidth = active ? 3 : 2;
+  const shadow = active
+    ? "0 6px 16px rgba(0,0,0,0.28)"
+    : "0 2px 7px rgba(0,0,0,0.2)";
+
+  return `
+    <div
+      id="overlay_${escapeHtml(cafe.id)}"
+      style="
+        display:inline-flex; align-items:center; position:relative;
+        transform:translateX(-50%) translateY(-20px);
+        cursor:pointer;
+        padding:2px 12px 2px 4px;
+        border-radius:999px;
+        background-color:white;
+        border:${borderWidth}px solid ${color};
+        box-shadow:${shadow};
+      "
+    >
+      <figure style="height:24px; width:0; overflow:hidden; transition:all 0.3s ease; margin:0;">
+        <img
+          style="height:24px; width:24px; object-fit:cover; border-radius:50%; pointer-events:none;"
+          src="https://picsum.photos/id/103/300/300"
+          alt=""
+        />
+      </figure>
+      <p style="padding:0; margin:0; margin-left:12px; font-size:12px; font-weight:700; pointer-events:none; white-space:nowrap;">
+        ${escapeHtml(cafe.name)}
+      </p>
+      <div style="position:absolute; left:50%; bottom:-${borderWidth - 1}px; transform:translateX(-50%) translateY(50%); pointer-events:none;">
+        <div style="border-radius:0 0 3px 0; width:8px; height:8px; transform:rotate(45deg); background-color:white; border-right:${borderWidth}px solid ${color}; border-bottom:${borderWidth}px solid ${color};"></div>
+      </div>
+    </div>
+  `;
+}
