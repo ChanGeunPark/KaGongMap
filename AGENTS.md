@@ -14,7 +14,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 프로젝트 한 줄 요약
 
-카공족을 위한 카페 지도 커뮤니티. Next.js 14 App Router + Supabase + 네이버 지도 API.
+카공족을 위한 카페 지도 커뮤니티. Next.js 16 App Router + Supabase + 네이버 지도 API.
 
 ## 반드시 지켜야 할 규칙
 

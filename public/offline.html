@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0fa76e" />
+    <title>오프라인 | 카공맵</title>
+    <style>
+      :root {
+        --main: #18e299;
+        --main-deep: #0fa76e;
+        --main-light: #d4fae8;
+        --fg: #0d0d0d;
+        --fg-muted: #666666;
+        --border: rgba(0, 0, 0, 0.06);
+        --card-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.06);
+        --radius: 16px;
+        --radius-sm: 12px;
+        --font:
+          system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #ededed;
+          --fg-muted: #a0a0a0;
+          --border: rgba(255, 255, 255, 0.08);
+          --main-light: rgba(24, 226, 153, 0.12);
+          --card-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+        body {
+          background: linear-gradient(
+            165deg,
+            rgba(24, 226, 153, 0.08) 0%,
+            #0d0d0d 45%,
+            #0a0a0a 100%
+          );
+        }
+        .card {
+          background: #141414;
+        }
+        .icon {
+          background: linear-gradient(
+            145deg,
+            rgba(24, 226, 153, 0.22),
+            rgba(24, 226, 153, 0.06)
+          );
+          color: var(--main);
+        }
+        .brand {
+          color: var(--main);
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: var(--font);
+        color: var(--fg);
+        background: linear-gradient(
+          165deg,
+          var(--main-light) 0%,
+          #fafafa 42%,
+          #f5f5f5 100%
+        );
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 20px;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 400px;
+        padding: 28px 24px 26px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--card-shadow);
+        text-align: center;
+      }
+
+      .icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(
+          145deg,
+          rgba(24, 226, 153, 0.2),
+          rgba(24, 226, 153, 0.06)
+        );
+        color: var(--main-deep);
+        /* stroke가 viewBox 밖으로 나가도 잘리지 않도록 */
+        padding: 5px;
+        box-sizing: border-box;
+      }
+
+      .icon svg {
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+        overflow: visible;
+        display: block;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.35;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: var(--fg-muted);
+      }
+
+      .hint {
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+        font-size: 0.8125rem;
+        color: var(--fg-muted);
+      }
+
+      .brand {
+        margin-top: 22px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--main-deep);
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <main class="card">
+        <div class="icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+            <!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.-->
+            <path
+              d="M320 160C229.1 160 146.8 196 86.3 254.6C73.6 266.9 53.3 266.6 41.1 253.9C28.9 241.2 29.1 220.9 41.8 208.7C113.7 138.9 211.9 96 320 96C428.1 96 526.3 138.9 598.3 208.7C611 221 611.3 241.3 599 253.9C586.7 266.5 566.4 266.9 553.8 254.6C493.2 196 410.9 160 320 160zM272 496C272 469.5 293.5 448 320 448C346.5 448 368 469.5 368 496C368 522.5 346.5 544 320 544C293.5 544 272 522.5 272 496zM200 390.2C188.3 403.5 168.1 404.7 154.8 393C141.5 381.3 140.3 361.1 152 347.8C193 301.4 253.1 272 320 272C386.9 272 447 301.4 488 347.8C499.7 361.1 498.4 381.3 485.2 393C472 404.7 451.7 403.4 440 390.2C410.6 356.9 367.8 336 320 336C272.2 336 229.4 356.9 200 390.2z"
+            />
+          </svg>
+        </div>
+        <h1>인터넷 연결이 필요해요</h1>
+        <p>
+          지도와 카페 정보는 네트워크가 연결된 뒤에 다시 불러올 수 있어요.
+          와이파이 또는 데이터 연결을 확인한 뒤 새로고침해 주세요.
+        </p>
+        <p class="hint">연결이 돌아오면 이 화면이 자동으로 사라질 수 있어요.</p>
+        <p class="brand">KaGongMap · 카공맵</p>
+      </main>
+    </div>
+  </body>
+</html>

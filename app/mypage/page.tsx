@@ -12,6 +12,7 @@ import { bookmarkKeys, fetchMyBookmarkedCafes } from "@/lib/api/bookmarks";
 import { cls } from "@/lib/utils";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeCard from "@/components/cafe/card/CafeCard";
+import PwaInstallBanner from "@/components/pwa/PwaInstallBanner";
 
 type MyPageTab = "bookmarks" | "cafes" | "reviews";
 
@@ -76,9 +77,6 @@ export default function MyPage() {
               설정
             </h1>
           </div>
-          <Link href="/" className="text-[13px] font-medium text-fg-3 hover:text-fg">
-            지도로
-          </Link>
         </div>
 
         <section className="rounded-2xl border border-border-subtle bg-bg p-5 shadow-card">
@@ -101,6 +99,10 @@ export default function MyPage() {
               </p>
             </div>
           </div>
+        </section>
+
+        <section>
+          <PwaInstallBanner />
         </section>
 
         <section className="mt-4 rounded-2xl border border-border-subtle bg-bg p-5 shadow-card">
@@ -355,9 +357,7 @@ function SettingsLink({
         <KGIcon name={icon} size={20} stroke={2} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-semibold text-fg">
-          {title}
-        </span>
+        <span className="block text-[14px] font-semibold text-fg">{title}</span>
         <span className="mt-0.5 block truncate text-[12.5px] text-fg-3">
           {description}
         </span>

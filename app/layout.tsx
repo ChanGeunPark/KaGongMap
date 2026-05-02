@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
@@ -7,6 +7,11 @@ import AuthProvider from "@/providers/AuthProvider";
 import GlobalModal from "@/components/modal/GlobalModal";
 import { getSiteUrl } from "@/lib/siteUrl";
 import BottomNavigation from "@/components/layout/BottomNavigation";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+
+export const viewport: Viewport = {
+  themeColor: "#16a34a",
+};
 
 const siteUrl = getSiteUrl();
 const siteName = "카공맵";
@@ -84,6 +89,11 @@ export const metadata: Metadata = {
     },
   },
   category: "map",
+  appleWebApp: {
+    capable: true,
+    title: "카공맵",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({
@@ -98,6 +108,7 @@ export default function RootLayout({
           src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`}
           strategy="afterInteractive"
         />
+        <ServiceWorkerRegister />
         <AuthProvider>
           <QueryProvider>
             {children}

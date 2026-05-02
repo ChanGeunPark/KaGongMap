@@ -16,6 +16,7 @@ import {
   TbCoin,
   TbCurrentLocation,
   TbDeviceLaptop,
+  TbDownload,
   TbFlag,
   TbHeart,
   TbHeartFilled,
@@ -92,7 +93,8 @@ type IconName =
   | "edit"
   | "trash"
   | "settings"
-  | "loader";
+  | "loader"
+  | "download";
 
 interface KGIconProps {
   name: IconName | string;
@@ -146,6 +148,7 @@ const ICONS: Record<string, IconType> = {
   trash: TbTrash,
   settings: TbSettings,
   loader: TbLoader2,
+  download: TbDownload,
 };
 
 export default function KGIcon({ name, size = 18, stroke = 1.8 }: KGIconProps) {
