@@ -319,8 +319,8 @@ a:hover {
 /* User location marker — centered on the geo coordinate */
 .kg-user-marker {
   position: relative;
-  width: 16px;
-  height: 16px;
+  width: 55px;
+  height: 55px;
   pointer-events: none;
 }
 .kg-user-marker__pulse {
@@ -335,15 +335,13 @@ a:hover {
   opacity: 0;
   animation: kgPulse 1.6s ease-out infinite;
 }
-.kg-user-marker__dot {
+.kg-user-marker__cat {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #3772cf;
-  border: 2.5px solid white;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  width: 38px;
+  height: auto;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
   transform: translate(-50%, -50%);
+  user-select: none;
 }

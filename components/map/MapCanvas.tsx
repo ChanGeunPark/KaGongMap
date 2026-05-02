@@ -7,12 +7,12 @@ import { toast } from "react-toastify";
 import { cls } from "@/lib/utils";
 import { TbBookmarkFilled } from "react-icons/tb";
 import { useAuthGateStore, useBookmarkModalStore } from "@/stores/modalStore";
-import { useBookmarks } from "@/hooks/useBookmarks";
 import { useSession } from "next-auth/react";
 
 const MAX_VISIBLE_CAFE_MARKERS = 30;
 const MARKER_CLUSTER_MAX_ZOOM = 16;
 const MARKER_CLUSTER_GRID_SIZE = 96;
+const USER_MARKER_SIZE = 48;
 
 // 태그 개수 기준: 7+ 우수(녹색), 4+ 양호(앰버), 그 외(레드)
 function scoreColor(tagCount: number) {
@@ -64,9 +64,13 @@ type MarkerWithMutableMeta = naver.maps.Marker & {
 
 function userPinHtml() {
   return `
-    <div style="position:relative; width:16px; height:16px; pointer-events:none;">
+    <div class="kg-user-marker" aria-hidden="true">
       <div class="kg-user-marker__pulse"></div>
-      <div style="position:absolute; left:50%; top:50%; width:14px; height:14px; border-radius:50%; background:#3772cf; border:2.5px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); transform:translate(-50%,-50%);"></div>
+      <img
+        class="kg-user-marker__cat"
+        src="/images/marks/markDefaultCat.png"
+        alt=""
+      />
     </div>
   `;
 }
@@ -602,7 +606,10 @@ export default function MapCanvas({
         map: mapInstance.current,
         icon: {
           content: userPinHtml(),
-          anchor: new naver.maps.Point(8, 8),
+          anchor: new naver.maps.Point(
+            USER_MARKER_SIZE / 2,
+            USER_MARKER_SIZE / 2,
+          ),
         },
         zIndex: 1000,
       });
