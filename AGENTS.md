@@ -70,7 +70,6 @@ type CafeTag =
   | "와이파이_있음"
   | "조용함"
   | "24시간"
-  | "시간제한없음"
   | "노트북_허용"
   | "혼잡도_낮음"
   | "늦은영업"
@@ -112,21 +111,21 @@ type CafeTag =
 
 Claude Code에서 `@` 멘션으로 호출한다.
 
-| 에이전트 | 역할 | 사용 예 |
-|----------|------|---------|
-| `@kagongmap-coder` | 새 컴포넌트·훅·페이지·API 코드 작성 | `@kagongmap-coder 즐겨찾기 토글 버튼 만들어줘` |
-| `@kagongmap-refactor` | 기능 변경 없이 코드 품질·타입 개선 | `@kagongmap-refactor CafeInfoSidebar 리팩토링해줘` |
-| `@kagongmap-planner` | 기능 기획·UX 설계·구현 순서 논의 | `@kagongmap-planner 랭킹 기능 어떻게 설계할까?` |
+| 에이전트              | 역할                                | 사용 예                                            |
+| --------------------- | ----------------------------------- | -------------------------------------------------- |
+| `@kagongmap-coder`    | 새 컴포넌트·훅·페이지·API 코드 작성 | `@kagongmap-coder 즐겨찾기 토글 버튼 만들어줘`     |
+| `@kagongmap-refactor` | 기능 변경 없이 코드 품질·타입 개선  | `@kagongmap-refactor CafeInfoSidebar 리팩토링해줘` |
+| `@kagongmap-planner`  | 기능 기획·UX 설계·구현 순서 논의    | `@kagongmap-planner 랭킹 기능 어떻게 설계할까?`    |
 
 ### 슬래시 커맨드 (`.claude/commands/`)
 
 Claude Code에서 `/커맨드명 [인자]` 형태로 호출한다.
 
-| 커맨드 | 설명 | 사용 예 |
-|--------|------|---------|
-| `/new-component` | 프로젝트 컨벤션에 맞는 React 컴포넌트 생성 | `/new-component 카페 즐겨찾기 하트 버튼, cafe/에 위치` |
-| `/new-hook` | React Query 훅 + API 함수 생성 | `/new-hook 즐겨찾기 목록 조회, userId 파라미터` |
-| `/new-page` | Next.js App Router 페이지 생성 | `/new-page /cafes/new 카페 등록 페이지, 인증 필요` |
-| `/new-api` | Supabase API 함수 + Route Handler 생성 | `/new-api 즐겨찾기 추가/삭제, bookmarks 테이블` |
-| `/feature` | 기획 검토 → 구현 계획 → 코드 작성까지 단계별 진행 | `/feature 카공 팁 게시판 V2 기능 구현` |
-| `/type-check` | TypeScript 오류 전체 점검 및 수정 | `/type-check` |
+| 커맨드           | 설명                                              | 사용 예                                                |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| `/new-component` | 프로젝트 컨벤션에 맞는 React 컴포넌트 생성        | `/new-component 카페 즐겨찾기 하트 버튼, cafe/에 위치` |
+| `/new-hook`      | React Query 훅 + API 함수 생성                    | `/new-hook 즐겨찾기 목록 조회, userId 파라미터`        |
+| `/new-page`      | Next.js App Router 페이지 생성                    | `/new-page /cafes/new 카페 등록 페이지, 인증 필요`     |
+| `/new-api`       | Supabase API 함수 + Route Handler 생성            | `/new-api 즐겨찾기 추가/삭제, bookmarks 테이블`        |
+| `/feature`       | 기획 검토 → 구현 계획 → 코드 작성까지 단계별 진행 | `/feature 카공 팁 게시판 V2 기능 구현`                 |
+| `/type-check`    | TypeScript 오류 전체 점검 및 수정                 | `/type-check`                                          |

@@ -25,6 +25,18 @@ interface CafeEditModalStoreState {
   setCafe: (cafe: CafeWithDetail) => void;
 }
 
+interface AuthGateStoreState {
+  showAuthGate: boolean;
+  message: string | null;
+  openAuthGate: (message?: string) => void;
+  closeAuthGate: () => void;
+}
+
+interface BookmarkModalStoreState {
+  showBookmarkModal: boolean;
+  setShowBookmarkModal: (showBookmarkModal: boolean) => void;
+}
+
 // ── Image Modal Store ───────────────────────────────────────────────────────────
 export const useImageModalStore = create<ImageModalStoreState>((set) => ({
   imageUrl: null,
@@ -62,4 +74,20 @@ export const useCafeEditModalStore = create<CafeEditModalStoreState>((set) => ({
         : { showCafeEditModal: false, cafe: null },
     ),
   setCafe: (cafe) => set({ cafe }),
+}));
+
+export const useAuthGateStore = create<AuthGateStoreState>((set) => ({
+  showAuthGate: false,
+  message: null,
+  openAuthGate: (message) =>
+    set({
+      showAuthGate: true,
+      message: message ?? "로그인 후 사용할 수 있는 기능이에요.",
+    }),
+  closeAuthGate: () => set({ showAuthGate: false, message: null }),
+}));
+
+export const useBookmarkModalStore = create<BookmarkModalStoreState>((set) => ({
+  showBookmarkModal: false,
+  setShowBookmarkModal: (showBookmarkModal) => set({ showBookmarkModal }),
 }));

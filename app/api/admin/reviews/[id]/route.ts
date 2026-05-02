@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminApiAccess } from "@/lib/adminAuth";
 import { createAdminClient } from "@/lib/supabase/server";
 
 interface RouteCtx {
@@ -7,6 +8,9 @@ interface RouteCtx {
 
 // DELETE /api/admin/reviews/[id] — 어드민이 후기 강제 삭제 (CASCADE로 review_reports도 정리)
 export async function DELETE(_: Request, ctx: RouteCtx) {
+  const authError = await requireAdminApiAccess();
+  if (authError) return authError;
+
   const { id: reviewId } = await ctx.params;
   const supabase = createAdminClient();
 

@@ -285,6 +285,15 @@ a:hover {
   border-radius: 9999px;
 }
 
+/* Hide scrollbar while keeping overflow scroll (chip rails, sheets, …) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes kgSlideUp {
   from {
     transform: translate(-50%, 20px);

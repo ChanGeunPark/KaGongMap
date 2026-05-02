@@ -3,7 +3,6 @@
 import { CafeMarker } from "@/types/db";
 import { cls } from "@/lib/utils";
 import { useLikes } from "@/hooks/useLikes";
-import { TbHeart, TbHeartFilled } from "react-icons/tb";
 import LikeButton from "@/components/button/LikeButton";
 
 interface CafeCardProps {
@@ -24,61 +23,66 @@ export default function CafeCard({
   const { isLiked, toggle } = useLikes();
   const liked = isLiked(cafe.id);
 
+  const maxTags = compact ? 2 : 3;
+  const hiddenTagCount = cafe.tags.length - maxTags;
+
   return (
     <div
       onMouseEnter={onHover}
       onClick={onClick}
       className={cls(
-        "group flex gap-3.5 rounded-2xl cursor-pointer transition-all duration-160",
+        "group cursor-pointer rounded-2xl border p-4 transition-all duration-150",
         selected
-          ? "bg-kg-amber-light border border-gray-300 shadow-[0_2px_12px_rgba(245,165,36,0.14)]"
-          : "bg-bg border border-border-subtle shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
-        "p-4",
+          ? "border-kg-amber/45 bg-kg-amber-light/60 shadow-[0_4px_16px_rgba(245,165,36,0.14)]"
+          : "border-border-subtle bg-bg shadow-card hover:border-border-medium hover:shadow-button hover:-translate-y-px",
       )}
     >
-      <div className="flex-1 min-w-0 flex flex-col gap-2">
-        <div className="flex items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <h4 className="text-caption font-semibold tracking-[-0.2px] text-fg truncate m-0 leading-snug">
-              {cafe.name}
-            </h4>
-            <div className="flex items-center gap-1.5 text-[11px] text-fg-3 mt-[3px]">
-              <span>좋아요 {cafe.like_count}</span>
-              {cafe.min_order_amount != null && (
-                <>
-                  <span className="text-fg-4">·</span>
-                  <span>
-                    최소 {cafe.min_order_amount.toLocaleString("ko-KR")}원
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <h4 className="text-btn font-semibold tracking-[-0.2px] text-fg truncate leading-tight m-0">
+            {cafe.name}
+          </h4>
+          {cafe.address && (
+            <p className="mt-1 text-[12.5px] text-fg-3 truncate">
+              {cafe.address}
+            </p>
+          )}
 
-          <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+          <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-fg-3">
+            <span>좋아요 {cafe.like_count.toLocaleString("ko-KR")}</span>
+            {cafe.min_order_amount != null && (
+              <>
+                <span className="text-fg-4">·</span>
+                <span>
+                  최소 {cafe.min_order_amount.toLocaleString("ko-KR")}원
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-[5px] items-center mt-auto">
-          {cafe.tags.slice(0, compact ? 2 : 3).map((t) => (
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+        </div>
+      </div>
+
+      {cafe.tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {cafe.tags.slice(0, maxTags).map((t) => (
             <span
               key={t}
-              className="text-[10.5px] rounded-full font-medium text-fg-2 bg-gray-100"
-              style={{ padding: "2px 7px" }}
+              className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-fg-2"
             >
               {t.replace(/_/g, " ")}
             </span>
           ))}
-
-          {cafe.tags.length > 3 && (
-            <span
-              className="text-[10.5px] rounded-full font-medium text-fg-2 bg-gray-100"
-              style={{ padding: "2px 7px" }}
-            >
-              +{cafe.tags.length - 3}
+          {hiddenTagCount > 0 && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-fg-3">
+              +{hiddenTagCount}
             </span>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

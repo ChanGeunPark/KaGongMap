@@ -33,17 +33,3 @@ export async function unlikeCafe(cafeId: string): Promise<void> {
     throw new Error(message ?? "좋아요 해제 중 오류가 발생했습니다.");
   }
 }
-
-export async function syncLocalLikes(cafeIds: string[]): Promise<string[]> {
-  const res = await fetch("/api/likes", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cafeIds }),
-  });
-  if (!res.ok) {
-    const { message } = await res.json().catch(() => ({}));
-    throw new Error(message ?? "좋아요 동기화 중 오류가 발생했습니다.");
-  }
-  const json = (await res.json()) as { cafeIds: string[] };
-  return json.cafeIds ?? [];
-}

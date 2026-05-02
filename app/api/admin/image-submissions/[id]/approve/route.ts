@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdminApiAccess } from "@/lib/adminAuth";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authError = await requireAdminApiAccess();
+  if (authError) return authError;
+
   const { id } = await params;
   const supabase = createAdminClient();
 

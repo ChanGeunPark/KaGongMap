@@ -3,6 +3,7 @@
 import Badge from "@/components/badge/Badge";
 import KaGongButton from "@/components/button/KaGongButton";
 import KGIcon from "@/components/ui/KGIcon";
+import { openNaverMapPlace } from "@/lib/naverMapAppLink";
 import { cls, getCloudflareImageUrl } from "@/lib/utils";
 import {
   useCafeEditModalStore,
@@ -11,10 +12,11 @@ import {
 } from "@/stores/modalStore";
 import { CafeMarker, CafeWithDetail } from "@/types/db";
 import { useLikes } from "@/hooks/useLikes";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import Image from "next/image";
-import { useState } from "react";
-import { TbClock, TbHeart, TbMapPin } from "react-icons/tb";
+import { TbClock, TbCoin, TbHeart, TbMapPin } from "react-icons/tb";
 import LikeButton from "@/components/button/LikeButton";
+import BookmarkButton from "@/components/button/BookmarkButton";
 import CafeReviewSection from "@/components/cafe/detail/CafeReviewSection";
 
 interface CafeModalDetailProps {
@@ -37,6 +39,12 @@ export function CafeModalDetail({
 
   const { isLiked, toggle } = useLikes();
   const liked = isLiked(cafe.id);
+  const {
+    isBookmarked,
+    toggle: toggleBookmark,
+    isPending: bookmarkPending,
+  } = useBookmarks();
+  const bookmarked = isBookmarked(cafe.id);
 
   const images = detail?.images ?? [];
   const visibleImages = images.slice(0, 5);
@@ -50,7 +58,6 @@ export function CafeModalDetail({
     와이파이_있음: "📶 와이파이",
     조용함: "🤫 조용함",
     "24시간": "🕐 24시간",
-    시간제한없음: "♾️ 시간제한 없음",
     노트북_허용: "💻 노트북 허용",
     혼잡도_낮음: "🟢 혼잡도 낮음",
     늦은영업: "🌙 늦은영업",
@@ -128,14 +135,6 @@ export function CafeModalDetail({
               <TbHeart size={15} strokeWidth={2.2} />
               <span>{cafe.like_count}</span>
             </div>
-            {cafe.min_order_amount != null && (
-              <>
-                <span className="text-fg-4">·</span>
-                <span>
-                  최소금액 {cafe.min_order_amount.toLocaleString("ko-KR")}원
-                </span>
-              </>
-            )}
           </div>
         </div>
 
@@ -160,6 +159,20 @@ export function CafeModalDetail({
       )}
       {!detailLoading && hasDetailInfo && (
         <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50">
+          {/* 최소금액 */}
+          {detail?.min_order_amount != null && (
+            <div className="flex gap-2 text-mono text-fg-2">
+              <TbCoin
+                size={14}
+                strokeWidth={2}
+                className="shrink-0 text-fg-4 mt-1"
+              />
+              <span className="leading-snug">
+                최소금액 {detail.min_order_amount.toLocaleString("ko-KR")}원
+              </span>
+            </div>
+          )}
+
           {detail?.address && (
             <div className="flex items-start gap-2 text-mono text-fg-2">
               <TbMapPin
@@ -171,7 +184,7 @@ export function CafeModalDetail({
             </div>
           )}
           {detail?.hours && (
-            <div className="flex items-start gap-2 text-memo text-fg-2">
+            <div className="flex gap-2 text-mono text-fg-2">
               <TbClock
                 size={14}
                 strokeWidth={2}
@@ -190,7 +203,7 @@ export function CafeModalDetail({
 
       {/* ── Actions ── */}
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2 justify-between">
           <KaGongButton
             buttonStyle="OUTLINED"
             buttonSize="LARGE"
@@ -204,7 +217,35 @@ export function CafeModalDetail({
           >
             수정하기
           </KaGongButton>
-          <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+
+          <div className="flex gap-2">
+            <KaGongButton
+              buttonStyle="PRIMARY"
+              buttonSize="LARGE"
+              onClick={() => {
+                const lat = detail?.lat ?? cafe.lat;
+                const lng = detail?.lng ?? cafe.lng;
+                const placeName = detail?.name ?? cafe.name;
+                const webSearchQuery = [cafe.name, detail?.address]
+                  .filter(Boolean)
+                  .join(" ");
+                openNaverMapPlace({
+                  lat,
+                  lng,
+                  placeName,
+                  webSearchQuery: webSearchQuery.trim() || placeName,
+                });
+              }}
+            >
+              길찾기
+            </KaGongButton>
+            <BookmarkButton
+              bookmarked={bookmarked}
+              onClick={() => toggleBookmark(cafe.id)}
+              disabled={bookmarkPending}
+            />
+            <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+          </div>
         </div>
 
         <CafeReviewSection cafeId={cafe.id} />

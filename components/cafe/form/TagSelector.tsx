@@ -19,12 +19,6 @@ const CAFE_TAGS = [
   { id: "조용함", label: "조용함", emoji: "🤫", desc: "집중하기 좋은 분위기" },
   { id: "24시간", label: "24시간", emoji: "🕐", desc: "24시간 운영" },
   {
-    id: "시간제한없음",
-    label: "시간제한없음",
-    emoji: "♾️",
-    desc: "무제한 착석",
-  },
-  {
     id: "노트북_허용",
     label: "노트북 허용",
     emoji: "💻",

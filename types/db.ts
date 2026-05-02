@@ -29,6 +29,7 @@ export interface DbUser {
 export interface CafeMarker {
   id: string;
   name: string;
+  address: string;
   lat: number;
   lng: number;
   like_count: number;

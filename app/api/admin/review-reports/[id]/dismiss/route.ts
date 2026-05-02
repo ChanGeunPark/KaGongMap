@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminApiAccess } from "@/lib/adminAuth";
 import { createAdminClient } from "@/lib/supabase/server";
 
 interface RouteCtx {
@@ -7,6 +8,9 @@ interface RouteCtx {
 
 // POST /api/admin/review-reports/[id]/dismiss — 단건 신고 무시
 export async function POST(_: Request, ctx: RouteCtx) {
+  const authError = await requireAdminApiAccess();
+  if (authError) return authError;
+
   const { id: reportId } = await ctx.params;
   const supabase = createAdminClient();
 

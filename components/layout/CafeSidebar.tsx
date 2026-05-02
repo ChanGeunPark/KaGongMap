@@ -5,13 +5,12 @@ import CafeCard from "../cafe/card/CafeCard";
 import { cls } from "@/lib/utils";
 import { IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
+import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 
 interface CafeSidebarProps {
   cafes: CafeMarker[]; // 카페 목록
-  selectedId: string | null; // 선택된 카페 ID
   hoveredId: string | null; // 호버된 카페 ID
   setHoveredId: (id: string) => void; // 호버된 카페 ID 설정
-  selectCafe: (id: string) => void; // 카페 선택
   cardDensity: "medium" | "low"; // 카드 밀도
   isOpen: boolean; // 사이드바 열림 여부
   setSidebarOpen: (open: boolean) => void; // 사이드바 열림 여부 설정
@@ -19,14 +18,16 @@ interface CafeSidebarProps {
 
 export default function CafeSidebar({
   cafes,
-  selectedId,
-  hoveredId,
   setHoveredId,
-  selectCafe,
   cardDensity,
   isOpen,
   setSidebarOpen,
 }: CafeSidebarProps) {
+  const selectedId = useCafeSelectionStore((state) => state.selectedId);
+  const openCafePreview = useCafeSelectionStore(
+    (state) => state.openCafePreview,
+  );
+
   return (
     <motion.aside
       initial={false}
@@ -60,7 +61,7 @@ export default function CafeSidebar({
 
       {isOpen && (
         <div className="relative w-full h-full overflow-scroll">
-          <div className="re max-w-[420px] w-full mx-auto overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
+          <div className="relative min-w-[300px] max-w-[420px] w-full mx-auto overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
             <div className="border-b border-border-subtle flex items-center justify-between py-[14px] px-[20px]">
               <div>
                 <div className="text-btn font-semibold tracking-[-0.2px]">
@@ -81,7 +82,7 @@ export default function CafeSidebar({
                   compact={cardDensity === "low"}
                   selected={c.id === selectedId}
                   onHover={() => setHoveredId(c.id)}
-                  onClick={() => selectCafe(c.id)}
+                  onClick={() => openCafePreview(c.id)}
                 />
               ))}
               <div className="py-5 text-center text-mono text-fg-4 font-mono uppercase tracking-[0.5px]">

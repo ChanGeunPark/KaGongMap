@@ -40,7 +40,7 @@ export async function fetchCafeMarkers(): Promise<CafeMarker[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("cafe_markers")
-    .select("id, name, lat, lng, like_count, min_order_amount, tags");
+    .select("id, name, address, lat, lng, like_count, min_order_amount, tags");
 
   if (error) throw new Error(error.message);
   return (data ?? []) as CafeMarker[];

@@ -3,6 +3,24 @@
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
+function getSafeCallbackUrl(): string {
+  if (typeof window === "undefined") return "/";
+
+  const callbackUrl = new URLSearchParams(window.location.search).get(
+    "callbackUrl",
+  );
+
+  if (
+    callbackUrl &&
+    callbackUrl.startsWith("/") &&
+    !callbackUrl.startsWith("//")
+  ) {
+    return callbackUrl;
+  }
+
+  return "/";
+}
+
 export default function LoginPage() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
@@ -25,19 +43,29 @@ export default function LoginPage() {
         <>
           <button
             type="button"
-            onClick={() => signIn("kakao", { callbackUrl: "/" })}
+            onClick={() =>
+              signIn("kakao", { callbackUrl: getSafeCallbackUrl() })
+            }
             className="mt-8 w-full rounded-lg bg-yellow-300 px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-yellow-400"
           >
             카카오로 시작하기
           </button>
 
-          <button
+          <p className="mt-4 text-center text-xs leading-5 text-gray-500">
+            로그인하면 카공맵의{" "}
+            <Link href="/privacy" className="font-medium text-gray-700 underline">
+              개인정보 처리방침
+            </Link>
+            을 확인한 것으로 간주됩니다.
+          </p>
+
+          {/* <button
             type="button"
             onClick={() => signIn("google", { callbackUrl: "/" })}
             className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           >
             구글 로그인 (준비됨)
-          </button>
+          </button> */}
         </>
       )}
 

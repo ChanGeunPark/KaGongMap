@@ -3,21 +3,80 @@
 import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
 import KagongMapModal from "../modal/KagongMapModal";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CafeInfoForm from "../cafe/form/CafeInfoForm/CafeInfoForm";
 import { signOut, useSession } from "next-auth/react";
 import KaGongButton from "../button/KaGongButton";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import Image from "next/image";
+import DropDownItem from "../holder/DropdownHolder";
+import { useCafeMarkers } from "@/lib/api/cafes";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 interface TopNavProps {
-  query: string;
-  setQuery: (q: string) => void;
+  onSelectCafe?: (id: string) => void;
 }
 
-export default function TopNav({ query, setQuery }: TopNavProps) {
+interface AdminStatusResponse {
+  isAdmin: boolean;
+}
+
+async function fetchAdminStatus(): Promise<AdminStatusResponse> {
+  const res = await fetch("/api/admin/me", { cache: "no-store" });
+
+  if (!res.ok) {
+    return { isAdmin: false };
+  }
+
+  return (await res.json()) as AdminStatusResponse;
+}
+
+export default function TopNav({ onSelectCafe }: TopNavProps) {
   const [showModal, setShowModal] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const desktopSearchRef = useRef<HTMLDivElement | null>(null);
+  const mobileSearchRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const { data: allCafes = [] } = useCafeMarkers();
+
+  const filteredCafes = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return allCafes
+      .filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.tags.some((tag) => tag.toLowerCase().includes(q)),
+      )
+      .slice(0, 8);
+  }, [allCafes, query]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (desktopSearchRef.current?.contains(target)) return;
+      if (mobileSearchRef.current?.contains(target)) return;
+      setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [searchOpen]);
+
+  const handleSelectCafe = (id: string) => {
+    setSearchOpen(false);
+    setQuery("");
+    if (onSelectCafe) {
+      onSelectCafe(id);
+    } else {
+      router.push(`/cafes/${id}`);
+    }
+  };
+
+  const showDropdown = searchOpen && query.trim().length > 0;
 
   return (
     <>
@@ -30,23 +89,39 @@ export default function TopNav({ query, setQuery }: TopNavProps) {
             className="hidden md:block w-px h-[22px] bg-border-subtle shrink-0"
           />
 
-          <SearchBar
-            query={query}
-            setQuery={setQuery}
-            className="hidden md:flex flex-1 max-w-[480px]"
-            showShortcut
-          />
+          <div
+            ref={desktopSearchRef}
+            className="relative hidden md:flex flex-1 max-w-[480px]"
+          >
+            <SearchBar
+              query={query}
+              setQuery={setQuery}
+              className="flex w-full"
+              onFocus={() => setSearchOpen(true)}
+            />
+            {showDropdown && (
+              <DropDownItem cafes={filteredCafes} onSelect={handleSelectCafe} />
+            )}
+          </div>
 
           <div className="flex items-center gap-2 ml-auto">
             <ReportButton onClick={() => setShowModal(true)} />
 
+            <AdminButton />
             <AuthArea />
           </div>
         </div>
-
         {/* 모바일 검색 행 */}
-        <div className="md:hidden px-4 pb-3">
-          <SearchBar query={query} setQuery={setQuery} className="flex" />
+        <div ref={mobileSearchRef} className="md:hidden px-4 pb-3 relative">
+          <SearchBar
+            query={query}
+            setQuery={setQuery}
+            className="flex"
+            onFocus={() => setSearchOpen(true)}
+          />
+          {showDropdown && (
+            <DropDownItem cafes={filteredCafes} onSelect={handleSelectCafe} />
+          )}
         </div>
       </header>
 
@@ -64,34 +139,18 @@ export default function TopNav({ query, setQuery }: TopNavProps) {
 /* ---------- Logo ---------- */
 function Logo() {
   return (
-    <a
-      href="#"
+    <Link
+      href="/"
       className="flex items-center gap-2 text-fg font-semibold text-[19px] tracking-[-0.3px] shrink-0 transition-opacity hover:opacity-80"
     >
-      <span className="inline-flex items-center justify-center">
-        {/* <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z" />
-          <circle cx="12" cy="9" r="2.2" fill="currentColor" />
-        </svg> */}
-
-        <Image
-          src="/images/logo.png"
-          alt="카공맵"
-          width={120}
-          height={50}
-          className="object-cover"
-        />
-      </span>
-    </a>
+      <Image
+        src="/images/logo.png"
+        alt="카공맵"
+        width={120}
+        height={50}
+        className="object-cover"
+      />
+    </Link>
   );
 }
 
@@ -100,14 +159,9 @@ interface SearchBarProps {
   query: string;
   setQuery: (q: string) => void;
   className?: string;
-  showShortcut?: boolean;
+  onFocus?: () => void;
 }
-function SearchBar({
-  query,
-  setQuery,
-  className,
-  showShortcut,
-}: SearchBarProps) {
+function SearchBar({ query, setQuery, className, onFocus }: SearchBarProps) {
   return (
     <div
       className={cls(
@@ -120,45 +174,11 @@ function SearchBar({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="카페, 지역, 역 검색…"
+        onFocus={onFocus}
+        placeholder="카페 검색…"
         className="flex-1 bg-transparent border-none outline-none text-fg text-sm placeholder:text-fg-4"
       />
-      {showShortcut && (
-        <kbd className="hidden lg:block font-mono text-[10.5px] py-1 px-1.5 rounded border border-border-medium tracking-[0.5px] text-fg-3">
-          ⌘K
-        </kbd>
-      )}
     </div>
-  );
-}
-
-/* ---------- IconButton (모바일 검색/햄버거) ---------- */
-interface IconButtonProps {
-  icon: "search" | "menu";
-  label: string;
-  size?: number;
-  className?: string;
-  onClick?: () => void;
-}
-function IconButton({
-  icon,
-  label,
-  size = 16,
-  className,
-  onClick,
-}: IconButtonProps) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={cls(
-        "inline-flex w-9 h-9 items-center justify-center rounded-full border border-border-medium bg-bg-muted text-fg-2 transition-colors hover:bg-gray-100 active:scale-[0.96]",
-        className,
-      )}
-    >
-      <KGIcon name={icon} size={size} />
-    </button>
   );
 }
 
@@ -279,6 +299,31 @@ function AuthArea() {
         </div>
       )}
     </div>
+  );
+}
+
+function AdminButton() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { data } = useQuery({
+    queryKey: ["admin", "me"],
+    queryFn: fetchAdminStatus,
+    enabled: Boolean(session),
+    staleTime: 60_000,
+  });
+
+  if (!session || !data?.isAdmin) {
+    return null;
+  }
+
+  return (
+    <KaGongButton
+      buttonStyle="OUTLINED"
+      buttonSize="MEDIUM"
+      onClick={() => router.push("/admin")}
+    >
+      어드민
+    </KaGongButton>
   );
 }
 

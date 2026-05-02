@@ -5,6 +5,7 @@ import { FilterItem, FilterVariant, SortBy } from "@/types/cafe";
 import { KG_FILTERS } from "@/lib/data";
 import KGIcon from "@/components/ui/KGIcon";
 import Chip from "@/components/ui/Chip";
+import { cls } from "@/lib/utils";
 
 interface FilterBarProps {
   variant: FilterVariant;
@@ -29,25 +30,29 @@ function FilterChips({
   setSortBy,
 }: FilterBarProps) {
   return (
-    <div
-      className="container mx-auto px-4 flex items-center gap-2 border-b border-border-subtle bg-bg overflow-x-auto whitespace-nowrap kg-scroll"
-      style={{ paddingTop: 14, paddingBottom: 14 }}
-    >
-      <div className="flex items-center gap-1.5 mr-0.5 t">
-        <KGIcon name={"sliders"} size={14} stroke={2} />
-        <span className="ext-sm font-semibold text-zinc-500">필터</span>
+    <div className="w-full border-b border-border-subtle">
+      <div
+        className={cls(
+          "container mx-auto px-4 flex items-center gap-2 bg-bg overflow-x-auto whitespace-nowrap scrollbar-hide",
+          "py-3",
+        )}
+      >
+        <div className="flex items-center gap-1.5 mr-0.5">
+          <KGIcon name={"sliders"} size={14} stroke={2} />
+          <span className="ext-sm font-semibold text-zinc-500">필터</span>
+        </div>
+        <div className="w-px h-5 border-l border-border-subtle mx-1" />
+        {KG_FILTERS.map((f) => (
+          <Chip
+            key={f.id}
+            active={activeFilters.has(f.id)}
+            onClick={() => toggle(f.id)}
+            icon={f.icon}
+          >
+            {f.label}
+          </Chip>
+        ))}
       </div>
-      <div className="w-px h-5 bg-border-subtle mx-1" />
-      {KG_FILTERS.map((f) => (
-        <Chip
-          key={f.id}
-          active={activeFilters.has(f.id)}
-          onClick={() => toggle(f.id)}
-          icon={f.icon}
-        >
-          {f.label}
-        </Chip>
-      ))}
     </div>
   );
 }

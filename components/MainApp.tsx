@@ -20,6 +20,7 @@ import { useCreateUser, useUser } from "@/lib/api/user";
 import { useUserStore } from "@/stores/userStore";
 import BottomSheetModal from "./modal/BottomSheetModal";
 import { CafeModalDetail } from "./cafe/detail/CafeModalDetail";
+import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 
 interface Tweaks {
   // 트윅 설정
@@ -161,18 +162,17 @@ function SegButtons({
 export default function MainApp() {
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS);
   const [tweaksOn, setTweaksOn] = useState(false);
-  const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortBy>("score");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [previewId, setPreviewId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bounds, setBounds] = useState<{
     ne: naver.maps.LatLng;
     sw: naver.maps.LatLng;
   } | null>(null);
+  const { selectedId, previewId, openCafePreview, closeCafePreview } =
+    useCafeSelectionStore();
 
   const { data: session, status } = useSession();
   const userId = (session?.user as { id?: string })?.id ?? null;
@@ -282,18 +282,9 @@ export default function MainApp() {
     });
   };
 
-  // 필터 + 검색 + 정렬
+  // 필터 + 정렬 (검색은 TopNav 내부 드롭다운에만 영향)
   const cafes = useMemo<CafeMarker[]>(() => {
     let list = [...allCafes];
-
-    if (query) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.tags.some((tag) => tag.includes(query)),
-      );
-    }
 
     for (const filterId of activeFilters) {
       const tag = FILTER_TAG_MAP[filterId];
@@ -310,7 +301,7 @@ export default function MainApp() {
     }
 
     return list;
-  }, [allCafes, query, activeFilters, sortBy]);
+  }, [allCafes, activeFilters, sortBy]);
 
   // bounds 필터: 현재 지도 화면에 보이는 카페만
   const visibleCafes = useMemo<CafeMarker[]>(() => {
@@ -325,8 +316,7 @@ export default function MainApp() {
   }, [cafes, bounds]);
 
   const selectCafe = (id: string) => {
-    setSelectedId(id);
-    setPreviewId(id);
+    openCafePreview(id);
   };
 
   // FloatingCard는 Tier 1 데이터로 즉시 표시, 상세 로딩 후 교체
@@ -335,7 +325,6 @@ export default function MainApp() {
     : null;
 
   const useSheet = tweaks.layoutVariant === "sheet";
-
   const router = useRouter();
 
   if (isLoading) {
@@ -350,8 +339,8 @@ export default function MainApp() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-bg">
-      <TopNav query={query} setQuery={setQuery} />
+    <div className="flex h-[calc(100vh-60px)] flex-col bg-bg ">
+      <TopNav onSelectCafe={selectCafe} />
       <FilterBar
         variant={tweaks.filterVariant}
         activeFilters={activeFilters}
@@ -367,10 +356,8 @@ export default function MainApp() {
 
         <CafeSidebar
           cafes={visibleCafes}
-          selectedId={selectedId}
           hoveredId={hoveredId}
           setHoveredId={setHoveredId}
-          selectCafe={selectCafe}
           cardDensity={tweaks.cardDensity}
           isOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -430,10 +417,7 @@ export default function MainApp() {
             }}
             widthThreshold={2000}
             showModal={previewMarker !== null}
-            showModalToggler={(next) => {
-              setPreviewId(null);
-              setSelectedId(null);
-            }}
+            showModalToggler={closeCafePreview}
           >
             {previewMarker && (
               <CafeModalDetail
@@ -443,10 +427,7 @@ export default function MainApp() {
                 onOpenDetail={() => {
                   router.push(`/cafes/${previewMarker.id}`);
                 }}
-                onClose={() => {
-                  setPreviewId(null);
-                  setSelectedId(null);
-                }}
+                onClose={closeCafePreview}
               />
             )}
           </BottomSheetModal>

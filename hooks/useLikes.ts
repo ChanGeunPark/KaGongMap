@@ -1,18 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchMyLikedCafeIds,
   likeCafe,
   likeKeys,
-  syncLocalLikes,
   unlikeCafe,
 } from "@/lib/api/likes";
 import { cafeKeys } from "@/lib/api/cafes";
 import {
-  clearLikedCafeIds,
   readLikedCafeIds,
   writeLikedCafeIds,
 } from "@/hooks/storage/likedStorage";
@@ -24,15 +22,14 @@ interface UseLikesReturn {
   isAuthed: boolean;
 }
 
-// 로그인 시 localStorage(익명 좋아요) → DB로 합집합 머지 후 localStorage 비움.
-// 비로그인 상태에서는 localStorage를 source-of-truth로 사용.
+// 비로그인 상태에서는 localStorage를 source-of-truth로 사용한다.
+// 로그인 후에는 서버의 cafe_likes만 사용하고, 익명 좋아요는 머지하지 않는다.
 export function useLikes(): UseLikesReturn {
   const { status } = useSession();
   const isAuthed = status === "authenticated";
   const queryClient = useQueryClient();
 
   const [localLikes, setLocalLikes] = useState<string[]>(() => []);
-  const mergedForSession = useRef(false);
 
   // 마운트 시 localStorage hydrate (SSR 안전)
   useEffect(() => {
@@ -47,33 +44,6 @@ export function useLikes(): UseLikesReturn {
     enabled: isAuthed,
     staleTime: 1000 * 60,
   });
-
-  // 로그인되면 localStorage 머지 → 비우기
-  useEffect(() => {
-    if (!isAuthed) {
-      mergedForSession.current = false;
-      return;
-    }
-    if (mergedForSession.current) return;
-
-    const local = readLikedCafeIds();
-    if (local.length === 0) {
-      mergedForSession.current = true;
-      return;
-    }
-
-    mergedForSession.current = true;
-    syncLocalLikes(local)
-      .then((merged) => {
-        clearLikedCafeIds();
-        setLocalLikes([]);
-        queryClient.setQueryData(likeKeys.me(), merged);
-        queryClient.invalidateQueries({ queryKey: cafeKeys.markers() });
-      })
-      .catch(() => {
-        mergedForSession.current = false;
-      });
-  }, [isAuthed, queryClient]);
 
   const liked = isAuthed ? serverLikes : localLikes;
   const likedSet = useMemo(() => new Set(liked), [liked]);

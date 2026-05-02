@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminApiAccess } from "@/lib/adminAuth";
 import { createAdminClient } from "@/lib/supabase/server";
 import type {
   DbReview,
@@ -8,6 +9,9 @@ import type {
 
 // GET /api/admin/review-reports — pending 신고를 후기 단위로 그룹핑
 export async function GET() {
+  const authError = await requireAdminApiAccess();
+  if (authError) return authError;
+
   const supabase = createAdminClient();
 
   const { data: reports, error: reportErr } = await supabase
