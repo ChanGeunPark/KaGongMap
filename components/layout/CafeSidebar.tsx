@@ -34,7 +34,7 @@ export default function CafeSidebar({
       animate={{ width: isOpen ? "100vw" : 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cls(
-        "z-50 h-full absolute top-0 left-0 bottom-0 w-full max-w-[420px] bg-white",
+        "z-40 h-full absolute top-0 left-0 bottom-0 w-full max-w-[420px] bg-white",
       )}
     >
       {/* Sidebar toggle button */}

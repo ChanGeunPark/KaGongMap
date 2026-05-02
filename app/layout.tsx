@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import QueryProvider from "@/providers/QueryProvider";
@@ -104,10 +103,6 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <Script
-          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`}
-          strategy="afterInteractive"
-        />
         <ServiceWorkerRegister />
         <AuthProvider>
           <QueryProvider>

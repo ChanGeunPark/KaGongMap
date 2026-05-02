@@ -28,6 +28,7 @@ import {
   TbMap2,
   TbMapPin,
   TbMenu2,
+  TbMessages,
   TbMinus,
   TbPencil,
   TbPhone,
@@ -84,6 +85,7 @@ type IconName =
   | "flag"
   | "sparkle"
   | "menu"
+  | "messages"
   | "list"
   | "bookmark"
   | "trending"
@@ -138,6 +140,7 @@ const ICONS: Record<string, IconType> = {
   flag: TbFlag,
   sparkle: TbSparkles,
   menu: TbMenu2,
+  messages: TbMessages,
   list: TbList,
   bookmark: TbBookmark,
   trending: TbTrendingUp,

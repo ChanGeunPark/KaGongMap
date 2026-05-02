@@ -436,6 +436,12 @@ export default function MapCanvas({
         zoom: 15,
         minZoom: 12,
         maxZoom: 19,
+        logoControl: true,
+        logoControlOptions: { position: naver.maps.Position.BOTTOM_LEFT },
+        mapDataControl: true,
+        mapDataControlOptions: { position: naver.maps.Position.BOTTOM_LEFT },
+        scaleControl: true,
+        scaleControlOptions: { position: naver.maps.Position.BOTTOM_RIGHT },
       });
 
       if (navigator.geolocation) {
