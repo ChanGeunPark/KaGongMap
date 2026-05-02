@@ -27,7 +27,6 @@
 | 📶 와이파이 있음 | 와이파이 제공                       |
 | 🤫 조용함        | 대화 소음이 적고 집중하기 좋음      |
 | 🌙 24시간        | 24시간 운영                         |
-| ⏰ 시간제한없음  | 별도 시간 제한 없음                 |
 | 💻 노트북 허용   | 노트북 사용 환영                    |
 | 🪑 혼잡도 낮음   | 자리 잡기 쉽고 여유 있음            |
 
@@ -37,7 +36,7 @@
 
 | 레이어          | 기술                               |
 | --------------- | ---------------------------------- |
-| Frontend        | Next.js 14 (App Router)            |
+| Frontend        | Next.js 16 (App Router)            |
 | Styling         | Tailwind CSS                       |
 | 지도            | 네이버 지도 API                    |
 | Backend & Auth  | Supabase (PostgreSQL + Auth + RLS) |
@@ -56,12 +55,56 @@
 
 ### 환경변수 설정
 
-프로젝트 루트에 `.env.local` 파일을 생성하고 아래 값을 입력합니다.
+프로젝트 루트에 환경별 `.env*` 파일을 생성하고 아래 값을 입력합니다.
+
+- `npm run dev`: `.env.development.local` 값을 우선 사용합니다.
+- 배포/운영: Vercel Environment Variables 또는 운영용 `.env` 값에 실제 서버 정보를 설정합니다.
+- `.env*` 파일은 비밀키가 포함되므로 커밋하지 않습니다.
 
 ```bash
+NEXT_PUBLIC_SITE_URL=your_site_url
+NEXTAUTH_URL=your_site_url
+NEXTAUTH_SECRET=your_secret
+
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+ADMIN_USER_IDS=your_nextauth_user_id
+
 NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=your_naver_map_client_id
+NAVER_MAP_CLIENT_SECRET=your_naver_map_client_secret
+
+KAKAO_REST_API_KEY=your_kakao_rest_api_key
+KAKAO_CLIENT_SECRET=your_kakao_client_secret
+
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_IMAGES_API_TOKEN=your_cloudflare_images_api_token
+NEXT_PUBLIC_CLOUDFLARE_IMAGES_URL=your_cloudflare_images_delivery_hash
+```
+
+개발 환경 예시는 아래처럼 테스트 서버 값을 넣습니다.
+
+```bash
+# .env.development.local
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_dev_secret
+
+NEXT_PUBLIC_SUPABASE_URL=your_test_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_test_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_test_supabase_service_role_key
+ADMIN_USER_IDS=your_nextauth_user_id
+
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=your_test_naver_map_client_id
+NAVER_MAP_CLIENT_SECRET=your_test_naver_map_client_secret
+
+KAKAO_REST_API_KEY=your_test_kakao_rest_api_key
+KAKAO_CLIENT_SECRET=your_test_kakao_client_secret
+
+CLOUDFLARE_ACCOUNT_ID=your_test_cloudflare_account_id
+CLOUDFLARE_IMAGES_API_TOKEN=your_test_cloudflare_images_api_token
+NEXT_PUBLIC_CLOUDFLARE_IMAGES_URL=your_test_cloudflare_images_delivery_hash
 ```
 
 ### 설치 및 실행

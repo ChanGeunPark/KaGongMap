@@ -2,25 +2,25 @@
 
 import { cls } from "@/lib/utils";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Cafe,
-  FilterVariant,
-  LayoutVariant,
-  MapTransform,
-  SortBy,
-} from "@/types/cafe";
-import { KG_CAFES, KG_FILTERS } from "@/lib/data";
+import { FilterVariant, LayoutVariant, SortBy } from "@/types/cafe";
+import { CafeMarker } from "@/types/db";
+import { KG_FILTERS, FILTER_TAG_MAP } from "@/lib/data";
+import { useCafeDetail, useCafeMarkers } from "@/lib/api/cafes";
 import TopNav from "@/components/layout/TopNav";
 import FilterBar from "@/components/layout/FilterBar";
 import FilterDrawer from "@/components/layout/FilterDrawer";
 import BottomSheet from "@/components/layout/BottomSheet";
-import { FloatingCard } from "@/components/cafe/CafePreviewCard";
 import MapCanvas from "@/components/map/MapCanvas";
 import MonoLabel from "@/components/ui/MonoLabel";
-import CafeCard from "@/components/cafe/CafeCard";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeSidebar from "./layout/CafeSidebar";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCreateUser, useUser } from "@/lib/api/user";
+import { useUserStore } from "@/stores/userStore";
+import BottomSheetModal from "./modal/BottomSheetModal";
+import { CafeModalDetail } from "./cafe/detail/CafeModalDetail";
+import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 
 interface Tweaks {
   // 트윅 설정
@@ -38,17 +38,6 @@ const DEFAULT_TWEAKS: Tweaks = {
 };
 
 const POINT_COLORS = ["#F5A524", "#E86A33", "#E33F5F", "#8B5CF6", "#18E299"];
-
-function MapCtrlBtn({ icon, onClick }: { icon: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-10 h-10 rounded-xl bg-bg border border-border-subtle inline-flex items-center justify-center cursor-pointer text-fg-2 shadow-card"
-    >
-      <KGIcon name={icon} size={16} stroke={2} />
-    </button>
-  );
-}
 
 function TweaksPanel({
   tweaks,
@@ -171,31 +160,88 @@ function SegButtons({
 }
 
 export default function MainApp() {
-  const router = useRouter();
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS);
   const [tweaksOn, setTweaksOn] = useState(false);
-  const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortBy>("score");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [previewId, setPreviewId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [transform, setTransform] = useState<MapTransform>({
-    x: -180,
-    y: -140,
-    s: 0.62,
-    animated: false,
-  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bounds, setBounds] = useState<{
+    ne: naver.maps.LatLng;
+    sw: naver.maps.LatLng;
+  } | null>(null);
+  const { selectedId, previewId, openCafePreview, closeCafePreview } =
+    useCafeSelectionStore();
+
+  const { data: session, status } = useSession();
+  const userId = (session?.user as { id?: string })?.id ?? null;
+  const {
+    data: dbUser,
+    isLoading: isUserLoading,
+    isSuccess: isUserFetchSuccess,
+    isError: isUserFetchError,
+  } = useUser(userId);
+  const { mutate: createUser } = useCreateUser();
+  const setDbUser = useUserStore((state) => state.setDbUser);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const createUserRef = useRef(createUser);
+  const createAttemptedForUserId = useRef<string | null>(null);
+  const prevUserIdForBootstrap = useRef<string | null>(null);
+
+  const profileImage = session?.user?.image ?? null;
+
+  useEffect(() => {
+    createUserRef.current = createUser;
+  }, [createUser]);
+
+  useEffect(() => {
+    if (prevUserIdForBootstrap.current === userId) return;
+    createAttemptedForUserId.current = null;
+    prevUserIdForBootstrap.current = userId;
+  }, [userId]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !userId) {
+      clearUser();
+    }
+  }, [status, userId, clearUser]);
+
+  useEffect(() => {
+    setDbUser(dbUser ?? null);
+  }, [dbUser, setDbUser]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !userId) return;
+    if (isUserLoading || !isUserFetchSuccess) return;
+    if (isUserFetchError) return;
+    if (dbUser !== null) return;
+
+    if (createAttemptedForUserId.current === userId) return;
+    createAttemptedForUserId.current = userId;
+
+    createUserRef.current({
+      userId,
+      avatar_url: profileImage,
+    });
+  }, [
+    status,
+    userId,
+    dbUser,
+    isUserLoading,
+    isUserFetchSuccess,
+    isUserFetchError,
+    profileImage,
+  ]);
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{
-    x: number;
-    y: number;
-    tx: number;
-    ty: number;
-  } | null>(null);
+
+  // Tier 1: 지도 전체 마커 로딩
+  const { data: allCafes = [], isLoading } = useCafeMarkers();
+
+  // Tier 2: 선택된 카페 상세 (핀 클릭 시 1건만 온디맨드)
+  const { data: selectedDetail, isLoading: detailLoading } =
+    useCafeDetail(selectedId);
 
   // Edit mode postMessage protocol
   useEffect(() => {
@@ -220,7 +266,6 @@ export default function MainApp() {
     });
   };
 
-  // Apply point color CSS var
   useEffect(() => {
     document.documentElement.style.setProperty("--kg-amber", tweaks.pointColor);
   }, [tweaks.pointColor]);
@@ -237,110 +282,65 @@ export default function MainApp() {
     });
   };
 
-  // Filter + sort
-  const cafes = useMemo<Cafe[]>(() => {
-    let list = [...KG_CAFES];
-    if (query) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.shortName.toLowerCase().includes(q) ||
-          c.neigh.includes(query) ||
-          c.tags.some((t) => t.includes(query)),
-      );
+  // 필터 + 정렬 (검색은 TopNav 내부 드롭다운에만 영향)
+  const cafes = useMemo<CafeMarker[]>(() => {
+    let list = [...allCafes];
+
+    for (const filterId of activeFilters) {
+      const tag = FILTER_TAG_MAP[filterId];
+      if (tag) list = list.filter((c) => c.tags.includes(tag));
     }
-    for (const f of activeFilters) {
-      if (f === "power") list = list.filter((c) => c.levels.power >= 3);
-      if (f === "wifi") list = list.filter((c) => c.levels.wifi >= 3);
-      if (f === "quiet") list = list.filter((c) => c.levels.quiet >= 3);
-      if (f === "space") list = list.filter((c) => c.levels.space >= 3);
-      if (f === "open24")
-        list = list.filter((c) => c.tags.some((t) => t.includes("24시간")));
-      if (f === "noLimit") list = list.filter((c) => c.limits.length === 0);
-      if (f === "notebook")
-        list = list.filter((c) => !c.limits.some((l) => l.includes("노트북")));
-      if (f === "cheap") list = list.filter((c) => c.priceLevel <= 1);
+
+    if (sortBy === "score" || sortBy === "stars") {
+      // 1순위: 좋아요 수, 2순위: 태그 개수
+      list.sort((a, b) => {
+        const likeDiff = b.like_count - a.like_count;
+        if (likeDiff !== 0) return likeDiff;
+        return b.tags.length - a.tags.length;
+      });
     }
-    const cmp: Record<string, (a: Cafe, b: Cafe) => number> = {
-      stars: (a, b) => b.stars - a.stars,
-      reviews: (a, b) => b.reviewCount - a.reviewCount,
-    };
-    list.sort(cmp[sortBy]);
+
     return list;
-  }, [query, activeFilters, sortBy]);
+  }, [allCafes, activeFilters, sortBy]);
+
+  // bounds 필터: 현재 지도 화면에 보이는 카페만
+  const visibleCafes = useMemo<CafeMarker[]>(() => {
+    if (!bounds) return cafes;
+    return cafes.filter(
+      (c) =>
+        c.lat >= bounds.sw.lat() &&
+        c.lat <= bounds.ne.lat() &&
+        c.lng >= bounds.sw.lng() &&
+        c.lng <= bounds.ne.lng(),
+    );
+  }, [cafes, bounds]);
 
   const selectCafe = (id: string) => {
-    setSelectedId(id);
-    setPreviewId(id);
-    const c = KG_CAFES.find((x) => x.id === id);
-    if (c && tweaks.layoutVariant === "sidebar") {
-      const rect = document
-        .getElementById("kg-map-area")
-        ?.getBoundingClientRect();
-      if (rect) {
-        const s = 0.82;
-        setTransform({
-          x: rect.width / 2 - c.x * s,
-          y: rect.height / 2 - c.y * s,
-          s,
-          animated: true,
-        });
-        setTimeout(() => setTransform((t) => ({ ...t, animated: false })), 400);
-      }
-    }
+    openCafePreview(id);
   };
 
-  const openDetail = (id?: string) => {
-    router.push(`/cafes/${id ?? selectedId}`);
-  };
-
-  // Map drag
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (
-      (e.target as HTMLElement).tagName === "BUTTON" ||
-      (e.target as HTMLElement).closest("button")
-    )
-      return;
-    dragRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      tx: transform.x,
-      ty: transform.y,
-    };
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!dragRef.current) return;
-    setTransform((t) => ({
-      ...t,
-      x: dragRef.current!.tx + e.clientX - dragRef.current!.x,
-      y: dragRef.current!.ty + e.clientY - dragRef.current!.y,
-      animated: false,
-    }));
-  };
-  const onMouseUp = () => {
-    dragRef.current = null;
-  };
-
-  const zoom = (dir: number) => {
-    setTransform((t) => ({
-      ...t,
-      s: Math.max(0.4, Math.min(1.6, t.s + dir * 0.15)),
-      animated: true,
-    }));
-    setTimeout(() => setTransform((t) => ({ ...t, animated: false })), 400);
-  };
-
-  const preview = previewId
-    ? (KG_CAFES.find((c) => c.id === previewId) ?? null)
+  // FloatingCard는 Tier 1 데이터로 즉시 표시, 상세 로딩 후 교체
+  const previewMarker = previewId
+    ? (allCafes.find((c) => c.id === previewId) ?? null)
     : null;
-  const useSidebar = tweaks.layoutVariant === "sidebar";
-  const useFloating = tweaks.layoutVariant === "floating";
+
   const useSheet = tweaks.layoutVariant === "sheet";
+  const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-bg">
+        <div className="flex flex-col items-center gap-3 text-fg-3">
+          <KGIcon name="loader" size={28} stroke={1.5} />
+          <span className="text-mono text-sm">카페 정보를 불러오는 중…</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-screen flex flex-col bg-bg">
-      <TopNav query={query} setQuery={setQuery} />
+    <div className="flex h-[calc(100vh-60px)] flex-col bg-bg ">
+      <TopNav onSelectCafe={selectCafe} />
       <FilterBar
         variant={tweaks.filterVariant}
         activeFilters={activeFilters}
@@ -348,18 +348,16 @@ export default function MainApp() {
         sortBy={sortBy}
         setSortBy={setSortBy}
         openDrawer={() => setDrawerOpen(true)}
-        matchCount={cafes.length}
+        matchCount={visibleCafes.length}
       />
 
       <div className="relative flex-1 flex min-h-0">
         {/* Sidebar */}
 
         <CafeSidebar
-          cafes={cafes}
-          selectedId={selectedId}
+          cafes={visibleCafes}
           hoveredId={hoveredId}
           setHoveredId={setHoveredId}
-          selectCafe={selectCafe}
           cardDensity={tweaks.cardDensity}
           isOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -368,38 +366,21 @@ export default function MainApp() {
         <div
           id="kg-map-area"
           ref={mapRef}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
           className="flex-1 relative min-h-0 select-none"
         >
           <MapCanvas
             cafes={cafes}
             selectedId={selectedId}
             hoveredId={hoveredId}
-            onSelect={selectCafe}
             onHover={setHoveredId}
-            transform={transform}
+            onSelect={selectCafe}
+            onBoundsChange={setBounds}
           />
-
-          {/* Zoom controls */}
-          <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
-            <MapCtrlBtn onClick={() => zoom(1)} icon="plus" />
-            <MapCtrlBtn onClick={() => zoom(-1)} icon="minus" />
-            <div className="h-px bg-border-subtle" />
-            <MapCtrlBtn
-              onClick={() =>
-                setTransform({ x: 180, y: 80, s: 0.62, animated: true })
-              }
-              icon="locate"
-            />
-          </div>
 
           {/* Legend */}
           <div
             className={cls(
-              "absolute z-20 left-[20px] rounded-xl border border-border-subtle",
+              "absolute z-20 right-[20px] rounded-xl border border-border-subtle",
               "py-[10px] px-[14px] bg-white/95 backdrop-blur-sm shadow-card",
               useSheet ? "top-[20px] bottom-auto" : "bottom-[20px] top-auto",
             )}
@@ -409,9 +390,9 @@ export default function MainApp() {
             </div>
             <div className="flex gap-3 text-[11.5px] text-fg-2">
               {[
-                { colorClass: "bg-score-good", label: "85+ 우수" },
-                { colorClass: "bg-kg-amber", label: "65-84 양호" },
-                { colorClass: "bg-score-low", label: "<65" },
+                { colorClass: "bg-score-good", label: "태그 7+ 우수" },
+                { colorClass: "bg-kg-amber", label: "태그 4+ 양호" },
+                { colorClass: "bg-score-low", label: "태그 3개 이하" },
               ].map(({ colorClass, label }) => (
                 <span
                   key={label}
@@ -426,17 +407,30 @@ export default function MainApp() {
             </div>
           </div>
 
-          {/* Floating preview */}
-          {preview && (
-            <FloatingCard
-              cafe={preview}
-              onClose={() => {
-                setPreviewId(null);
-                setSelectedId(null);
-              }}
-              onOpenDetail={() => openDetail(preview.id)}
-            />
-          )}
+          {/* Floating preview — Tier 1로 즉시 표시, Tier 2 로딩 완료 시 상세 반영 */}
+
+          <BottomSheetModal
+            content={{
+              title: "카페 정보",
+              content: "카페 정보를 확인해주세요.",
+              actions: [{ label: "확인", onClick: () => {} }],
+            }}
+            widthThreshold={2000}
+            showModal={previewMarker !== null}
+            showModalToggler={closeCafePreview}
+          >
+            {previewMarker && (
+              <CafeModalDetail
+                cafe={previewMarker}
+                detail={selectedDetail ?? null}
+                detailLoading={detailLoading}
+                onOpenDetail={() => {
+                  router.push(`/cafes/${previewMarker.id}`);
+                }}
+                onClose={closeCafePreview}
+              />
+            )}
+          </BottomSheetModal>
 
           {/* Bottom sheet */}
           {useSheet && (
@@ -444,10 +438,10 @@ export default function MainApp() {
               cafes={cafes}
               selectedId={selectedId}
               setSelectedId={selectCafe}
-              matchCount={cafes.length}
-              onOpenDetail={openDetail}
+              matchCount={visibleCafes.length}
               sortBy={sortBy}
               setSortBy={setSortBy}
+              onOpenDetail={() => {}}
             />
           )}
         </div>
@@ -459,6 +453,7 @@ export default function MainApp() {
         activeFilters={activeFilters}
         toggle={toggleFilter}
         filters={KG_FILTERS}
+        onReset={() => setActiveFilters(new Set())}
       />
 
       {tweaksOn && <TweaksPanel tweaks={tweaks} update={updateTweak} />}

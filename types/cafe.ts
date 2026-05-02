@@ -13,37 +13,49 @@ export interface CafeLevels {
 export interface Cafe {
   id: string;
   name: string;
-  shortName: string; // 카페 이름 줄임
-  neigh: string; // 카페 주소 줄임
-  addr: string; // 카페 주소
+  shortName: string;
+  neigh: string;
+  addr: string;
   x: number;
   y: number;
-  hours: string; // 카페 운영시간
+  lat?: number;
+  lng?: number;
+  distance?: number;
+  hours: string;
   phone?: string;
-  priceLevel: number; // 카페 가격 레벨
-  avgPrice: string; // 카페 평균 가격
-  capacity: number; // 카페 수용인원
-  stars: number; // 카페 별점
-  reviewCount: number; // 카페 리뷰 개수
+  priceLevel: number;
+  avgPrice: string;
+  capacity: number;
+  stars: number;
+  reviewCount: number;
   levels: CafeLevels;
-  pros: string[]; // 카페 장점
+  pros: string[];
   cons: string[];
-  limits: string[]; // 카페 제한사항
-  tags: string[]; // 카페 태그
+  limits: string[];
+  tags: string[];
   hero: HeroKind;
-  peakHours: number[]; // 카페 피크 시간
+  peakHours: number[];
   score: number;
+  verified?: boolean;
+  trending?: string;
+  openNow?: boolean;
+  crowd?: number;
+}
+
+export interface Review {
+  initials: string;
+  name: string;
+  avatarBg: string;
+  stars: number;
+  date: string;
+  visits: number;
+  text: string;
+  tags: string[];
+  badge?: string;
 }
 
 export interface FilterItem {
   id: string;
   label: string;
   icon: string;
-}
-
-export interface MapTransform {
-  x: number;
-  y: number;
-  s: number;
-  animated: boolean;
 }

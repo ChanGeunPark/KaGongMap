@@ -23,7 +23,7 @@ export default function Chip({
       className={cls(
         "inline-flex items-center gap-1.5 rounded-full whitespace-nowrap cursor-pointer",
         "transition-all duration-fast text-label",
-        "py-[7px] pr-[14px] pl-3 border",
+        "max-lg:py-2 py-[7px] pr-[14px] pl-3 border",
         active
           ? "font-semibold bg-fg text-bg border-fg shadow-none"
           : "font-medium bg-bg text-fg-2 border-border-medium shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
