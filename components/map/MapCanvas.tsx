@@ -1,290 +1,17 @@
 "use client";
 
 import { CafeMarker } from "@/types/db";
-import { useCallback, useEffect, useRef, useState } from "react";
-import KGIcon from "../ui/KGIcon";
-import { toast } from "react-toastify";
-import { cls } from "@/lib/utils";
-import { TbBookmarkFilled } from "react-icons/tb";
-import { useAuthGateStore, useBookmarkModalStore } from "@/stores/modalStore";
-import { useSession } from "next-auth/react";
-
-const MAX_VISIBLE_CAFE_MARKERS = 30;
-const MARKER_CLUSTER_MAX_ZOOM = 16;
-const MARKER_CLUSTER_GRID_SIZE = 96;
-const USER_MARKER_SIZE = 48;
-
-// 태그 개수 기준: 7+ 우수(녹색), 4+ 양호(앰버), 그 외(레드)
-function scoreColor(tagCount: number) {
-  if (tagCount >= 7) return "#22c55e";
-  if (tagCount >= 4) return "#f5a524";
-  return "#ef4444";
-}
-
-// naver.maps 타입 정의에 빠진 애니메이션 메서드 보강
-type MapWithMorph = naver.maps.Map & {
-  morph(
-    latlng: naver.maps.Coord,
-    zoom?: number,
-    options?: { duration: number; easing?: string },
-  ): void;
-  getMaxZoom(): number;
-};
-const TRANSITION = { duration: 100, easing: "easeOutCubic" };
-
-type MapWithBounds = naver.maps.Map & {
-  getBounds(): naver.maps.LatLngBounds;
-  getProjection(): naver.maps.MapSystemProjection;
-};
-
-type EventWithRemove = typeof naver.maps.Event & {
-  removeListener(listener: naver.maps.MapEventListener): void;
-};
-
-type ClusterIcon = {
-  content: string;
-  anchor: naver.maps.Point;
-};
-
-type Cluster = {
-  center: naver.maps.LatLng;
-  bounds: naver.maps.LatLngBounds;
-  markers: naver.maps.Marker[];
-};
-
-type ProjectedPoint = naver.maps.Point & {
-  x: number;
-  y: number;
-};
-
-type MarkerWithMutableMeta = naver.maps.Marker & {
-  setPosition(position: naver.maps.Coord | naver.maps.CoordLiteral): void;
-  setTitle(title: string): void;
-};
-
-function userPinHtml() {
-  return `
-    <div class="kg-user-marker" aria-hidden="true">
-      <div class="kg-user-marker__pulse"></div>
-      <img
-        class="kg-user-marker__cat"
-        src="/images/marks/markDefaultCat.png"
-        alt=""
-      />
-    </div>
-  `;
-}
-
-function clusterHtml(count: number) {
-  const size = count >= 20 ? 56 : count >= 10 ? 50 : 44;
-  const bg = count >= 20 ? "#166534" : count >= 10 ? "#0f766e" : "#16a34a";
-  return `
-    <div
-      style="
-        width:${size}px; height:${size}px; border-radius:999px;
-        display:flex; align-items:center; justify-content:center;
-        cursor:pointer;
-        color:white; font-size:13px; font-weight:800;
-        background:${bg};
-        border:3px solid rgba(255,255,255,0.92);
-        box-shadow:0 8px 20px rgba(15,23,42,0.25);
-      "
-    >
-      ${count}
-    </div>
-  `;
-}
-
-function clusterIcon(count: number): ClusterIcon {
-  const size = count >= 20 ? 56 : count >= 10 ? 50 : 44;
-  return {
-    content: clusterHtml(count),
-    anchor: new naver.maps.Point(size / 2, size / 2),
-  };
-}
-
-function pinHtml(cafe: CafeMarker, active: boolean) {
-  const color = scoreColor(cafe.tags.length);
-  const borderWidth = active ? 3 : 2;
-  const shadow = active
-    ? "0 6px 16px rgba(0,0,0,0.28)"
-    : "0 2px 7px rgba(0,0,0,0.2)";
-  return `
-    <div
-      id="overlay_${cafe.id}"
-      style="
-        display:inline-flex; align-items:center; position:relative;
-        transform:translateX(-50%) translateY(-20px);
-        cursor:pointer;
-        padding:2px 12px 2px 4px;
-        border-radius:999px;
-        background-color:white;
-        border:${borderWidth}px solid ${color};
-        box-shadow:${shadow};
-      "
-    >
-      <figure style="height:24px; width:0; overflow:hidden; transition:all 0.3s ease; margin:0;">
-        <img
-          style="height:24px; width:24px; object-fit:cover; border-radius:50%; pointer-events:none;"
-          src="https://picsum.photos/id/103/300/300"
-        />
-      </figure>
-      <p style="padding:0; margin:0; margin-left:12px; font-size:12px; font-weight:700; pointer-events:none; white-space:nowrap;">
-        ${cafe.name}
-      </p>
-      <div style="position:absolute; left:50%; bottom:-${borderWidth - 1}px; transform:translateX(-50%) translateY(50%); pointer-events:none;">
-        <div style="border-radius:0 0 3px 0; width:8px; height:8px; transform:rotate(45deg); background-color:white; border-right:${borderWidth}px solid ${color}; border-bottom:${borderWidth}px solid ${color};"></div>
-      </div>
-    </div>
-  `;
-}
-
-class CafeMarkerClusterer {
-  private map: MapWithBounds;
-  private markers: naver.maps.Marker[] = [];
-  private clusterMarkers: naver.maps.Marker[] = [];
-  private idleListener: naver.maps.MapEventListener | null = null;
-
-  constructor(map: naver.maps.Map) {
-    this.map = map as MapWithBounds;
-    this.idleListener = naver.maps.Event.addListener(map, "idle", () => {
-      this.redraw();
-    });
-  }
-
-  setMarkers(markers: naver.maps.Marker[]) {
-    this.markers = markers;
-    this.redraw();
-  }
-
-  redraw() {
-    this.clearClusterMarkers();
-
-    const map = this.map;
-    const bounds = map.getBounds();
-    const visibleMarkers = this.markers.filter((marker) =>
-      bounds.hasLatLng(marker.getPosition()),
-    );
-    const hiddenMarkers = this.markers.filter(
-      (marker) => !bounds.hasLatLng(marker.getPosition()),
-    );
-
-    hiddenMarkers.forEach((marker) => marker.setMap(null));
-
-    if (map.getZoom() >= MARKER_CLUSTER_MAX_ZOOM) {
-      this.showLimitedMarkers(visibleMarkers);
-      return;
-    }
-
-    const clusters = this.createClusters(visibleMarkers);
-    let shownCafeMarkers = 0;
-
-    clusters.forEach((cluster) => {
-      if (cluster.markers.length < 2) {
-        if (shownCafeMarkers < MAX_VISIBLE_CAFE_MARKERS) {
-          cluster.markers[0]?.setMap(map);
-          shownCafeMarkers += 1;
-        } else {
-          cluster.markers[0]?.setMap(null);
-        }
-        return;
-      }
-
-      cluster.markers.forEach((marker) => marker.setMap(null));
-      this.addClusterMarker(cluster);
-    });
-  }
-
-  destroy() {
-    this.clearClusterMarkers();
-    this.markers.forEach((marker) => marker.setMap(null));
-    if (this.idleListener) {
-      (naver.maps.Event as EventWithRemove).removeListener(this.idleListener);
-      this.idleListener = null;
-    }
-  }
-
-  private createClusters(markers: naver.maps.Marker[]) {
-    const clusters: Cluster[] = [];
-
-    markers.forEach((marker) => {
-      const position = marker.getPosition() as naver.maps.LatLng;
-      let closestIndex = -1;
-      let closestDistance = Infinity;
-
-      for (let index = 0; index < clusters.length; index += 1) {
-        const cluster = clusters[index];
-        if (!cluster) continue;
-        if (!cluster.bounds.hasLatLng(position)) continue;
-
-        const distance = this.map
-          .getProjection()
-          .getDistance(cluster.center, position);
-        if (distance < closestDistance) {
-          closestIndex = index;
-          closestDistance = distance;
-        }
-      }
-
-      if (closestIndex >= 0) {
-        clusters[closestIndex]?.markers.push(marker);
-        return;
-      }
-
-      clusters.push({
-        center: position,
-        bounds: this.createClusterBounds(position),
-        markers: [marker],
-      });
-    });
-
-    return clusters;
-  }
-
-  private createClusterBounds(position: naver.maps.LatLng) {
-    const projection = this.map.getProjection();
-    const point = projection.fromCoordToOffset(position) as ProjectedPoint;
-    const halfGrid = MARKER_CLUSTER_GRID_SIZE / 2;
-    const sw = projection.fromOffsetToCoord(
-      new naver.maps.Point(point.x - halfGrid, point.y + halfGrid),
-    ) as naver.maps.LatLng;
-    const ne = projection.fromOffsetToCoord(
-      new naver.maps.Point(point.x + halfGrid, point.y - halfGrid),
-    ) as naver.maps.LatLng;
-
-    return new naver.maps.LatLngBounds(sw, ne);
-  }
-
-  private addClusterMarker(cluster: Cluster) {
-    const marker = new naver.maps.Marker({
-      position: cluster.center,
-      map: this.map,
-      icon: clusterIcon(cluster.markers.length),
-      title: `${cluster.markers.length}개 카페`,
-    });
-
-    naver.maps.Event.addListener(marker, "click", () => {
-      const map = this.map as unknown as MapWithMorph;
-      map.morph(cluster.center, Math.min(map.getZoom() + 1, map.getMaxZoom()), {
-        duration: 250,
-        easing: "easeOutCubic",
-      });
-    });
-
-    this.clusterMarkers.push(marker);
-  }
-
-  private showLimitedMarkers(markers: naver.maps.Marker[]) {
-    markers.forEach((marker, index) => {
-      marker.setMap(index < MAX_VISIBLE_CAFE_MARKERS ? this.map : null);
-    });
-  }
-
-  private clearClusterMarkers() {
-    this.clusterMarkers.forEach((marker) => marker.setMap(null));
-    this.clusterMarkers = [];
-  }
-}
+import { useEffect, useRef, useState } from "react";
+import { CafeMarkerClusterer } from "./CafeMarkerClusterer";
+import { cafePinHtml, userPinHtml } from "./markerIcons";
+import { TRANSITION, USER_MARKER_SIZE } from "./mapConfig";
+import {
+  MapWithBounds,
+  MapWithMorph,
+  MarkerWithMutableMeta,
+} from "@/types/naverMap";
+import { MapControls } from "./MapControls";
+import { useMapGeolocation } from "@/hooks/useMapGeolocation";
 
 interface MapCanvasProps {
   cafes: CafeMarker[];
@@ -297,13 +24,6 @@ interface MapCanvasProps {
     sw: naver.maps.LatLng;
   }) => void;
 }
-
-type LocationPermission =
-  | "checking" // 위치 권한 확인 중
-  | "granted" // 위치 권한 허용
-  | "prompt" // 위치 권한 요청필요 (사용자가 위치 권한을 허용해야 함)
-  | "denied" // 위치 권한 거절
-  | "unsupported"; // 위치 권한 지원 안 됨 (브라우저가 위치 권한을 지원하지 않음)
 
 export default function MapCanvas({
   cafes,
@@ -320,110 +40,13 @@ export default function MapCanvas({
   const userCircle = useRef<naver.maps.Circle | null>(null);
   const initialized = useRef(false);
   const [mapReady, setMapReady] = useState(false);
-  const [locationPermission, setLocationPermission] =
-    useState<LocationPermission>("checking");
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-    accuracy: number;
-  } | null>(null);
-  const isLocationEnabled = locationPermission === "granted";
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setTimeout(() => setLocationPermission("unsupported"), 0);
-      return;
-    }
-
-    if (!navigator.permissions?.query) {
-      setTimeout(() => setLocationPermission("prompt"), 0);
-      return;
-    }
-
-    let permissionStatus: PermissionStatus | null = null;
-    let cancelled = false;
-
-    navigator.permissions
-      .query({ name: "geolocation" })
-      .then((status) => {
-        if (cancelled) return;
-
-        permissionStatus = status;
-        setLocationPermission(status.state);
-        status.onchange = () => setLocationPermission(status.state);
-      })
-      .catch(() => {
-        if (!cancelled) setLocationPermission("prompt");
-      });
-
-    return () => {
-      cancelled = true;
-      if (permissionStatus) permissionStatus.onchange = null;
-    };
-  }, []);
-
-  // 권한 허용 시 위치를 실시간으로 추적해 마커만 갱신 (카메라는 그대로)
-  useEffect(() => {
-    if (locationPermission !== "granted" || !navigator.geolocation) return;
-
-    const watchId = navigator.geolocation.watchPosition(
-      ({ coords }) => {
-        setUserLocation({
-          lat: coords.latitude,
-          lng: coords.longitude,
-          accuracy: coords.accuracy,
-        });
-      },
-      () => {}, // 단발 실패는 무시 — 다음 틱에 복구되면 됨
-      { enableHighAccuracy: true, maximumAge: 5_000, timeout: 15_000 },
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [locationPermission]);
-
-  const moveToCurrentLocation = useCallback(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setLocationPermission("unsupported");
-      toast.error("브라우저가 위치 권한을 지원하지 않습니다.");
-      return;
-    }
-
-    if (locationPermission === "denied") {
-      toast.error("위치 권한이 꺼져 있습니다.");
-      return;
-    }
-
-    if (locationPermission === "prompt") {
-      toast.error("위치 권한을 허용해주세요.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setLocationPermission("granted");
-        setUserLocation({
-          lat: coords.latitude,
-          lng: coords.longitude,
-          accuracy: coords.accuracy,
-        });
-        (mapInstance.current as MapWithMorph | null)?.morph(
-          new naver.maps.LatLng(coords.latitude, coords.longitude),
-          16,
-          TRANSITION,
-        );
-      },
-      (error) => {
-        setLocationPermission(
-          error.code === error.PERMISSION_DENIED ? "denied" : "prompt",
-        );
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 60_000,
-        timeout: 10_000,
-      },
-    );
-  }, [locationPermission]);
+  const {
+    isLocationEnabled,
+    locationPermission,
+    moveToCurrentLocation,
+    setUserLocation,
+    userLocation,
+  } = useMapGeolocation(mapInstance);
 
   useEffect(() => {
     function initMap() {
@@ -526,7 +149,7 @@ export default function MapCanvas({
         position: new naver.maps.LatLng(cafe.lat, cafe.lng),
         map: null,
         icon: {
-          content: pinHtml(cafe, false),
+          content: cafePinHtml(cafe, false),
           anchor: new naver.maps.Point(0, 14),
         },
         title: cafe.name,
@@ -555,7 +178,7 @@ export default function MapCanvas({
       const cafe = cafes.find((c) => c.id === id);
       if (!cafe) return;
       marker.setIcon({
-        content: pinHtml(cafe, id === selectedId || id === hoveredId),
+        content: cafePinHtml(cafe, id === selectedId || id === hoveredId),
         anchor: new naver.maps.Point(0, 14),
       });
     });
@@ -641,89 +264,25 @@ export default function MapCanvas({
   return (
     <>
       <div id="naver-map" className="absolute inset-0 w-full h-full" />
-      {/* Zoom controls */}
-      <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
-        <MapCtrlBtn
-          onClick={() => {
-            const map = mapInstance.current as MapWithMorph | null;
-            if (!map) return;
-            map.morph(map.getCenter(), map.getZoom() + 1, TRANSITION);
-          }}
-          icon="plus"
-        />
-        <MapCtrlBtn
-          onClick={() => {
-            const map = mapInstance.current as MapWithMorph | null;
-            if (!map) return;
-            map.morph(map.getCenter(), map.getZoom() - 1, TRANSITION);
-          }}
-          icon="minus"
-        />
-        <div className="h-px bg-border-subtle" />
-        <MapCtrlBtn
-          onClick={moveToCurrentLocation}
-          icon="locate"
-          active={isLocationEnabled}
-          title={
-            locationPermission === "denied"
-              ? "위치 권한이 꺼져 있습니다"
-              : "현재 위치로 이동"
-          }
-        />
-        <BookmarkButton />
-      </div>
-    </>
-  );
-}
-
-function BookmarkButton() {
-  const { setShowBookmarkModal } = useBookmarkModalStore();
-  const { openAuthGate } = useAuthGateStore();
-  // 로그인이 되어있는지 확인
-  const { status } = useSession();
-  const isAuthed = status === "authenticated";
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        if (!isAuthed) {
-          openAuthGate();
-          return;
+      <MapControls
+        isLocationEnabled={isLocationEnabled}
+        locationTitle={
+          locationPermission === "denied"
+            ? "위치 권한이 꺼져 있습니다"
+            : "현재 위치로 이동"
         }
-        setShowBookmarkModal(true);
-      }}
-      className={cls(
-        "size-8 rounded-full inline-flex items-center justify-center cursor-pointer transition-colors",
-        "bg-white border border-border-subtle text-fg-3 hover:bg-gray-100",
-      )}
-    >
-      <TbBookmarkFilled size={20} />
-    </button>
-  );
-}
-
-function MapCtrlBtn({
-  icon,
-  onClick,
-  active = false,
-  title,
-}: {
-  icon: string;
-  onClick: () => void;
-  active?: boolean;
-  title?: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className={`w-8 h-8 rounded-xl border inline-flex items-center justify-center cursor-pointer shadow-card ${
-        active
-          ? "bg-main text-white border-accent"
-          : "bg-bg text-fg-2 border-border-subtle"
-      }`}
-    >
-      <KGIcon name={icon} size={16} stroke={2} />
-    </button>
+        onZoomIn={() => {
+          const map = mapInstance.current as MapWithMorph | null;
+          if (!map) return;
+          map.morph(map.getCenter(), map.getZoom() + 1, TRANSITION);
+        }}
+        onZoomOut={() => {
+          const map = mapInstance.current as MapWithMorph | null;
+          if (!map) return;
+          map.morph(map.getCenter(), map.getZoom() - 1, TRANSITION);
+        }}
+        onLocate={moveToCurrentLocation}
+      />
+    </>
   );
 }

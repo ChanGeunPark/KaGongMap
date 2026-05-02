@@ -107,7 +107,7 @@ export default function TopNav({ onSelectCafe }: TopNavProps) {
           <div className="flex items-center gap-2 ml-auto">
             <ReportButton onClick={() => setShowModal(true)} />
 
-            {/* <AdminButton /> */}
+            <AdminButton />
             <AuthArea />
           </div>
         </div>
