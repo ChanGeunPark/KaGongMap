@@ -24,7 +24,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     id: "community",
     name: "커뮤니티",
     link: "/community",
-    icon: "users",
+    icon: "messages",
     upcoming: true,
   },
   {

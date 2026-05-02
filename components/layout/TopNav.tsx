@@ -107,7 +107,7 @@ export default function TopNav({ onSelectCafe }: TopNavProps) {
           <div className="flex items-center gap-2 ml-auto">
             <ReportButton onClick={() => setShowModal(true)} />
 
-            <AdminButton />
+            {/* <AdminButton /> */}
             <AuthArea />
           </div>
         </div>
@@ -225,8 +225,12 @@ function AuthArea() {
         buttonStyle="OUTLINED"
         buttonSize="MEDIUM"
         onClick={() => router.push("/login")}
+        style={{
+          width: "40px",
+          height: "40px",
+        }}
       >
-        로그인
+        <KGIcon name="users" size={20} stroke={2} />
       </KaGongButton>
     );
   }
@@ -322,7 +326,7 @@ function AdminButton() {
       buttonSize="MEDIUM"
       onClick={() => router.push("/admin")}
     >
-      어드민
+      A
     </KaGongButton>
   );
 }
