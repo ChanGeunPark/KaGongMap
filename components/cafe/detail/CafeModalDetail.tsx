@@ -18,6 +18,7 @@ import { TbClock, TbCoin, TbHeart, TbMapPin } from "react-icons/tb";
 import LikeButton from "@/components/button/LikeButton";
 import BookmarkButton from "@/components/button/BookmarkButton";
 import CafeReviewSection from "@/components/cafe/detail/CafeReviewSection";
+import { TAG_LABELS } from "@/lib/data";
 
 interface CafeModalDetailProps {
   cafe: CafeMarker;
@@ -52,20 +53,6 @@ export function CafeModalDetail({
     detail &&
     (detail.address || detail.hours || detail.description)
   );
-
-  const TAG_LABELS: Record<string, string> = {
-    콘센트_있음: "🔌 콘센트",
-    와이파이_있음: "📶 와이파이",
-    조용함: "🤫 조용함",
-    "24시간": "🕐 24시간",
-    노트북_허용: "💻 노트북 허용",
-    혼잡도_낮음: "🟢 혼잡도 낮음",
-    늦은영업: "🌙 늦은영업",
-    가성비_좋음: "💸 가성비 좋음",
-    자연채광: "☀️ 자연채광",
-    야외테라스: "🌿 야외테라스",
-    반려동물_가능: "🐶 반려동물 가능",
-  };
 
   return (
     <div className="flex flex-col gap-5 p-5">
