@@ -33,7 +33,7 @@ export default function CafeEditModal({
       showModalToggler={(open) => !open && onClose()}
       title={`✏️ ${cafe.name} 정보 수정 제보`}
       blur
-      zIndex={120}
+      zIndex={260}
     >
       <CafeInfoForm
         mode="edit"

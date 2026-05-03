@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -9,10 +9,14 @@ import { toast } from "react-toastify";
 import { useUserStore } from "@/stores/userStore";
 import { useUpdateNickname } from "@/lib/api/user";
 import { bookmarkKeys, fetchMyBookmarkedCafes } from "@/lib/api/bookmarks";
+import { cafeKeys, fetchMyRegisteredCafes } from "@/lib/api/cafes";
+import { useMySubmissionsSummary } from "@/lib/api/submissions";
 import { cls } from "@/lib/utils";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeCard from "@/components/cafe/card/CafeCard";
 import PwaInstallBanner from "@/components/pwa/PwaInstallBanner";
+import PushNotificationToggle from "@/components/notifications/PushNotificationToggle";
+import LocationPermissionStatus from "@/components/notifications/LocationPermissionStatus";
 
 type MyPageTab = "bookmarks" | "cafes" | "reviews";
 
@@ -32,6 +36,13 @@ export default function MyPage() {
     queryFn: fetchMyBookmarkedCafes,
     enabled: status === "authenticated",
   });
+  const { data: submissionsSummary } = useMySubmissionsSummary(
+    status === "authenticated",
+  );
+  const myCafeSubmissionCount = submissionsSummary
+    ? submissionsSummary.cafes_registered +
+      submissionsSummary.cafe_submissions.pending
+    : 0;
 
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState("");
@@ -67,7 +78,7 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-[640px] px-5 py-10">
+      <div className="mx-auto max-w-[640px] px-5 py-6">
         <div className="mb-7 flex items-end justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.5px] text-kg-amber-deep">
@@ -121,6 +132,9 @@ export default function MyPage() {
           )}
         </section>
 
+        {isAuthenticated && <PushNotificationToggle />}
+        <LocationPermissionStatus />
+
         <SettingsSection />
 
         {isAuthenticated && (
@@ -137,7 +151,11 @@ export default function MyPage() {
             <div className="flex rounded-full bg-gray-100 p-1">
               {TABS.map((tab) => {
                 const count =
-                  tab.id === "bookmarks" ? bookmarkedCafes.length : 0;
+                  tab.id === "bookmarks"
+                    ? bookmarkedCafes.length
+                    : tab.id === "cafes"
+                      ? myCafeSubmissionCount
+                      : 0;
                 return (
                   <button
                     key={tab.id}
@@ -165,11 +183,7 @@ export default function MyPage() {
                 />
               )}
               {activeTab === "cafes" && (
-                <EmptyPanel
-                  icon="pin"
-                  title="등록한 카페 목록은 아직 준비 중이에요."
-                  description="즐겨찾기부터 먼저 연결해두었습니다."
-                />
+                <MyCafesTab onSelectCafe={() => router.push("/")} />
               )}
               {activeTab === "reviews" && (
                 <EmptyPanel
@@ -411,6 +425,48 @@ function BookmarkTab({
   );
 }
 
+function MyCafesTab({
+  onSelectCafe,
+}: {
+  onSelectCafe: (id: string) => void;
+}) {
+  const { data: cafes = [], isLoading } = useQuery({
+    queryKey: cafeKeys.mine(),
+    queryFn: fetchMyRegisteredCafes,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg p-6">
+        <div className="h-4 w-24 rounded bg-gray-200 animate-pulse" />
+        <div className="mt-4 h-20 rounded-xl bg-gray-100 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (cafes.length === 0) {
+    return (
+      <EmptyPanel
+        icon="pin"
+        title="아직 등록된 카페가 없어요."
+        description="제보가 어드민 승인을 통과하면 여기에 모입니다."
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {cafes.map((cafe) => (
+        <CafeCard
+          key={cafe.id}
+          cafe={cafe}
+          onClick={() => onSelectCafe(cafe.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function EmptyPanel({
   icon,
   title,
@@ -422,7 +478,7 @@ function EmptyPanel({
 }) {
   return (
     <div className="rounded-2xl border border-border-subtle bg-bg p-8 text-center shadow-card">
-      <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-gray-100 text-fg-3">
+      <div className="mx-auto mb-3 flex size-8 items-center justify-center rounded-lg bg-gray-100 text-fg-3">
         <KGIcon name={icon} size={18} stroke={2} />
       </div>
       <p className="text-[15px] font-semibold text-fg">{title}</p>

@@ -22,7 +22,7 @@ export function MapControls({
   onLocate,
 }: MapControlsProps) {
   return (
-    <div className="absolute top-5 right-5 flex flex-col gap-2 z-20">
+    <div className="absolute top-5 right-5 flex flex-col gap-2 z-[120]">
       <MapCtrlBtn onClick={onZoomIn} icon="plus" />
       <MapCtrlBtn onClick={onZoomOut} icon="minus" />
       <div className="h-px bg-border-subtle" />

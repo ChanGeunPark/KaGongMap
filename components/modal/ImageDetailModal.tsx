@@ -13,7 +13,7 @@ const ImageDetailModal = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="absolute w-full h-full top-0 left-0 bg-black/70 z-100"
+      className="absolute w-full h-full top-0 left-0 bg-black/70 z-[310]"
     >
       <div className="w-full h-full flex items-center justify-center">
         {imageUrl && (

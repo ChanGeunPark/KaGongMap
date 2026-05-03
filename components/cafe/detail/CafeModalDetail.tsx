@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { track } from "@/lib/firebase/analytics";
 import Badge from "@/components/badge/Badge";
 import KaGongButton from "@/components/button/KaGongButton";
 import KGIcon from "@/components/ui/KGIcon";
@@ -18,6 +20,7 @@ import { TbClock, TbCoin, TbHeart, TbMapPin } from "react-icons/tb";
 import LikeButton from "@/components/button/LikeButton";
 import BookmarkButton from "@/components/button/BookmarkButton";
 import CafeReviewSection from "@/components/cafe/detail/CafeReviewSection";
+import { TAG_LABELS } from "@/lib/data";
 
 interface CafeModalDetailProps {
   cafe: CafeMarker;
@@ -37,14 +40,24 @@ export function CafeModalDetail({
     useImageSubmitModalStore();
   const { setShowCafeEditModal, setCafe } = useCafeEditModalStore();
 
-  const { isLiked, toggle } = useLikes();
+  const { isLiked, toggle, isAuthed: likeAuthed } = useLikes();
   const liked = isLiked(cafe.id);
   const {
     isBookmarked,
     toggle: toggleBookmark,
     isPending: bookmarkPending,
+    isAuthed: bookmarkAuthed,
   } = useBookmarks();
   const bookmarked = isBookmarked(cafe.id);
+
+  useEffect(() => {
+    track("cafe_view", {
+      cafe_id: cafe.id,
+      cafe_name: cafe.name,
+      tag_count: cafe.tags.length,
+      like_count: cafe.like_count,
+    });
+  }, [cafe.id, cafe.name, cafe.like_count, cafe.tags.length]);
 
   const images = detail?.images ?? [];
   const visibleImages = images.slice(0, 5);
@@ -52,20 +65,6 @@ export function CafeModalDetail({
     detail &&
     (detail.address || detail.hours || detail.description)
   );
-
-  const TAG_LABELS: Record<string, string> = {
-    콘센트_있음: "🔌 콘센트",
-    와이파이_있음: "📶 와이파이",
-    조용함: "🤫 조용함",
-    "24시간": "🕐 24시간",
-    노트북_허용: "💻 노트북 허용",
-    혼잡도_낮음: "🟢 혼잡도 낮음",
-    늦은영업: "🌙 늦은영업",
-    가성비_좋음: "💸 가성비 좋음",
-    자연채광: "☀️ 자연채광",
-    야외테라스: "🌿 야외테라스",
-    반려동물_가능: "🐶 반려동물 가능",
-  };
 
   return (
     <div className="flex flex-col gap-5 p-5">
@@ -194,7 +193,7 @@ export function CafeModalDetail({
             </div>
           )}
           {detail?.description && (
-            <p className="text-fg-3 text-memo line-clamp-2 leading-snug  border-t border-black/5 mt-0.5 pt-2">
+            <p className="whitespace-pre-line text-fg-3 text-sm border-t border-black/5 mt-0.5 pt-3">
               {detail.description}
             </p>
           )}
@@ -241,10 +240,27 @@ export function CafeModalDetail({
             </KaGongButton>
             <BookmarkButton
               bookmarked={bookmarked}
-              onClick={() => toggleBookmark(cafe.id)}
+              onClick={() => {
+                track("favorite_toggle", {
+                  cafe_id: cafe.id,
+                  action: bookmarked ? "remove" : "add",
+                  is_logged_in: bookmarkAuthed,
+                });
+                toggleBookmark(cafe.id);
+              }}
               disabled={bookmarkPending}
             />
-            <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+            <LikeButton
+              liked={liked}
+              onClick={() => {
+                track("like_toggle", {
+                  cafe_id: cafe.id,
+                  action: liked ? "remove" : "add",
+                  is_logged_in: likeAuthed,
+                });
+                toggle(cafe.id);
+              }}
+            />
           </div>
         </div>
 

@@ -168,7 +168,7 @@ function DropdownButton({
 
       {open && (
         <div
-          className="absolute top-[calc(100%+6px)] left-0 min-w-[180px] bg-bg border border-border-medium rounded-xl z-40"
+          className="absolute top-[calc(100%+6px)] left-0 min-w-[180px] bg-bg border border-border-medium rounded-xl z-[150]"
           style={{
             boxShadow: "var(--shadow-overlay)",
             padding: 6,

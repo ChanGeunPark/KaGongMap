@@ -20,23 +20,21 @@ function SwitchToggle(props: SwitchToggleProps) {
     <div
       className={cls(
         `${props.className}`,
-        "w-11 h-6 bg-gray-200 rounded-full dark:bg-gray-600 relative",
+        "w-11 h-6 bg-gray-200 rounded-full relative",
         // peer css
         "peer peer-checked:after:translate-x-full",
-        "peer-checked:after:bg-white dark:peer-checked:after:bg-gray-900",
+        "peer-checked:after:bg-white",
         props.disabled
-          ? "peer-checked:bg-gray-100 dark:peer-checked:bg-gray-900 dark:bg-gray-900"
+          ? "peer-checked:bg-gray-100"
           : props.themeColor
             ? props.themeColor
             : "peer-checked:bg-approveMain",
 
         // after css
         "after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[3px]",
-        "after:gray-200 dark:after:bg-gray-300 after:rounded-full",
+        "after:gray-200 after:rounded-full",
         "after:h-[19px] after:w-[19px] after:transition-all after:duration-500 after:ease-out",
-        props.disabled
-          ? "after:!bg-gray-200 dark:after:!bg-gray-800"
-          : "after:bg-white",
+        props.disabled ? "after:!bg-gray-200" : "after:bg-white",
 
         "peer-checked:[&>b]:opacity-0 peer-checked:[&>i]:opacity-100",
       )}
@@ -44,10 +42,10 @@ function SwitchToggle(props: SwitchToggleProps) {
     >
       {props.showIcon && (
         <>
-          <b className="absolute z-10 left-1.5 top-1/2 -translate-y-1/2 block">
+          <b className="absolute z-[101] left-1.5 top-1/2 -translate-y-1/2 block">
             <TbX className="w-3 h-3  fill-gray-200" fill="" />
           </b>
-          <i className="absolute z-10 opacity-0 right-1.5 top-1/2 -translate-y-1/2">
+          <i className="absolute z-[101] opacity-0 right-1.5 top-1/2 -translate-y-1/2">
             <TbCheck className="w-3 h-3  fill-approveMain" fill="" />
           </i>
         </>

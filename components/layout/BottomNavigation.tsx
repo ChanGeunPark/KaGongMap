@@ -47,7 +47,7 @@ export default function BottomNavigation() {
       <nav
         aria-label="하단 네비게이션"
         className={cls(
-          "fixed inset-x-0 bottom-0 z-60 border-t border-border-subtle bg-white/92 backdrop-blur-xl",
+          "fixed inset-x-0 bottom-0 z-[160] border-t border-border-subtle bg-white/92 backdrop-blur-xl",
           "pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.05)]",
         )}
       >

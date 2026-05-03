@@ -35,7 +35,7 @@ export default function FilterDrawer({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-200">
+        <div className="fixed inset-0 z-[220]">
           <motion.div
             onClick={onClose}
             className="absolute inset-0 bg-black/40"

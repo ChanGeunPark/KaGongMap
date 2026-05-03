@@ -21,6 +21,8 @@ export async function POST(
     return NextResponse.json({ message: updateError.message }, { status: 500 });
   }
 
+  // 승인 트리거가 cafes에 등록자 user_id까지 복사한 뒤,
+  // 행은 즉시 삭제해 cafes/cafe_submissions의 데이터 중복을 방지한다.
   const { error: deleteError } = await supabase
     .from("cafe_submissions")
     .delete()

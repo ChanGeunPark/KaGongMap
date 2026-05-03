@@ -42,7 +42,7 @@ export default function CafePin({
       className={cls(
         "absolute bg-transparent border-none cursor-pointer p-0",
         "origin-bottom transition-transform duration-200 ease-out",
-        selected ? "z-30" : prominent ? "z-20" : "z-10",
+        selected ? "z-[103]" : prominent ? "z-[102]" : "z-[101]",
         dim && !prominent && "opacity-[0.65]",
       )}
       style={buttonStyle}

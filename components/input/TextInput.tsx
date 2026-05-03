@@ -45,13 +45,9 @@ function TextInput(props: TextAreaInputProps) {
       }}
       className={cls(
         "relative w-full border-none bg-transparent break-word outline-none resize-none",
-        "text-gray-900 dark:text-white", //text
-        props.disabled
-          ? "placeholder:text-gray-200 dark:placeholder:text-gray-700"
-          : "",
-        props.placeholder
-          ? "placeholder:text-gray-300 dark:placeholder:text-gray-600"
-          : "",
+        "text-gray-900", //text
+        props.disabled ? "placeholder:text-gray-200" : "",
+        props.placeholder ? "placeholder:text-gray-300" : "",
         //custom
         props.className ? props.className : "",
       )}

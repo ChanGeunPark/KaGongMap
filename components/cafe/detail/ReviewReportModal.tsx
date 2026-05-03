@@ -70,7 +70,7 @@ export default function ReviewReportModal({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-300">
+        <div className="fixed inset-0 z-[330]">
           <motion.div
             onClick={handleClose}
             className="absolute inset-0 bg-black/50"

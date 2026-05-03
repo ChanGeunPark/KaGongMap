@@ -29,7 +29,7 @@ export default function BottomSheet({
 
   return (
     <div
-      className="absolute left-0 right-0 bottom-0 z-40 bg-bg rounded-tl-3xl rounded-tr-3xl border border-border-subtle border-b-0 flex flex-col overflow-hidden"
+      className="absolute left-0 right-0 bottom-0 z-[180] bg-bg rounded-tl-3xl rounded-tr-3xl border border-border-subtle border-b-0 flex flex-col overflow-hidden"
       style={{
         boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
         maxHeight: expanded ? "70%" : selected ? 260 : 180,

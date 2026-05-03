@@ -38,7 +38,7 @@ export const getDefaultStyle = (
     "rounded-full flex justify-center items-center transition-all duration-200 w-fit flex-shrink-0";
   const roundedStyle = rounded ? "rounded-full" : "rounded-none";
   const disabledStyle = disabled
-    ? "!bg-gray-100 lg:hover:!bg-gray-100 !text-gray-400 dark:!bg-gray-800 lg:dark:hover:!bg-gray-800 dark:!text-gray-500 !cursor-default"
+    ? "!bg-gray-100 lg:hover:!bg-gray-100 !text-gray-400 !cursor-default"
     : "";
   return cls(defaultStyle, roundedStyle, buttonStyle, disabledStyle);
 };

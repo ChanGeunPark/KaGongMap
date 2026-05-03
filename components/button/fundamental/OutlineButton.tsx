@@ -35,7 +35,6 @@ function OutlineButton(props: ButtonProps) {
     getDefaultStyle(
       cls(
         "border-[1.5px] text-gray-500 border-gray-100 bg-white lg:hover:bg-gray-50",
-        "dark:text-gray-50 dark:border-[rgba(255,255,255,0.3)] dark:bg-transparent lg:dark:hover:bg-gray-800",
       ),
       rounded,
       disabled,

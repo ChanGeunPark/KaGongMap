@@ -110,3 +110,5 @@ kagongmap/
 - `docs/ARCHITECTURE.md` — 페이지별 컴포넌트 트리
 - `docs/DB_SCHEMA.md` — Supabase 테이블 스키마 & SQL
 - `docs/MILESTONES.md` — 주차별 개발 목표
+- `docs/PUSH_NOTIFICATIONS.md` — FCM 푸시 알림 설정 & 발송 헬퍼
+- `docs/ANALYTICS.md` — Firebase Analytics 이벤트 목록 & GA4 콘솔 설정

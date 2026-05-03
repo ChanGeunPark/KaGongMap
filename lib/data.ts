@@ -16,6 +16,21 @@ export const FILTER_TAG_MAP: Record<string, CafeTag> = {
   pet: "반려동물_가능",
 };
 
+export const TAG_LABELS: Record<CafeTag, string> = {
+  콘센트_있음: "🔌 콘센트",
+  와이파이_있음: "📶 와이파이",
+  조용함: "🤫 조용함",
+  "24시간": "🕐 24시간",
+  시간제한없음: "⏳ 시간제한 없음",
+  노트북_허용: "💻 노트북 허용",
+  혼잡도_낮음: "🟢 혼잡도 낮음",
+  늦은영업: "🌙 늦은영업",
+  가성비_좋음: "💸 가성비 좋음",
+  자연채광: "☀️ 자연채광",
+  야외테라스: "🌿 야외테라스",
+  반려동물_가능: "🐶 반려동물 가능",
+};
+
 export const KG_FILTERS: FilterItem[] = [
   { id: "power", label: "콘센트", icon: "plug" },
   { id: "wifi", label: "와이파이", icon: "wifi" },

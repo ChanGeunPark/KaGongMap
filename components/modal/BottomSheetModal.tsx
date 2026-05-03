@@ -79,7 +79,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, damping: 100, stiffness: 100 }}
         className={cls(
-          "z-99 fixed",
+          "z-[240] fixed",
           `h-fit max-h-[75vh] overflow-y-auto max-w-[520px] w-full shadow-elevation03 scrollbar-default left-1/2 -translate-x-1/2 `,
           "bottom-0 rounded-tr-xl rounded-tl-xl shadow-lg bg-white",
         )}
@@ -93,7 +93,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
           }}
           className={cls(
             className ? className : "",
-            "bg-white dark:bg-gray-850 dark:text-white relative ",
+            "bg-white relative ",
             // size
             `h-fit max-h-[75vh] overflow-y-auto scrollbar-hide w-full shadow-elevation03 `,
             // position
@@ -106,10 +106,10 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
           <div
             ref={touchRef}
             className={cls(
-              " flex justify-center items-center cursor-pointer sticky top-0 z-50",
+              " flex justify-center items-center cursor-pointer sticky top-0 z-[241]",
               "right-[20px]",
               isBottom
-                ? " rounded-full bg-white py-4 dark:bg-gray-850"
+                ? " rounded-full bg-white py-4"
                 : "w-[28px] absolute h-[28px]",
             )}
             onClick={isBottom ? () => {} : showModalToggler}
@@ -118,7 +118,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
               <span className="block w-[60px] h-1 bg-gray-200 rounded-full"></span>
             ) : (
               <span
-                className="block text-xl leading-none text-gray-700 dark:text-white"
+                className="block text-xl leading-none text-gray-700"
                 aria-hidden="true"
               >
                 <TbX size={14} strokeWidth={2.5} />
@@ -134,7 +134,7 @@ export default function BottomSheetModal(props: BottomSheetModalProps) {
        * Drawer - dim
        */}
       <div
-        className="z-98 fixed w-screen h-screen top-0 left-0 bg-black"
+        className="z-[239] fixed w-screen h-screen top-0 left-0 bg-black"
         style={{
           touchAction: "none",
           opacity: 0.4 * (1 - Math.max(0, downwardWalkY - 50) / 100),

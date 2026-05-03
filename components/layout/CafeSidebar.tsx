@@ -34,13 +34,13 @@ export default function CafeSidebar({
       animate={{ width: isOpen ? "100vw" : 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cls(
-        "z-40 h-full absolute top-0 left-0 bottom-0 w-full max-w-[420px] bg-white",
+        "z-[170] h-full absolute top-0 left-0 bottom-0 w-full max-w-[420px] bg-white",
       )}
     >
       {/* Sidebar toggle button */}
       <button
         className={cls(
-          "absolute z-20 top-4 h-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
+          "absolute z-[171] top-4 h-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
           isOpen
             ? "rotate-0 right-4 w-8"
             : "left-[calc(100%+10px)] w-max gap-2 pl-4 pr-2",

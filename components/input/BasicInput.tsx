@@ -24,17 +24,13 @@ function BasicInput(props: InputProps) {
         >
           <h5 className="relative inline-block">{props.label}</h5>
           {props.optional && (
-            <span className=" text-gray-300 dark:text-gray-700 ml-1 body3">
-              (선택)
-            </span>
+            <span className=" text-gray-300 ml-1 body3">(선택)</span>
           )}
           {props.important ? (
             <span className="text-error ml-0.5">*</span>
           ) : null}
           {props.unableEdit ? (
-            <span className="text-gray-400 ml-1 body3 dark:text-gray-500">
-              (수정불가)
-            </span>
+            <span className="text-gray-400 ml-1 body3">(수정불가)</span>
           ) : null}
         </label>
       ) : null}
@@ -98,15 +94,13 @@ function BasicInput(props: InputProps) {
           disabled={props.disabled}
           //style
           className={cls(
-            "w-full min-h-[48px] bg-white dark:bg-gray-800 rounded-md border-gray-50 border-solid border-2 p-3",
-            "body2-400 text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:body2-500", //text
+            "w-full min-h-[48px] bg-white rounded-md border-gray-50 border-solid border-2 p-3",
+            "body2-400 text-gray-900 placeholder:text-gray-300 placeholder:body2-500", //text
             props.errorText ? "border-alertMain" : "border-gray-50",
             props.readOnly
-              ? "invalid:!bg-gray-50 cursor-not-allowed !bg-gray-50 focus:border-gray-50 dark:!text-gray-500 dark:!bg-gray-800 dark:!border-gray-850 dark:focus:border-gray-850"
+              ? "invalid:!bg-gray-50 cursor-not-allowed !bg-gray-50 focus:border-gray-50"
               : "",
-            props.disabled
-              ? "bg-gray-50 dark:bg-gray-850 dark:placeholder:text-gray-600"
-              : "",
+            props.disabled ? "bg-gray-50" : "",
           )}
           onChange={props.onChange}
           {...props.rest}
@@ -122,9 +116,9 @@ function BasicInput(props: InputProps) {
             className="absolute right-3 bottom-1/2 translate-y-1/2 w-6 h-6 flex justify-center items-center"
           >
             {inputType === "password" ? (
-              <TbEyeOff className="fill-gray-600 dark:fill-gray-500" />
+              <TbEyeOff className="fill-gray-600" />
             ) : (
-              <TbEye className="fill-gray-700 dark:fill-gray-300" />
+              <TbEye className="fill-gray-700" />
             )}
           </button>
         ) : null}

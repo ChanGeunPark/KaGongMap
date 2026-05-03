@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useBootstrapDbUser } from "@/hooks/useBootstrapDbUser";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -37,6 +38,14 @@ export default function QueryProvider({
 }) {
   const queryClient = getQueryClient();
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <DbUserBootstrap />
+      {children}
+    </QueryClientProvider>
   );
+}
+
+function DbUserBootstrap() {
+  useBootstrapDbUser();
+  return null;
 }

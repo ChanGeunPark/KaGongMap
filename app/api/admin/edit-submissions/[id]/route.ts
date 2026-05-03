@@ -14,7 +14,7 @@ export async function DELETE(
 
   const { error } = await supabase
     .from("cafe_edit_submissions")
-    .delete()
+    .update({ status: "rejected", reviewed_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
