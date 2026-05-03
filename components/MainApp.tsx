@@ -17,7 +17,6 @@ import BottomSheetModal from "./modal/BottomSheetModal";
 import { CafeModalDetail } from "./cafe/detail/CafeModalDetail";
 import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 import { DEFAULT_TWEAKS, Tweaks, TweaksPanel } from "@/components/tweaks";
-import { useBootstrapDbUser } from "@/hooks/useBootstrapDbUser";
 import { useEditModeBridge } from "@/hooks/useEditModeBridge";
 import { useFilteredCafes } from "@/hooks/useFilteredCafes";
 
@@ -35,7 +34,6 @@ export default function MainApp() {
   const { selectedId, previewId, openCafePreview, closeCafePreview } =
     useCafeSelectionStore();
 
-  useBootstrapDbUser();
   const { tweaksOn, postTweakEdit } = useEditModeBridge();
 
   const mapRef = useRef<HTMLDivElement>(null);

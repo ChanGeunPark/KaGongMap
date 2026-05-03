@@ -8,6 +8,7 @@ export const cafeKeys = {
   markers: () => [...cafeKeys.all, "markers"] as const,
   detail: (id: string) => [...cafeKeys.all, "detail", id] as const,
   list: () => [...cafeKeys.all, "list"] as const,
+  mine: () => [...cafeKeys.all, "mine"] as const,
 };
 
 // ── Tier 1: 지도 마커 전체 로딩 ──────────────────────────────────────────────
@@ -59,6 +60,19 @@ export async function deleteCafe(id: string): Promise<void> {
     const { message } = await res.json();
     throw new Error(message ?? "카페 삭제 중 오류가 발생했습니다.");
   }
+}
+
+// ── 내가 등록한 카페 (cafes.user_id 기준) ────────────────────────────────────
+
+export async function fetchMyRegisteredCafes(): Promise<CafeMarker[]> {
+  const res = await fetch("/api/users/me/cafes", { cache: "no-store" });
+  if (!res.ok) {
+    if (res.status === 401) return [];
+    const { message } = await res.json().catch(() => ({}));
+    throw new Error(message ?? "내 카페 조회 중 오류가 발생했습니다.");
+  }
+  const json = (await res.json()) as { cafes: CafeMarker[] };
+  return json.cafes ?? [];
 }
 
 // ── 카페 ID 조회 (이름 + 주소로 lookup) ──────────────────────────────────────

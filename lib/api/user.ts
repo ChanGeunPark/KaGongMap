@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { useUserStore } from "@/stores/userStore";
 import { DbUser } from "@/types/db";
 
 // ── Query Keys ──────────────────────────────────────────────────────────────
@@ -102,10 +103,12 @@ export function useCreateUser() {
 
 export function useUpdateNickname() {
   const queryClient = useQueryClient();
+  const setDbUser = useUserStore((s) => s.setDbUser);
 
   return useMutation({
     mutationFn: (nickname: string) => updateNickname(nickname),
-    onSuccess: () => {
+    onSuccess: (user) => {
+      setDbUser(user);
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
   });

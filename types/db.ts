@@ -58,8 +58,10 @@ export interface CafeWithDetail {
 
 // ── cafe_submissions 테이블 ──────────────────────────────────────────────────
 // 사용자 카페 제보. 어드민 승인 시 트리거로 cafes에 자동 삽입.
+// 비로그인도 가능 (user_id NULL). 로그인 시 NextAuth OAuth ID 기록.
 export interface CafeSubmission {
   id: string;
+  user_id: string | null;
   name: string;
   address: string;
   lat: number;
@@ -84,6 +86,7 @@ export interface CreateSubmissionPayload {
   images: string[];
   description?: string;
   tags: CafeTag[];
+  user_id?: string | null;
 }
 
 // ── reviews ─────────────────────────────────────────────────────────────────

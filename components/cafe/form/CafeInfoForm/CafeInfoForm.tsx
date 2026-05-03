@@ -118,6 +118,7 @@ export default function CafeInfoForm({
           images: uploaded.map((image) => image.id),
           description: data.description || undefined,
           tags: data.tags as import("@/types/db").CafeTag[],
+          user_id: userId,
         });
         toast.success("제보가 접수되었습니다. 검토 후 지도에 등록됩니다.");
         onClose();

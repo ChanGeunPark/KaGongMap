@@ -39,6 +39,7 @@ export async function fetchImageSubmissions(): Promise<CafeImageSubmission[]> {
   const { data, error } = await supabase
     .from("cafe_image_submissions")
     .select("*, cafes (name, address)")
+    .eq("status", "pending")
     .order("submitted_at", { ascending: false });
 
   if (error) throw new Error(error.message);

@@ -51,21 +51,24 @@ export default function LoginPage() {
             카카오로 시작하기
           </button>
 
-          <p className="mt-4 text-center text-xs leading-5 text-gray-500">
-            로그인하면 카공맵의{" "}
-            <Link href="/privacy" className="font-medium text-gray-700 underline">
-              개인정보 처리방침
-            </Link>
-            을 확인한 것으로 간주됩니다.
-          </p>
-
-          {/* <button
+          <button
             type="button"
             onClick={() => signIn("google", { callbackUrl: "/" })}
             className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           >
-            구글 로그인 (준비됨)
-          </button> */}
+            구글 로그인
+          </button>
+
+          <p className="mt-4 text-center text-xs leading-5 text-gray-500">
+            로그인하면 카공맵의{" "}
+            <Link
+              href="/privacy"
+              className="font-medium text-gray-700 underline"
+            >
+              개인정보 처리방침
+            </Link>
+            을 확인한 것으로 간주됩니다.
+          </p>
         </>
       )}
 

@@ -45,6 +45,7 @@ export async function fetchEditSubmissions(): Promise<CafeEditSubmission[]> {
   const { data, error } = await supabase
     .from("cafe_edit_submissions")
     .select("*, cafes (name, address)")
+    .eq("status", "pending")
     .order("submitted_at", { ascending: false });
 
   if (error) throw new Error(error.message);

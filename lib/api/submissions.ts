@@ -7,7 +7,34 @@ import { cafeKeys } from "./cafes";
 export const submissionKeys = {
   all: ["submissions"] as const,
   list: () => [...submissionKeys.all, "list"] as const,
+  mySummary: () => [...submissionKeys.all, "mySummary"] as const,
 };
+
+// ── 내 제보 집계 ─────────────────────────────────────────────────────────────
+// 승인된 카페는 cafes로 이동하면서 *_submissions 행이 삭제되므로,
+// "등록된 카페"는 cafes.user_id 기준으로 별도 카운트한다.
+
+export type SubmissionStatusCount = {
+  pending: number;
+  rejected: number;
+};
+
+export type MySubmissionsSummary = {
+  cafes_registered: number;
+  cafe_submissions: SubmissionStatusCount;
+  cafe_image_submissions: SubmissionStatusCount;
+  cafe_edit_submissions: SubmissionStatusCount;
+};
+
+export async function fetchMySubmissionsSummary(): Promise<MySubmissionsSummary> {
+  const res = await fetch("/api/users/me/submissions-summary");
+  if (!res.ok) {
+    const { message } = await res.json().catch(() => ({}));
+    throw new Error(message ?? "내 제보 집계 조회 중 오류가 발생했습니다.");
+  }
+  const json = (await res.json()) as { summary: MySubmissionsSummary };
+  return json.summary;
+}
 
 // ── 카페 제보 제출 ────────────────────────────────────────────────────────────
 
@@ -19,6 +46,7 @@ export async function createSubmission(
   const { data, error } = await supabase
     .from("cafe_submissions")
     .insert({
+      user_id: payload.user_id ?? null,
       name: payload.name,
       address: payload.address,
       lat: payload.lat,
@@ -43,6 +71,7 @@ export async function fetchSubmissions(): Promise<CafeSubmission[]> {
   const { data, error } = await supabase
     .from("cafe_submissions")
     .select("*")
+    .eq("status", "pending")
     .order("submitted_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -80,6 +109,14 @@ export function useSubmissions() {
   return useQuery({
     queryKey: submissionKeys.list(),
     queryFn: fetchSubmissions,
+  });
+}
+
+export function useMySubmissionsSummary(enabled = true) {
+  return useQuery({
+    queryKey: submissionKeys.mySummary(),
+    queryFn: fetchMySubmissionsSummary,
+    enabled,
   });
 }
 
