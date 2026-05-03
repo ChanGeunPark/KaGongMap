@@ -32,7 +32,7 @@ function TextButton(props: ButtonProps) {
 
   const textButtonStyle = cls(
     getDefaultStyle(
-      "border-0 bg-transparent text-gray-500 lg:hover:bg-gray-50 lg:dark:hover:bg-gray-800",
+      "border-0 bg-transparent text-gray-500 lg:hover:bg-gray-50",
       rounded,
       disabled,
     ),

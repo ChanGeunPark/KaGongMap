@@ -25,7 +25,7 @@ export default function KagongMapModal(props: KagongMapModalProps) {
     isCloseButton = true,
   } = props;
 
-  const z = zIndex ? zIndex : 200;
+  const z = zIndex ? zIndex : 260;
 
   useEffect(() => {
     if (showModal) {
@@ -61,12 +61,11 @@ export default function KagongMapModal(props: KagongMapModalProps) {
         <div
           className={cls(
             "w-full max-h-[90vh] h-auto bg-white overflow-y-auto shadow-elevation02",
-            "dark:bg-gray-850 dark:text-white",
             className ? className : "",
           )}
         >
           {isCloseButton && (
-            <div className="w-full flex justify-between items-center px-4 py-3 sticky top-0 bg-white z-50">
+            <div className="w-full flex justify-between items-center px-4 py-3 sticky top-0 bg-white z-[261]">
               {title && typeof title === "string" && (
                 <h4 className="text-xl font-semibold">{title}</h4>
               )}

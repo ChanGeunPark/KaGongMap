@@ -32,7 +32,7 @@ function SecondaryButton(props: ButtonProps) {
 
   const blackButtonStyle = cls(
     getDefaultStyle(
-      "bg-gray-900 dark:bg-[#101213] text-white lg:hover:bg-gray-800 lg:dark:hover:bg-gray-800",
+      "bg-gray-900 text-white lg:hover:bg-gray-800",
       rounded,
       disabled,
     ),

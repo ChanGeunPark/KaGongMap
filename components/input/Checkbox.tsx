@@ -38,9 +38,9 @@ function Checkbox({
       <label
         htmlFor={id}
         className={cls(
-          "cursor-pointer transition-all flex items-center justify-center text-bold w-[18px] h-[18px] border-gray-300 dark:border-gray-700 border-2 rounded-sm  min-w-[18px] lg:group-hover:border-primaryDark",
+          "cursor-pointer transition-all flex items-center justify-center text-bold w-[18px] h-[18px] border-gray-300 border-2 rounded-sm  min-w-[18px] lg:group-hover:border-primaryDark",
           "peer-checked:border-none peer-checked:bg-primaryDark peer-checked:text-white", // button Checked
-          "[&>svg]:fill-white dark:[&>svg]:fill-gray-700 peer-checked:[&>svg]:stroke-white", //icon
+          "[&>svg]:fill-white peer-checked:[&>svg]:stroke-white", //icon
         )}
       >
         <svg
@@ -62,8 +62,8 @@ function Checkbox({
       <label
         htmlFor={allClick ? id : ""}
         className={cls(
-          "body2-500 ml-2 cursor-pointer text-gray-700 dark:text-gray-300",
-          "peer-checked:text-gray-900 dark:peer-checked:text-white",
+          "body2-500 ml-2 cursor-pointer text-gray-700",
+          "peer-checked:text-gray-900",
           className ? className : "",
         )}
       >

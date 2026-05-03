@@ -20,7 +20,7 @@ function OutlinedBadge(props: BadgeProps) {
     <div
       className={cls(
         GetBadgeSizeClassName(BadgeSize),
-        "border-2 border-gray-100 dark:border-gray-700 text-gray-700 dark:text-white",
+        "border-2 border-gray-100 text-gray-700",
         className ? className : "",
       )}
       style={style}
@@ -28,7 +28,7 @@ function OutlinedBadge(props: BadgeProps) {
       {children}
       {onClose ? (
         <button type="button" onClick={onClose}>
-          <TbX className="w-4 h-4 ml-1 fill-gray-600 dark:fill-gray-300" />
+          <TbX className="w-4 h-4 ml-1 fill-gray-600" />
         </button>
       ) : null}
     </div>

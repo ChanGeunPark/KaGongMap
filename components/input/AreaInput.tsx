@@ -43,16 +43,10 @@ function AreaInput(props: TextAreaInputProps) {
           htmlFor={name}
         >
           <h5 className="relative inline-block">{label}</h5>
-          {optional && (
-            <span className="text-gray-300 dark:text-gray-700 ml-1 body3">
-              (선택)
-            </span>
-          )}
+          {optional && <span className="text-gray-300 ml-1 body3">(선택)</span>}
           {important ? <span className="text-alertMain ml-0.5">*</span> : null}
           {unableEdit ? (
-            <span className="text-gray-400 ml-1 body3 dark:text-gray-500">
-              (수정불가)
-            </span>
+            <span className="text-gray-400 ml-1 body3">(수정불가)</span>
           ) : null}
         </label>
       ) : null}
@@ -68,10 +62,10 @@ function AreaInput(props: TextAreaInputProps) {
         onBlur={onBlur}
         className={cls(
           "body1-400 w-full h-28 placeholder:body2-400 rounded-md outline-none resize-none border-2 border-solid focus:ring-0 p-4",
-          "text-gray-800 placeholder:text-gray-300 dark:placeholder:text-gray-500 dark:text-gray-200 dark:bg-gray-800 bg-white focus:border-primaryDark dark:focus:border-primaryDark",
+          "text-gray-800 placeholder:text-gray-300 bg-white focus:border-primaryDark",
           displayError
             ? "border-alertMain focus:!border-alertMain"
-            : "border-gray-50 dark:border-gray-700",
+            : "border-gray-50",
           label ? "mt-1" : "",
           className ?? "",
         )}

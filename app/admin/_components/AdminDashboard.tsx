@@ -209,7 +209,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-[140]">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
@@ -566,7 +566,7 @@ function SubmissionCard({
 
             {/* 설명 */}
             {submission.description && (
-              <p className="mt-3 text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 leading-relaxed">
+              <p className="mt-3 whitespace-pre-line text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 leading-relaxed">
                 {submission.description}
               </p>
             )}
@@ -683,7 +683,7 @@ function RegisteredCafeCard({
 
             {/* 설명 */}
             {cafe.description && (
-              <p className="mt-3 text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 leading-relaxed">
+              <p className="mt-3 whitespace-pre-line text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 leading-relaxed">
                 {cafe.description}
               </p>
             )}
@@ -885,7 +885,9 @@ function EditSubmissionCard({
               {submission.description && (
                 <div>
                   <span className="text-gray-400">설명</span>{" "}
-                  <span className="font-medium">{submission.description}</span>
+                  <span className="whitespace-pre-line font-medium">
+                    {submission.description}
+                  </span>
                 </div>
               )}
             </div>

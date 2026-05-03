@@ -20,7 +20,7 @@ function BlackBadge(props: BadgeProps) {
     <div
       className={cls(
         GetBadgeSizeClassName(BadgeSize),
-        "bg-gray-800 text-white dark:bg-gray-700",
+        "bg-gray-800 text-white",
         className ? className : "",
       )}
       style={style}

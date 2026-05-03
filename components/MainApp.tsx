@@ -47,7 +47,7 @@ function TweaksPanel({
   update: (key: keyof Tweaks, value: string) => void;
 }) {
   return (
-    <div className="fixed right-5 bottom-5 z-500 w-[280px] bg-bg border border-border-medium rounded-2xl shadow-overlay p-5 font-sans">
+    <div className="fixed right-5 bottom-5 z-[500] w-[280px] bg-bg border border-border-medium rounded-2xl shadow-overlay p-5 font-sans">
       <div className="flex items-center justify-between mb-3.5">
         <div className="text-[13px] font-semibold tracking-[-0.2px]">
           Tweaks
@@ -380,7 +380,7 @@ export default function MainApp() {
           {/* Legend */}
           <div
             className={cls(
-              "absolute z-20 right-[20px] rounded-xl border border-border-subtle",
+              "absolute z-[110] right-[20px] rounded-xl border border-border-subtle",
               "py-[10px] px-[14px] bg-white/95 backdrop-blur-sm shadow-card",
               useSheet ? "top-[20px] bottom-auto" : "bottom-[20px] top-auto",
             )}

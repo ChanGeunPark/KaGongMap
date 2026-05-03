@@ -67,7 +67,7 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-[640px] px-5 py-10">
+      <div className="mx-auto max-w-[640px] px-5 py-6">
         <div className="mb-7 flex items-end justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.5px] text-kg-amber-deep">

@@ -20,7 +20,7 @@ function TintBadge(props: BadgeProps) {
     <div
       className={cls(
         GetBadgeSizeClassName(BadgeSize),
-        "bg-primaryLight border-[1.5px] border-primarySub text-gray-800 dark:bg-[rgba(255,229,92,0.1)] dark:border-[rgba(255,229,92,0.2)] dark:text-primarySub",
+        "bg-primaryLight border-[1.5px] border-primarySub text-gray-800",
         className ? className : "",
       )}
       style={style}

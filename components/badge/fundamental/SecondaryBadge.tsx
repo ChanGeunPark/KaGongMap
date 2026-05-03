@@ -20,7 +20,7 @@ function SecondaryBadge(props: BadgeProps) {
     <div
       className={cls(
         GetBadgeSizeClassName(BadgeSize),
-        "bg-secondary-light dark:bg-transparent border-[1.5px] border-secondary text-secondary-dark dark:!border-secondary",
+        "bg-secondary-light border-[1.5px] border-secondary text-secondary-dark",
         className ? className : "",
       )}
       style={style}

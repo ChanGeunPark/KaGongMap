@@ -194,7 +194,7 @@ export function CafeModalDetail({
             </div>
           )}
           {detail?.description && (
-            <p className="text-fg-3 text-memo line-clamp-2 leading-snug  border-t border-black/5 mt-0.5 pt-2">
+            <p className="whitespace-pre-line text-fg-3 text-sm border-t border-black/5 mt-0.5 pt-3">
               {detail.description}
             </p>
           )}

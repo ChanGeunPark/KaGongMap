@@ -40,7 +40,7 @@ export default function AuthGate() {
   return (
     <AnimatePresence>
       {showAuthGate && (
-        <div className="fixed inset-0 z-[260] flex items-center justify-center px-5 py-6">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center px-5 py-6">
           <motion.button
             type="button"
             aria-label="로그인 안내 닫기"

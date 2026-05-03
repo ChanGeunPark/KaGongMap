@@ -33,7 +33,7 @@ function CancelButton(props: ButtonProps) {
 
   const cancelButtonStyle = cls(
     getDefaultStyle(
-      "border-0 bg-transparent text-alertMain lg:hover:bg-gray-50 lg:dark:hover:bg-gray-800",
+      "border-0 bg-transparent text-alertMain lg:hover:bg-gray-50",
       rounded,
       disabled,
     ),

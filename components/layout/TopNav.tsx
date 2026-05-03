@@ -80,7 +80,7 @@ export default function TopNav({ onSelectCafe }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border-subtle bg-white/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-[140] border-b border-border-subtle bg-white/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-14 md:h-16 flex items-center gap-3 md:gap-5">
           <Logo />
 
@@ -269,7 +269,7 @@ function AuthArea() {
         <div
           role="menu"
           className={cls(
-            "absolute right-0 top-[calc(100%+8px)] z-50 min-w-[200px] overflow-hidden",
+            "absolute right-0 top-[calc(100%+8px)] z-[150] min-w-[200px] overflow-hidden",
             "rounded-sm border border-border-medium bg-white shadow-overlay",
           )}
         >
