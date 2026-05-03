@@ -10,6 +10,7 @@ import KagongMapModal from "@/components/modal/KagongMapModal";
 import { useUploadCloudflareImages } from "@/lib/api/cloudflare";
 import { cafeKeys } from "@/lib/api/cafes";
 import { createCafeImageSubmission } from "@/lib/api/imageSubmissions";
+import { track } from "@/lib/firebase/analytics";
 
 interface ImageSubmitModalProps {
   cafeId: string;
@@ -33,7 +34,13 @@ export default function ImageSubmitModal({
   const uploadMutation = useUploadCloudflareImages();
   const submitMutation = useMutation({
     mutationFn: createCafeImageSubmission,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      track("photo_submit", {
+        cafe_id: cafeId,
+        image_count: variables.images.length,
+        has_caption: !!variables.caption,
+        is_logged_in: !!userId,
+      });
       toast.success("사진이 제보되었습니다. 승인 후 반영됩니다.");
       queryClient.invalidateQueries({ queryKey: cafeKeys.detail(cafeId) });
       setFiles([]);

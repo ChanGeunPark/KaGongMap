@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
+import { sendPushToAdmins } from "@/lib/firebase/sendPush";
 import type { ReviewReportReason } from "@/types/db";
+
+const REASON_LABEL: Record<ReviewReportReason, string> = {
+  spam: "스팸/광고",
+  abuse: "욕설/혐오",
+  inappropriate: "부적절한 내용",
+  irrelevant: "관련 없는 내용",
+  other: "기타",
+};
 
 const VALID_REASONS: ReviewReportReason[] = [
   "spam",
@@ -92,6 +101,12 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     console.error("[POST /api/reviews/:id/reports] error", error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
+
+  void sendPushToAdmins({
+    title: "새 후기 신고",
+    body: `사유: ${REASON_LABEL[reason]}`,
+    link: "/admin",
+  }).catch((err) => console.error("[review-reports] push 실패", err));
 
   return NextResponse.json({ ok: true });
 }

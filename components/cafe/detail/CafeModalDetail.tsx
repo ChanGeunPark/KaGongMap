@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { track } from "@/lib/firebase/analytics";
 import Badge from "@/components/badge/Badge";
 import KaGongButton from "@/components/button/KaGongButton";
 import KGIcon from "@/components/ui/KGIcon";
@@ -38,14 +40,24 @@ export function CafeModalDetail({
     useImageSubmitModalStore();
   const { setShowCafeEditModal, setCafe } = useCafeEditModalStore();
 
-  const { isLiked, toggle } = useLikes();
+  const { isLiked, toggle, isAuthed: likeAuthed } = useLikes();
   const liked = isLiked(cafe.id);
   const {
     isBookmarked,
     toggle: toggleBookmark,
     isPending: bookmarkPending,
+    isAuthed: bookmarkAuthed,
   } = useBookmarks();
   const bookmarked = isBookmarked(cafe.id);
+
+  useEffect(() => {
+    track("cafe_view", {
+      cafe_id: cafe.id,
+      cafe_name: cafe.name,
+      tag_count: cafe.tags.length,
+      like_count: cafe.like_count,
+    });
+  }, [cafe.id, cafe.name, cafe.like_count, cafe.tags.length]);
 
   const images = detail?.images ?? [];
   const visibleImages = images.slice(0, 5);
@@ -228,10 +240,27 @@ export function CafeModalDetail({
             </KaGongButton>
             <BookmarkButton
               bookmarked={bookmarked}
-              onClick={() => toggleBookmark(cafe.id)}
+              onClick={() => {
+                track("favorite_toggle", {
+                  cafe_id: cafe.id,
+                  action: bookmarked ? "remove" : "add",
+                  is_logged_in: bookmarkAuthed,
+                });
+                toggleBookmark(cafe.id);
+              }}
               disabled={bookmarkPending}
             />
-            <LikeButton liked={liked} onClick={() => toggle(cafe.id)} />
+            <LikeButton
+              liked={liked}
+              onClick={() => {
+                track("like_toggle", {
+                  cafe_id: cafe.id,
+                  action: liked ? "remove" : "add",
+                  is_logged_in: likeAuthed,
+                });
+                toggle(cafe.id);
+              }}
+            />
           </div>
         </div>
 

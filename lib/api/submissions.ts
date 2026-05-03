@@ -41,27 +41,19 @@ export async function fetchMySubmissionsSummary(): Promise<MySubmissionsSummary>
 export async function createSubmission(
   payload: CreateSubmissionPayload,
 ): Promise<string> {
-  const supabase = createClient();
+  const res = await fetch("/api/cafes/submissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-  const { data, error } = await supabase
-    .from("cafe_submissions")
-    .insert({
-      user_id: payload.user_id ?? null,
-      name: payload.name,
-      address: payload.address,
-      lat: payload.lat,
-      lng: payload.lng,
-      hours: payload.hours ?? null,
-      min_order_amount: payload.min_order_amount ?? null,
-      images: payload.images,
-      description: payload.description ?? null,
-      tags: payload.tags,
-    })
-    .select("id")
-    .single();
+  if (!res.ok) {
+    const { message } = await res.json().catch(() => ({}));
+    throw new Error(message ?? "제보 중 오류가 발생했습니다.");
+  }
 
-  if (error) throw new Error(error.message);
-  return data.id;
+  const json = (await res.json()) as { id: string };
+  return json.id;
 }
 
 // ── 어드민: 제보 목록 조회 ────────────────────────────────────────────────────

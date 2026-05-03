@@ -13,6 +13,7 @@ import {
   editSubmissionKeys,
 } from "@/lib/api/editSubmissions";
 import { useUploadCloudflareImages } from "@/lib/api/cloudflare";
+import { track } from "@/lib/firebase/analytics";
 import InfoFormStep1 from "./InfoFormStep1";
 import InfoFormStep2 from "./InfoFormStep2";
 import InfoFormStep3 from "./InfoFormStep3";
@@ -120,6 +121,13 @@ export default function CafeInfoForm({
           tags: data.tags as import("@/types/db").CafeTag[],
           user_id: userId,
         });
+        track("cafe_submit_complete", {
+          tag_count: data.tags.length,
+          image_count: uploaded.length,
+          has_description: !!data.description,
+          has_hours: !!data.hours,
+          is_logged_in: !!userId,
+        });
         toast.success("제보가 접수되었습니다. 검토 후 지도에 등록됩니다.");
         onClose();
         return;
@@ -147,6 +155,11 @@ export default function CafeInfoForm({
 
       queryClient.invalidateQueries({ queryKey: editSubmissionKeys.list() });
       queryClient.invalidateQueries({ queryKey: cafeKeys.detail(cafeId) });
+      track("edit_suggest_submit", {
+        cafe_id: cafeId,
+        tag_count: data.tags.length,
+        is_logged_in: !!userId,
+      });
       toast.success("수정 제보가 접수되었습니다. 어드민 검토 후 반영됩니다.");
       onClose();
     } catch (err) {

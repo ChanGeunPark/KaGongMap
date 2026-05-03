@@ -9,6 +9,7 @@ import {
   useDeleteReview,
   useReviews,
 } from "@/lib/api/reviews";
+import { track } from "@/lib/firebase/analytics";
 import { useUserStore } from "@/stores/userStore";
 import { cls, formatDate } from "@/lib/utils";
 import type { DbReview } from "@/types/db";
@@ -77,6 +78,11 @@ function ReviewForm({ cafeId }: { cafeId: string }) {
         { content: trimmed },
         {
           onSuccess: () => {
+            track("review_submit", {
+              cafe_id: cafeId,
+              content_length: trimmed.length,
+              is_logged_in: true,
+            });
             setContent("");
             toast.success("후기가 등록되었습니다.");
           },
@@ -99,6 +105,11 @@ function ReviewForm({ cafeId }: { cafeId: string }) {
       { content: trimmed, nickname: nickname.trim(), password },
       {
         onSuccess: () => {
+          track("review_submit", {
+            cafe_id: cafeId,
+            content_length: trimmed.length,
+            is_logged_in: false,
+          });
           setContent("");
           setNickname("");
           setPassword("");

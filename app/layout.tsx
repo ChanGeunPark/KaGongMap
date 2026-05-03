@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import QueryProvider from "@/providers/QueryProvider";
@@ -7,6 +8,10 @@ import GlobalModal from "@/components/modal/GlobalModal";
 import { getSiteUrl } from "@/lib/siteUrl";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+import FirebaseAnalytics from "@/components/layout/FirebaseAnalytics";
+import RouteChangeTracker from "@/components/layout/RouteChangeTracker";
+import AnalyticsIdentity from "@/components/layout/AnalyticsIdentity";
+import ForegroundFcmListener from "@/components/notifications/ForegroundFcmListener";
 
 export const viewport: Viewport = {
   themeColor: "#16a34a",
@@ -104,7 +109,13 @@ export default function RootLayout({
     <html lang="ko" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ServiceWorkerRegister />
+        <FirebaseAnalytics />
+        <Suspense fallback={null}>
+          <RouteChangeTracker />
+        </Suspense>
+        <ForegroundFcmListener />
         <AuthProvider>
+          <AnalyticsIdentity />
           <QueryProvider>
             {children}
             <BottomNavigation />

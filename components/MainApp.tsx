@@ -19,6 +19,7 @@ import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 import { DEFAULT_TWEAKS, Tweaks, TweaksPanel } from "@/components/tweaks";
 import { useEditModeBridge } from "@/hooks/useEditModeBridge";
 import { useFilteredCafes } from "@/hooks/useFilteredCafes";
+import { track } from "@/lib/firebase/analytics";
 
 export default function MainApp() {
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS);
@@ -57,11 +58,18 @@ export default function MainApp() {
   const toggleFilter = (id: string) => {
     setActiveFilters((s) => {
       const n = new Set(s);
-      if (n.has(id)) {
+      const wasActive = n.has(id);
+      if (wasActive) {
         n.delete(id);
       } else {
         n.add(id);
       }
+      track("filter_apply", {
+        filter_id: id,
+        action: wasActive ? "remove" : "add",
+        active_filters: Array.from(n),
+        active_count: n.size,
+      });
       return n;
     });
   };
@@ -74,6 +82,22 @@ export default function MainApp() {
   );
 
   const selectCafe = (id: string) => {
+    openCafePreview(id);
+  };
+
+  const handleMarkerClick = (id: string) => {
+    const c = allCafes.find((x) => x.id === id);
+    track("cafe_marker_click", {
+      cafe_id: id,
+      cafe_name: c?.name,
+      tag_count: c?.tags.length ?? 0,
+    });
+    openCafePreview(id);
+  };
+
+  const handleSearchSelect = (id: string) => {
+    const c = allCafes.find((x) => x.id === id);
+    track("cafe_search_select", { cafe_id: id, cafe_name: c?.name });
     openCafePreview(id);
   };
 
@@ -98,7 +122,7 @@ export default function MainApp() {
 
   return (
     <div className="flex h-[calc(100vh-60px)] flex-col bg-bg ">
-      <TopNav onSelectCafe={selectCafe} />
+      <TopNav onSelectCafe={handleSearchSelect} />
       <FilterBar
         variant={tweaks.filterVariant}
         activeFilters={activeFilters}
@@ -131,7 +155,7 @@ export default function MainApp() {
             selectedId={selectedId}
             hoveredId={hoveredId}
             onHover={setHoveredId}
-            onSelect={selectCafe}
+            onSelect={handleMarkerClick}
             onBoundsChange={setBounds}
           />
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { sendPushToAdmins } from "@/lib/firebase/sendPush";
 
 export async function POST(
   req: NextRequest,
@@ -19,7 +20,7 @@ export async function POST(
 
   const { data: cafe, error: cafeError } = await supabase
     .from("cafes")
-    .select("id")
+    .select("id, name")
     .eq("id", cafeId)
     .maybeSingle();
 
@@ -47,6 +48,12 @@ export async function POST(
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
+
+  void sendPushToAdmins({
+    title: "새 사진 제보",
+    body: `${cafe.name}에 사진이 제보되었어요.`,
+    link: "/admin",
+  }).catch((err) => console.error("[image-submissions] push 실패", err));
 
   return NextResponse.json({ id: data.id });
 }

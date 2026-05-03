@@ -15,6 +15,8 @@ import { cls } from "@/lib/utils";
 import KGIcon from "@/components/ui/KGIcon";
 import CafeCard from "@/components/cafe/card/CafeCard";
 import PwaInstallBanner from "@/components/pwa/PwaInstallBanner";
+import PushNotificationToggle from "@/components/notifications/PushNotificationToggle";
+import LocationPermissionStatus from "@/components/notifications/LocationPermissionStatus";
 
 type MyPageTab = "bookmarks" | "cafes" | "reviews";
 
@@ -129,6 +131,9 @@ export default function MyPage() {
             <LoginSection />
           )}
         </section>
+
+        {isAuthenticated && <PushNotificationToggle />}
+        <LocationPermissionStatus />
 
         <SettingsSection />
 

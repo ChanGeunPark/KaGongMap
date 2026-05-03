@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { track } from "@/lib/firebase/analytics";
 
 function getSafeCallbackUrl(): string {
   if (typeof window === "undefined") return "/";
@@ -43,9 +44,10 @@ export default function LoginPage() {
         <>
           <button
             type="button"
-            onClick={() =>
-              signIn("kakao", { callbackUrl: getSafeCallbackUrl() })
-            }
+            onClick={() => {
+              track("login_attempt", { provider: "kakao" });
+              signIn("kakao", { callbackUrl: getSafeCallbackUrl() });
+            }}
             className="mt-8 w-full rounded-lg bg-yellow-300 px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-yellow-400"
           >
             카카오로 시작하기
@@ -53,7 +55,10 @@ export default function LoginPage() {
 
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => {
+              track("login_attempt", { provider: "google" });
+              signIn("google", { callbackUrl: "/" });
+            }}
             className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           >
             구글 로그인
