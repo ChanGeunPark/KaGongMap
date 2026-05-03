@@ -1,18 +1,21 @@
 import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { deleteCafe, cafeKeys } from "@/lib/api/cafes";
 import {
   approveSubmission,
   deleteSubmission,
-  deleteCafe,
+  submissionKeys,
+} from "@/lib/api/submissions";
+import {
   approveImageSubmission,
   deleteImageSubmission,
+  imageSubmissionKeys,
+} from "@/lib/api/imageSubmissions";
+import {
   approveEditSubmission,
   deleteEditSubmission,
-  submissionKeys,
-  cafeKeys,
-  imageSubmissionKeys,
   editSubmissionKeys,
-} from "@/lib/api/cafes";
+} from "@/lib/api/editSubmissions";
 
 function useAdminMutation(
   mutationFn: (id: string) => Promise<void>,

@@ -6,13 +6,12 @@ import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PlaceSearchResult } from "@/types/kakao";
 import KaGongButton from "../../../button/KaGongButton";
+import { getCafeIdByNameAndAddress, cafeKeys } from "@/lib/api/cafes";
+import { createSubmission } from "@/lib/api/submissions";
 import {
-  createSubmission,
   createCafeEditSubmission,
-  getCafeIdByNameAndAddress,
-  cafeKeys,
   editSubmissionKeys,
-} from "@/lib/api/cafes";
+} from "@/lib/api/editSubmissions";
 import { useUploadCloudflareImages } from "@/lib/api/cloudflare";
 import InfoFormStep1 from "./InfoFormStep1";
 import InfoFormStep2 from "./InfoFormStep2";

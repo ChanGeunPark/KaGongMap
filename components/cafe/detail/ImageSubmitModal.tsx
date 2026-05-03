@@ -8,7 +8,8 @@ import ImageUploader from "@/components/cafe/form/ImageUploader";
 import KaGongButton from "@/components/button/KaGongButton";
 import KagongMapModal from "@/components/modal/KagongMapModal";
 import { useUploadCloudflareImages } from "@/lib/api/cloudflare";
-import { createCafeImageSubmission, cafeKeys } from "@/lib/api/cafes";
+import { cafeKeys } from "@/lib/api/cafes";
+import { createCafeImageSubmission } from "@/lib/api/imageSubmissions";
 
 interface ImageSubmitModalProps {
   cafeId: string;

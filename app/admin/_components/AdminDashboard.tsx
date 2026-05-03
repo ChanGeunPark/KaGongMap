@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { fetchCafesAdmin, cafeKeys } from "@/lib/api/cafes";
+import { fetchSubmissions, submissionKeys } from "@/lib/api/submissions";
 import {
-  fetchSubmissions,
-  fetchCafesAdmin,
   fetchImageSubmissions,
-  fetchEditSubmissions,
-  submissionKeys,
-  cafeKeys,
   imageSubmissionKeys,
+} from "@/lib/api/imageSubmissions";
+import {
+  fetchEditSubmissions,
   editSubmissionKeys,
-} from "@/lib/api/cafes";
+} from "@/lib/api/editSubmissions";
 import Image from "next/image";
 import { useAdminReviewReports } from "@/lib/api/reviewReports";
 import ReviewReportsTab from "@/app/admin/_components/ReviewReportsTab";
