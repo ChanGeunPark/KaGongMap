@@ -17,6 +17,7 @@ import CafeCard from "@/components/cafe/card/CafeCard";
 import PwaInstallBanner from "@/components/pwa/PwaInstallBanner";
 import PushNotificationToggle from "@/components/notifications/PushNotificationToggle";
 import LocationPermissionStatus from "@/components/notifications/LocationPermissionStatus";
+import DevTestPushButton from "@/components/notifications/DevTestPushButton";
 
 type MyPageTab = "bookmarks" | "cafes" | "reviews";
 
@@ -133,7 +134,6 @@ export default function MyPage() {
         </section>
 
         {isAuthenticated && <PushNotificationToggle />}
-        <LocationPermissionStatus />
 
         <SettingsSection />
 

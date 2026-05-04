@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -102,11 +102,17 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  void sendPushToAdmins({
-    title: "새 후기 신고",
-    body: `사유: ${REASON_LABEL[reason]}`,
-    link: "/admin",
-  }).catch((err) => console.error("[review-reports] push 실패", err));
+  after(async () => {
+    try {
+      await sendPushToAdmins({
+        title: "새 후기 신고",
+        body: `사유: ${REASON_LABEL[reason]}`,
+        link: "/admin",
+      });
+    } catch (err) {
+      console.error("[review-reports] push 실패", err);
+    }
+  });
 
   return NextResponse.json({ ok: true });
 }
