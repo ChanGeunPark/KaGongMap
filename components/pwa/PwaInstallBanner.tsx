@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import KGIcon from "@/components/ui/KGIcon";
 import { cls } from "@/lib/utils";
 
@@ -9,9 +10,22 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+const isUnsupportedInstallBrowser = (ua: string) => {
+  if (/SamsungBrowser/i.test(ua)) return true;
+  // in-app 웹뷰: 카카오톡/네이버앱/라인/페이스북/인스타 등은 PWA 설치 불가
+  if (/KAKAOTALK|NAVER\(inapp|FBAN|FBAV|Instagram|Line\//i.test(ua))
+    return true;
+  return false;
+};
+
 export default function PwaInstallBanner() {
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const [unsupported] = useState(() =>
+    typeof navigator === "undefined"
+      ? false
+      : isUnsupportedInstallBrowser(navigator.userAgent),
+  );
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -30,6 +44,14 @@ export default function PwaInstallBanner() {
   }, []);
 
   const handleInstall = async () => {
+    if (unsupported) {
+      toast.info(
+        "이 브라우저는 앱 설치가 차단될 수 있어요. Chrome 브라우저에서 다시 열어 설치해주세요.",
+        { autoClose: 5000 },
+      );
+      return;
+    }
+
     if (!installEvent) return;
 
     await installEvent.prompt();
@@ -40,7 +62,7 @@ export default function PwaInstallBanner() {
     }
   };
 
-  if (!installEvent) return null;
+  if (!installEvent && !unsupported) return null;
 
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-border-subtle bg-bg shadow-card">

@@ -6,6 +6,7 @@ import FieldError from "@/components/input/FieldError";
 import { Control, Controller, FieldErrors } from "react-hook-form";
 import AddressSearch from "../AddressSearch";
 import { CafeFormValues } from "./CafeInfoForm";
+import HoursInput from "./HoursInput";
 
 export default function InfoFormStep1({
   control,
@@ -72,12 +73,7 @@ export default function InfoFormStep1({
           name="hours"
           control={control}
           render={({ field }) => (
-            <BasicInput
-              {...field}
-              label="영업시간"
-              type="text"
-              placeholder="예: 09:00 – 22:00 (월–금), 10:00 – 21:00 (주말)"
-            />
+            <HoursInput value={field.value} onChange={field.onChange} />
           )}
         />
       </div>

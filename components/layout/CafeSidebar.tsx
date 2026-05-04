@@ -40,10 +40,10 @@ export default function CafeSidebar({
       {/* Sidebar toggle button */}
       <button
         className={cls(
-          "absolute z-[171] top-4 h-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
+          "absolute z-[171] h-8 rounded-md bg-white border border-zinc-100 flex items-center justify-center cursor-pointer",
           isOpen
-            ? "rotate-0 right-4 w-8"
-            : "left-[calc(100%+10px)] w-max gap-2 pl-4 pr-2",
+            ? "rotate-0 right-5 w-8 top-4"
+            : "left-[calc(100%+10px)] w-max gap-2 pl-4 pr-2 top-8 ",
         )}
         onClick={() => setSidebarOpen(!isOpen)}
       >
@@ -60,7 +60,7 @@ export default function CafeSidebar({
       </button>
 
       {isOpen && (
-        <div className="relative w-full h-full overflow-scroll">
+        <div className="relative w-full h-full overflow-scroll scrollbar-hide">
           <div className="relative min-w-[300px] max-w-[420px] w-full mx-auto overflow-hidden border-r border-border-subtle flex flex-col shrink-0 bg-bg">
             <div className="border-b border-border-subtle flex items-center justify-between py-[14px] px-[20px]">
               <div>

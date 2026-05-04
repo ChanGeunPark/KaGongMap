@@ -121,21 +121,21 @@ export default function MainApp() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-60px)] flex-col bg-bg ">
+    <div className="flex h-[calc(100vh-60px)] flex-col">
       <TopNav onSelectCafe={handleSearchSelect} />
-      <FilterBar
-        variant={tweaks.filterVariant}
-        activeFilters={activeFilters}
-        toggle={toggleFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        openDrawer={() => setDrawerOpen(true)}
-        matchCount={visibleCafes.length}
-      />
 
       <div className="relative flex-1 flex min-h-0">
-        {/* Sidebar */}
+        <FilterBar
+          variant={tweaks.filterVariant}
+          activeFilters={activeFilters}
+          toggle={toggleFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          openDrawer={() => setDrawerOpen(true)}
+          matchCount={visibleCafes.length}
+        />
 
+        {/* Sidebar */}
         <CafeSidebar
           cafes={visibleCafes}
           hoveredId={hoveredId}

@@ -26,7 +26,7 @@ export default function Chip({
         "max-lg:py-2 py-[7px] pr-[14px] pl-3 border",
         active
           ? "font-semibold bg-fg text-bg border-fg shadow-none"
-          : "font-medium bg-bg text-fg-2 border-border-medium shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
+          : "font-medium bg-bg text-fg-2 border-border-medium shadow-[0_2px_2px_rgba(0,0,0,0.1)]",
       )}
     >
       {icon && <KGIcon name={icon} size={14} stroke={2} />}

@@ -23,25 +23,15 @@ export default function FilterBar(props: FilterBarProps) {
   return <FilterChips {...props} />;
 }
 
-function FilterChips({
-  activeFilters,
-  toggle,
-  sortBy,
-  setSortBy,
-}: FilterBarProps) {
+function FilterChips({ activeFilters, toggle }: FilterBarProps) {
   return (
-    <div className="w-full border-b border-border-subtle">
+    <div className="w-full absolute top-0 left-0 z-10">
       <div
         className={cls(
-          "container mx-auto px-4 flex items-center gap-2 bg-bg overflow-x-auto whitespace-nowrap scrollbar-hide",
+          "px-4 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide",
           "py-3",
         )}
       >
-        <div className="flex items-center gap-1.5 mr-0.5">
-          <KGIcon name={"sliders"} size={14} stroke={2} />
-          <span className="ext-sm font-semibold text-zinc-500">필터</span>
-        </div>
-        <div className="w-px h-5 border-l border-border-subtle mx-1" />
         {KG_FILTERS.map((f) => (
           <Chip
             key={f.id}
@@ -71,7 +61,7 @@ function FilterDropdowns({
 
   return (
     <div
-      className="flex items-center gap-2.5 px-6 border-b border-border-subtle bg-bg"
+      className="flex items-center gap-2.5 px-6 border-b border-border-subtle"
       style={{ paddingTop: 14, paddingBottom: 14 }}
     >
       {GROUPS.map((g) => {

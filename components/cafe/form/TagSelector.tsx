@@ -76,7 +76,7 @@ export default function TagSelector({ value, onChange }: TagSelectorProps) {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2.5">
+    <div className="grid max-lg:grid-cols-1 grid-cols-2 gap-2.5">
       {CAFE_TAGS.map((tag) => {
         const selected = value.includes(tag.id);
         return (
@@ -85,7 +85,7 @@ export default function TagSelector({ value, onChange }: TagSelectorProps) {
             type="button"
             onClick={() => toggle(tag.id)}
             className={cls(
-              "flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-120",
+              "flex items-center gap-3 rounded-lg border px-4 py-3.5 text-left transition-all duration-120",
               selected
                 ? "bg-kg-amber-light border-kg-amber shadow-[0_0_0_1px_rgba(245,165,36,0.25)]"
                 : "bg-bg border-border-medium hover:border-border-strong hover:bg-gray-50",
@@ -101,7 +101,7 @@ export default function TagSelector({ value, onChange }: TagSelectorProps) {
               >
                 {tag.label}
               </span>
-              <span className="text-[11px] text-fg-4 truncate">{tag.desc}</span>
+              <span className="text-[11px] text-fg-4">{tag.desc}</span>
             </div>
             {selected && (
               <TbCheck

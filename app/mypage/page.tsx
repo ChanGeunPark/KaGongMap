@@ -425,11 +425,7 @@ function BookmarkTab({
   );
 }
 
-function MyCafesTab({
-  onSelectCafe,
-}: {
-  onSelectCafe: (id: string) => void;
-}) {
+function MyCafesTab({ onSelectCafe }: { onSelectCafe: (id: string) => void }) {
   const { data: cafes = [], isLoading } = useQuery({
     queryKey: cafeKeys.mine(),
     queryFn: fetchMyRegisteredCafes,
