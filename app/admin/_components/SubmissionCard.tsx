@@ -59,9 +59,9 @@ export default function SubmissionCard({
 
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-400">
               {submission.hours && (
-                <span className="flex items-center gap-1">
+                <span className="flex items-start gap-1">
                   <span>🕐</span>
-                  {submission.hours}
+                  <span className="whitespace-pre-line">{submission.hours}</span>
                 </span>
               )}
               {submission.min_order_amount != null && (

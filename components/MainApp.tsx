@@ -121,21 +121,21 @@ export default function MainApp() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-60px)] flex-col bg-bg ">
+    <div className="flex h-[calc(100vh-60px)] flex-col">
       <TopNav onSelectCafe={handleSearchSelect} />
-      <FilterBar
-        variant={tweaks.filterVariant}
-        activeFilters={activeFilters}
-        toggle={toggleFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        openDrawer={() => setDrawerOpen(true)}
-        matchCount={visibleCafes.length}
-      />
 
       <div className="relative flex-1 flex min-h-0">
-        {/* Sidebar */}
+        <FilterBar
+          variant={tweaks.filterVariant}
+          activeFilters={activeFilters}
+          toggle={toggleFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          openDrawer={() => setDrawerOpen(true)}
+          matchCount={visibleCafes.length}
+        />
 
+        {/* Sidebar */}
         <CafeSidebar
           cafes={visibleCafes}
           hoveredId={hoveredId}
@@ -162,7 +162,7 @@ export default function MainApp() {
           {/* Legend */}
           <div
             className={cls(
-              "absolute z-[110] right-[20px] rounded-xl border border-border-subtle",
+              "absolute z-[110] right-[20px] rounded-lg border border-border-subtle",
               "py-[10px] px-[14px] bg-white/95 backdrop-blur-sm shadow-card",
               useSheet ? "top-[20px] bottom-auto" : "bottom-[20px] top-auto",
             )}
@@ -172,9 +172,9 @@ export default function MainApp() {
             </div>
             <div className="flex gap-3 text-[11.5px] text-fg-2">
               {[
-                { colorClass: "bg-score-good", label: "태그 7+ 우수" },
-                { colorClass: "bg-kg-amber", label: "태그 4+ 양호" },
-                { colorClass: "bg-score-low", label: "태그 3개 이하" },
+                { colorClass: "bg-score-good", label: "점수 10+ 우수" },
+                { colorClass: "bg-kg-amber", label: "점수 5+ 양호" },
+                { colorClass: "bg-score-low", label: "점수 4 이하" },
               ].map(({ colorClass, label }) => (
                 <span
                   key={label}

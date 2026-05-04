@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendPushToAdmins } from "@/lib/firebase/sendPush";
 
@@ -46,11 +46,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  void sendPushToAdmins({
-    title: "새 카페 제보",
-    body: `${body.name} 카페 제보가 들어왔어요.`,
-    link: "/admin",
-  }).catch((err) => console.error("[cafe-submissions] push 실패", err));
+  after(async () => {
+    try {
+      await sendPushToAdmins({
+        title: "새 카페 제보",
+        body: `${body.name} 카페 제보가 들어왔어요.`,
+        link: "/admin",
+      });
+    } catch (err) {
+      console.error("[cafe-submissions] push 실패", err);
+    }
+  });
 
   return NextResponse.json({ id: data.id });
 }

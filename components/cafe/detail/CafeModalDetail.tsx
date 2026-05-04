@@ -189,7 +189,9 @@ export function CafeModalDetail({
                 strokeWidth={2}
                 className="shrink-0 text-fg-4 mt-1"
               />
-              <span className="leading-snug">{detail.hours}</span>
+              <span className="leading-snug whitespace-pre-line">
+                {detail.hours}
+              </span>
             </div>
           )}
           {detail?.description && (

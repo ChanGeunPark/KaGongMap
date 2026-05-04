@@ -49,7 +49,9 @@ export default function EditSubmissionCard({
               {submission.hours && (
                 <div>
                   <span className="text-gray-400">영업시간</span>{" "}
-                  <span className="font-medium">{submission.hours}</span>
+                  <span className="font-medium whitespace-pre-line">
+                    {submission.hours}
+                  </span>
                 </div>
               )}
               {submission.min_order_amount != null && (

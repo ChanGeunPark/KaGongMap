@@ -30,6 +30,7 @@ import {
   TbMenu2,
   TbMessages,
   TbMinus,
+  TbParking,
   TbPencil,
   TbPhone,
   TbPlug,
@@ -96,7 +97,8 @@ type IconName =
   | "trash"
   | "settings"
   | "loader"
-  | "download";
+  | "download"
+  | "parking";
 
 interface KGIconProps {
   name: IconName | string;
@@ -152,6 +154,7 @@ const ICONS: Record<string, IconType> = {
   settings: TbSettings,
   loader: TbLoader2,
   download: TbDownload,
+  parking: TbParking,
 };
 
 export default function KGIcon({ name, size = 18, stroke = 1.8 }: KGIconProps) {

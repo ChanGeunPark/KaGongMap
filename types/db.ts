@@ -12,7 +12,8 @@ export type CafeTag =
   | "가성비_좋음"
   | "자연채광"
   | "야외테라스"
-  | "반려동물_가능";
+  | "반려동물_가능"
+  | "주차_가능";
 
 export type SubmissionStatus = "pending" | "approved" | "rejected";
 

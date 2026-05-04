@@ -24,33 +24,69 @@
 
 ## 폴더 구조 (실제 프로젝트 구조)
 
+> 카페 등록·상세·후기 작성은 모두 **모달 기반**(`/cafes/*` 별도 페이지 없음). 등록은 TopNav `ReportButton` → `CafeInfoForm` 모달, 상세는 핀 클릭 → `CafeModalDetail`, 후기는 상세 모달 내부 `CafeReviewSection`.
+
 ```
 kagongmap/
-├── app/                        # Next.js App Router
-│   ├── layout.tsx              # 루트 레이아웃 (GNB, AuthProvider)
-│   ├── page.tsx                # 메인 지도 /
+├── app/                              # Next.js App Router
+│   ├── layout.tsx                    # 루트 레이아웃 (Provider, GNB)
+│   ├── page.tsx                      # 메인 지도 / [PUBLIC]
 │   ├── globals.css
-│   ├── cafes/
-│   │   ├── [id]/
-│   │   │   ├── page.tsx        # 카페 상세 /cafes/[id] [PUBLIC]
-│   │   │   └── review/
-│   │   │       └── page.tsx    # 후기 작성 /cafes/[id]/review [AUTH]
-│   │   └── new/
-│   │       └── page.tsx        # 카페 등록 /cafes/new [AUTH]
-│   ├── mypage/
-│   │   └── page.tsx            # 마이페이지 /mypage [AUTH]
-│   └── login/
-│       └── page.tsx            # 로그인 /login [PUBLIC]
+│   ├── manifest.ts / robots.ts / sitemap.ts
+│   ├── admin/
+│   │   ├── _components/              # 어드민 전용 컴포넌트
+│   │   ├── _hooks/
+│   │   └── page.tsx                  # /admin [AUTH/ADMIN]
+│   ├── login/page.tsx                # /login [PUBLIC]
+│   ├── mypage/page.tsx               # /mypage [AUTH]
+│   ├── privacy/page.tsx              # /privacy [PUBLIC]
+│   └── api/                          # Route Handlers
+│       ├── auth/[...nextauth]/       # NextAuth
+│       ├── admin/                    # 어드민 전용 (cafes, submissions, image-submissions, edit-submissions, reviews, review-reports, me)
+│       ├── cafes/
+│       │   ├── [id]/                 # 카페 상세·후기·이미지/수정 제보
+│       │   │   ├── reviews/
+│       │   │   ├── image-submissions/
+│       │   │   └── edit-submissions/
+│       │   └── submissions/          # 카페 제보
+│       ├── reviews/[id]/reports/     # 후기 신고
+│       ├── bookmarks/                # 즐겨찾기
+│       ├── likes/[cafeId]/           # 좋아요
+│       ├── users/me/                 # 내 정보·내 카페·닉네임·제보 요약
+│       ├── fcm-tokens/               # FCM 토큰 등록/해제
+│       ├── cloudflare/image/         # 이미지 업로드 직접 URL
+│       ├── kakao/address/            # 주소 검색
+│       └── dev/test-push/            # [DEV] 푸시 테스트
 ├── components/
-│   ├── layout/                 # GNB, Footer 등 레이아웃 컴포넌트
-│   ├── map/                    # NaverMap, CafeMarker, FilterBar 등
-│   ├── cafe/                   # CafeCard, CafeTagList, CafeForm 등
-│   ├── review/                 # ReviewCard, RatingInput 등
-│   └── ui/                     # Button, Input, Modal, Toast 등 공통 UI
-├── hooks/                      # Custom React Hooks
-├── lib/                        # supabase client, 유틸 함수
-├── types/                      # TypeScript 타입 정의
-└── docs/                       # 프로젝트 문서
+│   ├── auth/                         # AuthGate, AuthProvider
+│   ├── badge/, button/, input/       # 공용 UI 프리미티브
+│   ├── cafe/
+│   │   ├── card/                     # CafeCard
+│   │   ├── detail/                   # CafeModalDetail, CafeInfoSidebar, CafeReviewSection, CafeEditModal
+│   │   └── form/CafeInfoForm/        # 카페 등록·수정 폼 (HoursInput, TagSelector 등)
+│   ├── holder/                       # 페이지/섹션 holder 컴포넌트
+│   ├── layout/                       # MainApp 보조 (TopNav, FilterBar, FilterDrawer, BottomSheet, CafeSidebar)
+│   │   └── topnav/
+│   ├── map/                          # MapCanvas, CafeMarkerClusterer, markerIcons
+│   ├── modal/                        # BottomSheetModal 등 공용 모달
+│   ├── notifications/                # FCM 권한 요청·DevTestPushButton
+│   ├── pwa/                          # 설치 프롬프트 등
+│   ├── tweaks/                       # 디자인 토글 패널 (DEV)
+│   └── ui/                           # KGIcon, ScoreDisc 등 공통 UI
+├── hooks/                            # Custom React Hooks
+│   └── storage/                      # localStorage 추상화
+├── lib/
+│   ├── api/                          # 도메인별 fetch + React Query
+│   ├── firebase/                     # admin, fcm, sendPush, analytics
+│   ├── supabase/                     # 서버/브라우저 클라이언트
+│   ├── scoring.ts                    # 차원별 가중치·점수·등급
+│   ├── data.ts                       # FILTER_TAG_MAP, TAG_LABELS, KG_FILTERS
+│   ├── auth.ts                       # NextAuth 옵션
+│   ├── adminAuth.ts                  # 어드민 가드
+│   └── (utils, enum, siteUrl, naverMapAppLink, pinHash, randomNickname)
+├── stores/                           # Zustand (cafeSelectionStore, modalStore, userStore)
+├── types/                            # TypeScript 타입 정의 (db, api, cafe, naver, kakao)
+└── docs/                             # 프로젝트 문서
 ```
 
 ## 인증 원칙: "보는 건 자유, 참여는 로그인"
@@ -73,15 +109,22 @@ kagongmap/
 10. **사진 제보 (기존 카페에 추가 이미지)**
 11. **어드민 콘솔 (`/admin`) — 카페/사진 제보 승인·삭제**
 
-## 카공 적합도 산출 방식
+## 적합도 산출 방식
 
-별점/avg_rating 미사용. 카페별 `cafe_tags` 개수 기반:
+별점/avg_rating 미사용. 카페별 보유 태그에 **차원별 가중치**를 합산해 점수화한다. 가중치와 임계값은 `lib/scoring.ts`에 정의 (클라이언트 계산).
 
-- **7개 이상**: 우수 (녹색 핀)
-- **4개 이상**: 양호 (앰버 핀)
-- **3개 이하**: 정보 부족 (레드 핀)
+- 차원: `kagong | date | talk` (`ScoreDimension` 타입)
+- 함수: `getScore(tags, dim)`, `getScoreTier(score, dim)` (`high | mid | low`)
+- 가중치 조정은 `lib/scoring.ts`의 `WEIGHTS` 객체만 수정하면 모든 화면 반영
 
-정렬 기본값: `like_count DESC` → `tags.length DESC` (클라이언트 정렬)
+카공 차원 임계값 (현재):
+- **점수 10+**: 우수 (녹색 핀)
+- **점수 5+**: 양호 (앰버 핀)
+- **점수 4 이하**: 정보 부족 (레드 핀)
+
+정렬 기본값: `like_count DESC` → `getScore(tags, "kagong") DESC` (클라이언트 정렬)
+
+> 향후 어드민에서 가중치를 동적으로 조정해야 할 때 `tag_scores` 테이블로 옮기되, 같은 자료구조를 DB seed로 이전하면 됨.
 
 ## V2 예정 기능 (MVP 이후)
 
@@ -91,8 +134,9 @@ kagongmap/
 ## 핵심 카공 태그 (enum)
 
 ```
-콘센트_있음 | 와이파이_있음 | 조용함 | 24시간 | 노트북_허용 | 혼잡도_낮음
-| 늦은영업 | 가성비_좋음 | 자연채광 | 야외테라스 | 반려동물_가능
+콘센트_있음 | 와이파이_있음 | 조용함 | 24시간 | 시간제한없음 | 노트북_허용
+| 혼잡도_낮음 | 늦은영업 | 가성비_좋음 | 자연채광 | 야외테라스
+| 반려동물_가능 | 주차_가능
 ```
 
 ## 코딩 컨벤션

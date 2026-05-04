@@ -1,15 +1,16 @@
 import { CafeMarker } from "@/types/db";
+import { getScore, getScoreTier } from "@/lib/scoring";
 
 type ClusterIcon = {
   content: string;
   anchor: naver.maps.Point;
 };
 
-function scoreColor(tagCount: number) {
-  if (tagCount >= 7) return "#22c55e";
-  if (tagCount >= 4) return "#f5a524";
-  return "#ef4444";
-}
+const TIER_COLOR: Record<"high" | "mid" | "low", string> = {
+  high: "#22c55e",
+  mid: "#f5a524",
+  low: "#ef4444",
+};
 
 function escapeHtml(value: string) {
   return value
@@ -62,7 +63,7 @@ export function clusterIcon(count: number): ClusterIcon {
 }
 
 export function cafePinHtml(cafe: CafeMarker, active: boolean) {
-  const color = scoreColor(cafe.tags.length);
+  const color = TIER_COLOR[getScoreTier(getScore(cafe.tags, "kagong"), "kagong")];
   const borderWidth = active ? 3 : 2;
   const shadow = active
     ? "0 6px 16px rgba(0,0,0,0.28)"

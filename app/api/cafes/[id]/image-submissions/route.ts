@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendPushToAdmins } from "@/lib/firebase/sendPush";
 
@@ -49,11 +49,17 @@ export async function POST(
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
-  void sendPushToAdmins({
-    title: "새 사진 제보",
-    body: `${cafe.name}에 사진이 제보되었어요.`,
-    link: "/admin",
-  }).catch((err) => console.error("[image-submissions] push 실패", err));
+  after(async () => {
+    try {
+      await sendPushToAdmins({
+        title: "새 사진 제보",
+        body: `${cafe.name}에 사진이 제보되었어요.`,
+        link: "/admin",
+      });
+    } catch (err) {
+      console.error("[image-submissions] push 실패", err);
+    }
+  });
 
   return NextResponse.json({ id: data.id });
 }
