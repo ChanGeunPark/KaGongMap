@@ -162,7 +162,7 @@ export default function MainApp() {
           {/* Legend */}
           <div
             className={cls(
-              "absolute z-[110] right-[20px] rounded-xl border border-border-subtle",
+              "absolute z-[110] right-[20px] rounded-lg border border-border-subtle",
               "py-[10px] px-[14px] bg-white/95 backdrop-blur-sm shadow-card",
               useSheet ? "top-[20px] bottom-auto" : "bottom-[20px] top-auto",
             )}

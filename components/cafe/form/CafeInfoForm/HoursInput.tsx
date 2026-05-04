@@ -3,6 +3,52 @@
 import { useState } from "react";
 import { cls } from "@/lib/utils";
 
+const STEP_MINUTES = 30;
+const TIME_OPTIONS: string[] = (() => {
+  const out: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += STEP_MINUTES) {
+      out.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    }
+  }
+  out.push("24:00");
+  return out;
+})();
+
+function TimeField({
+  value,
+  onChange,
+  compact = false,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  compact?: boolean;
+}) {
+  // 기존 데이터(10:32 등 비정형 값)도 그대로 보이도록 옵션에 포함
+  const options =
+    value && !TIME_OPTIONS.includes(value)
+      ? [value, ...TIME_OPTIONS]
+      : TIME_OPTIONS;
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cls(
+        "w-full bg-white rounded-md border-gray-50 border-solid border-2 text-gray-900 body2-400",
+        compact ? "min-h-[40px] px-2 text-sm" : "min-h-[48px] px-3",
+      )}
+    >
+      <option value="">선택</option>
+      {options.map((t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 type Mode = "everyday" | "weekday-weekend" | "per-day" | "24h" | "custom";
 
 const DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
@@ -36,12 +82,12 @@ const buildDayLabel = (label: string, h: DayHours) => {
 const buildWeekdayWeekend = (weekday: DayHours, weekend: DayHours) =>
   [buildDayLabel("평일", weekday), buildDayLabel("주말", weekend)]
     .filter(Boolean)
-    .join(", ");
+    .join("\n");
 
 const buildPerDay = (schedule: Record<Day, DayHours>) =>
   DAYS.map((d) => buildDayLabel(d, schedule[d]))
     .filter(Boolean)
-    .join(", ");
+    .join("\n");
 
 const createEmptySchedule = (): Record<Day, DayHours> =>
   Object.fromEntries(DAYS.map((d) => [d, { ...EMPTY_DAY }])) as Record<
@@ -178,7 +224,7 @@ export default function HoursInput({ value, onChange }: HoursInputProps) {
       )}
 
       {mode !== "custom" && value && (
-        <p className="text-caption text-fg-3">
+        <p className="text-caption text-fg-3 whitespace-pre-line">
           미리보기: <span className="text-fg-2 font-medium">{value}</span>
         </p>
       )}
@@ -197,19 +243,13 @@ function TimeRange({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <input
-        type="time"
-        value={open}
-        onChange={(e) => onChange(e.target.value, close)}
-        className="flex-1 min-h-[48px] bg-white rounded-md border-gray-50 border-solid border-2 px-3 body2-400 text-gray-900"
-      />
+      <div className="flex-1">
+        <TimeField value={open} onChange={(v) => onChange(v, close)} />
+      </div>
       <span className="text-fg-3">–</span>
-      <input
-        type="time"
-        value={close}
-        onChange={(e) => onChange(open, e.target.value)}
-        className="flex-1 min-h-[48px] bg-white rounded-md border-gray-50 border-solid border-2 px-3 body2-400 text-gray-900"
-      />
+      <div className="flex-1">
+        <TimeField value={close} onChange={(v) => onChange(open, v)} />
+      </div>
     </div>
   );
 }
@@ -232,19 +272,21 @@ function DayRow({
         <span className="flex-1 text-sm text-fg-3">휴무</span>
       ) : (
         <div className="flex flex-1 items-center gap-1.5 min-w-0">
-          <input
-            type="time"
-            value={value.open}
-            onChange={(e) => onChange({ ...value, open: e.target.value })}
-            className="flex-1 min-w-0 min-h-[40px] bg-white rounded-md border-gray-50 border-solid border-2 px-2 body2-400 text-gray-900"
-          />
+          <div className="flex-1 min-w-0">
+            <TimeField
+              value={value.open}
+              onChange={(v) => onChange({ ...value, open: v })}
+              compact
+            />
+          </div>
           <span className="text-fg-3 shrink-0">–</span>
-          <input
-            type="time"
-            value={value.close}
-            onChange={(e) => onChange({ ...value, close: e.target.value })}
-            className="flex-1 min-w-0 min-h-[40px] bg-white rounded-md border-gray-50 border-solid border-2 px-2 body2-400 text-gray-900"
-          />
+          <div className="flex-1 min-w-0">
+            <TimeField
+              value={value.close}
+              onChange={(v) => onChange({ ...value, close: v })}
+              compact
+            />
+          </div>
         </div>
       )}
       <label className="flex shrink-0 items-center gap-1 text-xs text-fg-3 cursor-pointer">

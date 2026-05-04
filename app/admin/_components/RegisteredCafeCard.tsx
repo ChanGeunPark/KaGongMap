@@ -51,9 +51,9 @@ export default function RegisteredCafeCard({
 
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-400">
               {cafe.hours && (
-                <span className="flex items-center gap-1">
+                <span className="flex items-start gap-1">
                   <span>🕐</span>
-                  {cafe.hours}
+                  <span className="whitespace-pre-line">{cafe.hours}</span>
                 </span>
               )}
               {cafe.min_order_amount != null && (

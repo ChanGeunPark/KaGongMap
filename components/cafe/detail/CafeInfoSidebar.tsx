@@ -109,9 +109,11 @@ export default function CafeInfoSidebar({ cafe }: { cafe: CafeWithDetail }) {
         {/* 정보 항목 */}
         <div className="flex flex-col gap-3.5 mt-4.5 text-[13.5px]">
           <InfoRow icon="clock" label="영업시간">
-            <div className="text-fg font-medium">{cafe.hours}</div>
+            <div className="text-fg font-medium whitespace-pre-line">
+              {cafe.hours}
+            </div>
             {cafe.hours && (
-              <div className="text-xs text-score-good mt-0.5">
+              <div className="text-xs text-score-good mt-0.5 whitespace-pre-line">
                 ● 영업시간 {cafe.hours}
               </div>
             )}
