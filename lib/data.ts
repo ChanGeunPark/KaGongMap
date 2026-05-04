@@ -14,6 +14,7 @@ export const FILTER_TAG_MAP: Record<string, CafeTag> = {
   naturalLight: "자연채광",
   terrace: "야외테라스",
   pet: "반려동물_가능",
+  parking: "주차_가능",
 };
 
 export const TAG_LABELS: Record<CafeTag, string> = {
@@ -29,6 +30,7 @@ export const TAG_LABELS: Record<CafeTag, string> = {
   자연채광: "☀️ 자연채광",
   야외테라스: "🌿 야외테라스",
   반려동물_가능: "🐶 반려동물 가능",
+  주차_가능: "🅿️ 주차 가능",
 };
 
 export const KG_FILTERS: FilterItem[] = [
@@ -43,4 +45,5 @@ export const KG_FILTERS: FilterItem[] = [
   { id: "naturalLight", label: "자연채광", icon: "sparkle" },
   { id: "terrace", label: "야외테라스", icon: "trending" },
   { id: "pet", label: "반려동물", icon: "heart" },
+  { id: "parking", label: "주차", icon: "parking" },
 ];

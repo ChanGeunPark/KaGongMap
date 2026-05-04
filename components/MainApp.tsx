@@ -172,9 +172,9 @@ export default function MainApp() {
             </div>
             <div className="flex gap-3 text-[11.5px] text-fg-2">
               {[
-                { colorClass: "bg-score-good", label: "태그 7+ 우수" },
-                { colorClass: "bg-kg-amber", label: "태그 4+ 양호" },
-                { colorClass: "bg-score-low", label: "태그 3개 이하" },
+                { colorClass: "bg-score-good", label: "점수 10+ 우수" },
+                { colorClass: "bg-kg-amber", label: "점수 5+ 양호" },
+                { colorClass: "bg-score-low", label: "점수 4 이하" },
               ].map(({ colorClass, label }) => (
                 <span
                   key={label}

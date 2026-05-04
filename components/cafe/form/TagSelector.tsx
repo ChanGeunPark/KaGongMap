@@ -60,6 +60,12 @@ const CAFE_TAGS = [
     emoji: "🐶",
     desc: "강아지·고양이 동반 OK",
   },
+  {
+    id: "주차_가능",
+    label: "주차 가능",
+    emoji: "🅿️",
+    desc: "차량 주차 가능",
+  },
 ] as const;
 
 interface TagSelectorProps {

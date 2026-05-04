@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { CafeMarker } from "@/types/db";
 import { FILTER_TAG_MAP } from "@/lib/data";
 import { SortBy } from "@/types/cafe";
+import { getScore } from "@/lib/scoring";
 
 interface Bounds {
   ne: naver.maps.LatLng;
@@ -31,7 +32,7 @@ export function useFilteredCafes(
       list.sort((a, b) => {
         const likeDiff = b.like_count - a.like_count;
         if (likeDiff !== 0) return likeDiff;
-        return b.tags.length - a.tags.length;
+        return getScore(b.tags, "kagong") - getScore(a.tags, "kagong");
       });
     }
 
@@ -39,7 +40,9 @@ export function useFilteredCafes(
   }, [allCafes, activeFilters, sortBy]);
 
   const visibleCafes = useMemo<CafeMarker[]>(() => {
-    if (!bounds) return cafes;
+    // 지도 bounds가 아직 없으면(=지도 초기화 전) 전체를 보여주지 않고 비워둠.
+    // bounds가 잡히기 전에 사이드바에 모든 카페가 깜빡이는 걸 방지.
+    if (!bounds) return [];
     return cafes.filter(
       (c) =>
         c.lat >= bounds.sw.lat() &&
