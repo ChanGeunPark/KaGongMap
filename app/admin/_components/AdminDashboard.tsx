@@ -133,11 +133,20 @@ export default function AdminDashboard() {
             <span className="text-gray-300">|</span>
             <span className="text-sm text-gray-500">ADMIN</span>
           </div>
-          {pendingCount > 0 && (
-            <span className="text-xs font-semibold bg-red-500 text-white px-2 py-0.5 rounded-full">
-              {pendingCount}건 대기
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/auto-submit"
+              className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full transition-colors"
+              title="AI 자동 제보 (본인 PC 의 Claude CLI 사용)"
+            >
+              ✨ AI 자동 제보
+            </Link>
+            {pendingCount > 0 && (
+              <span className="text-xs font-semibold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                {pendingCount}건 대기
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

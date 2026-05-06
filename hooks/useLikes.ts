@@ -10,6 +10,7 @@ import {
   unlikeCafe,
 } from "@/lib/api/likes";
 import { cafeKeys } from "@/lib/api/cafes";
+import type { CafeMarker, CafeWithDetail } from "@/types/db";
 import {
   readLikedCafeIds,
   writeLikedCafeIds,
@@ -20,6 +21,7 @@ interface UseLikesReturn {
   toggle: (cafeId: string) => void;
   count: number;
   isAuthed: boolean;
+  isPending: boolean;
 }
 
 // 비로그인 상태에서는 localStorage를 source-of-truth로 사용한다.
@@ -48,6 +50,26 @@ export function useLikes(): UseLikesReturn {
   const liked = isAuthed ? serverLikes : localLikes;
   const likedSet = useMemo(() => new Set(liked), [liked]);
 
+  // markers + detail 캐시의 like_count만 부분 패치 (전체 refetch 회피)
+  const patchLikeCount = useCallback(
+    (cafeId: string, delta: number) => {
+      queryClient.setQueryData<CafeMarker[]>(cafeKeys.markers(), (prev) => {
+        if (!prev) return prev;
+        return prev.map((m) =>
+          m.id === cafeId ? { ...m, like_count: m.like_count + delta } : m,
+        );
+      });
+      queryClient.setQueryData<CafeWithDetail>(
+        cafeKeys.detail(cafeId),
+        (prev) => {
+          if (!prev) return prev;
+          return { ...prev, like_count: prev.like_count + delta };
+        },
+      );
+    },
+    [queryClient],
+  );
+
   const serverToggle = useMutation({
     mutationFn: async ({
       cafeId,
@@ -67,14 +89,12 @@ export function useLikes(): UseLikesReturn {
         ? prev.filter((id) => id !== cafeId)
         : [...prev, cafeId];
       queryClient.setQueryData(likeKeys.me(), next);
+      patchLikeCount(cafeId, wasLiked ? -1 : 1);
       return { prev };
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (_err, { cafeId, wasLiked }, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(likeKeys.me(), ctx.prev);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: likeKeys.me() });
-      queryClient.invalidateQueries({ queryKey: cafeKeys.markers() });
+      patchLikeCount(cafeId, wasLiked ? 1 : -1);
     },
   });
 
@@ -90,8 +110,11 @@ export function useLikes(): UseLikesReturn {
       else await likeCafe(cafeId);
       return { cafeId, wasLiked };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: cafeKeys.markers() });
+    onMutate: ({ cafeId, wasLiked }) => {
+      patchLikeCount(cafeId, wasLiked ? -1 : 1);
+    },
+    onError: (_err, { cafeId, wasLiked }) => {
+      patchLikeCount(cafeId, wasLiked ? 1 : -1);
     },
   });
 
@@ -117,5 +140,6 @@ export function useLikes(): UseLikesReturn {
     toggle,
     count: liked.length,
     isAuthed,
+    isPending: serverToggle.isPending || anonToggle.isPending,
   };
 }

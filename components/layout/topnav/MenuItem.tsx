@@ -17,7 +17,7 @@ export default function MenuItem({
       role="menuitem"
       onClick={onClick}
       className={cls(
-        "w-full inline-flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+        "w-full inline-flex items-center gap-2 rounded-md px-3 py-4 text-left text-sm transition-colors",
         tone === "danger"
           ? "text-error hover:bg-red-50"
           : "text-fg-2 hover:bg-gray-50",

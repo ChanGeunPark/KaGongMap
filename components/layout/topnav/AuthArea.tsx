@@ -44,7 +44,7 @@ export default function AuthArea() {
     );
   }
 
-  const name = session.user?.name ?? "User";
+  const name = dbUser?.nickname ?? "User";
   const initial = name.charAt(0).toUpperCase();
 
   return (
