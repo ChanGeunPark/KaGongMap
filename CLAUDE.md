@@ -36,7 +36,10 @@ kagongmap/
 │   ├── admin/
 │   │   ├── _components/              # 어드민 전용 컴포넌트
 │   │   ├── _hooks/
-│   │   └── page.tsx                  # /admin [AUTH/ADMIN]
+│   │   ├── page.tsx                  # /admin [AUTH/ADMIN]
+│   │   └── auto-submit/              # /admin/auto-submit — AI 자동 제보 (로컬 브릿지 연동) [AUTH/ADMIN]
+│   │       ├── _components/          # AutoSubmitDashboard, KakaoSearchPanel, JobCard, ReviewModal 등
+│   │       └── page.tsx
 │   ├── login/page.tsx                # /login [PUBLIC]
 │   ├── mypage/page.tsx               # /mypage [AUTH]
 │   ├── privacy/page.tsx              # /privacy [PUBLIC]
@@ -57,6 +60,7 @@ kagongmap/
 │       ├── cloudflare/image/         # 이미지 업로드 직접 URL
 │       ├── kakao/address/            # 주소 검색
 │       └── dev/test-push/            # [DEV] 푸시 테스트
+브릿지 (Hono + claude CLI spawn)
 ├── components/
 │   ├── auth/                         # AuthGate, AuthProvider
 │   ├── badge/, button/, input/       # 공용 UI 프리미티브
@@ -108,6 +112,7 @@ kagongmap/
 9. Kakao + Google 소셜 로그인 (NextAuth.js)
 10. **사진 제보 (기존 카페에 추가 이미지)**
 11. **어드민 콘솔 (`/admin`) — 카페/사진 제보 승인·삭제**
+12. **어드민 AI 자동 제보 (`/admin/auto-submit`) — 본인 PC Claude CLI 로 카페 정보 자동 조사 (`docs/AUTO_SUBMIT.md`)**
 
 ## 적합도 산출 방식
 
@@ -118,6 +123,7 @@ kagongmap/
 - 가중치 조정은 `lib/scoring.ts`의 `WEIGHTS` 객체만 수정하면 모든 화면 반영
 
 카공 차원 임계값 (현재):
+
 - **점수 10+**: 우수 (녹색 핀)
 - **점수 5+**: 양호 (앰버 핀)
 - **점수 4 이하**: 정보 부족 (레드 핀)
@@ -156,3 +162,4 @@ kagongmap/
 - `docs/MILESTONES.md` — 주차별 개발 목표
 - `docs/PUSH_NOTIFICATIONS.md` — FCM 푸시 알림 설정 & 발송 헬퍼
 - `docs/ANALYTICS.md` — Firebase Analytics 이벤트 목록 & GA4 콘솔 설정
+- `docs/AUTO_SUBMIT.md` — 어드민 AI 자동 제보 (`/admin/auto-submit` + `tools/auto-submit-bridge`)
