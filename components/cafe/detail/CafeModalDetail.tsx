@@ -40,8 +40,14 @@ export function CafeModalDetail({
     useImageSubmitModalStore();
   const { setShowCafeEditModal, setCafe } = useCafeEditModalStore();
 
-  const { isLiked, toggle, isAuthed: likeAuthed } = useLikes();
+  const {
+    isLiked,
+    toggle,
+    isAuthed: likeAuthed,
+    isPending: likePending,
+  } = useLikes();
   const liked = isLiked(cafe.id);
+
   const {
     isBookmarked,
     toggle: toggleBookmark,
@@ -68,6 +74,15 @@ export function CafeModalDetail({
 
   return (
     <div className="flex flex-col gap-5 p-5">
+      {detailLoading && (
+        <div className="flex gap-2">
+          <div className="size-[84px] rounded-lg shrink-0 cursor-pointer bg-gray-200 animate-pulse" />
+          <div className="size-[84px] rounded-lg shrink-0 cursor-pointer bg-gray-200 animate-pulse" />
+          <div className="size-[84px] rounded-lg shrink-0 cursor-pointer bg-gray-200 animate-pulse" />
+          <div className="size-[84px] rounded-lg shrink-0 cursor-pointer bg-gray-200 animate-pulse" />
+        </div>
+      )}
+
       {/* ── Image Gallery ── */}
       {(images.length > 0 || !detailLoading) && (
         <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
@@ -254,7 +269,9 @@ export function CafeModalDetail({
             />
             <LikeButton
               liked={liked}
+              disabled={likePending}
               onClick={() => {
+                if (likePending) return;
                 track("like_toggle", {
                   cafe_id: cafe.id,
                   action: liked ? "remove" : "add",

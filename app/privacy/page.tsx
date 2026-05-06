@@ -132,7 +132,7 @@ export default function PrivacyPage() {
             <p className="mt-3 text-[13px] leading-6 text-fg-3">
               카공맵이 어떤 정보를 어떤 목적으로 다루는지 투명하게 안내합니다.
             </p>
-            <div className="mt-5 rounded-xl bg-kg-amber-light px-4 py-3">
+            <div className="mt-5 rounded-lg bg-kg-amber-light px-4 py-3">
               <div className="text-[11px] font-semibold text-kg-amber-deep">
                 시행일
               </div>
@@ -144,17 +144,17 @@ export default function PrivacyPage() {
         </aside>
 
         <div>
-          <section className="mb-5 rounded-2xl border border-border-subtle bg-fg p-6 text-bg shadow-card sm:p-7">
+          <section className="mb-5 rounded-2xl border border-border-subtle bg-white p-6 text-fg shadow-card sm:p-7">
             <div className="inline-flex rounded-full bg-kg-amber px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.5px] text-fg">
               No Ads
             </div>
             <h2 className="mt-5 text-[26px] font-semibold leading-tight tracking-[-0.5px] sm:text-[34px]">
               광고 목적의 개인정보 처리는 아직 하지 않습니다.
             </h2>
-            <p className="mt-4 max-w-[680px] text-sm leading-7 text-white/70 sm:text-[15px]">
-              현재 카공맵은 로그인, 카페 제보, 후기, 좋아요, 즐겨찾기 등
-              서비스 기능 제공에 필요한 정보만 사용합니다. 광고나 맞춤형 광고
-              추적을 시작하게 되면 처리방침을 먼저 업데이트하겠습니다.
+            <p className="mt-4 max-w-[680px] text-sm leading-7 text-fg-3 sm:text-[15px]">
+              현재 카공맵은 로그인, 카페 제보, 후기, 좋아요, 즐겨찾기 등 서비스
+              기능 제공에 필요한 정보만 사용합니다. 광고나 맞춤형 광고 추적을
+              시작하게 되면 처리방침을 먼저 업데이트하겠습니다.
             </p>
           </section>
 
