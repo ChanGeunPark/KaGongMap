@@ -19,4 +19,5 @@ export type EventWithRemove = typeof naver.maps.Event & {
 export type MarkerWithMutableMeta = naver.maps.Marker & {
   setPosition(position: naver.maps.Coord | naver.maps.CoordLiteral): void;
   setTitle(title: string): void;
+  setZIndex(zIndex: number): void;
 };

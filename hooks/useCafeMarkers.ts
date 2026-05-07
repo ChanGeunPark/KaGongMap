@@ -1,8 +1,14 @@
 import { RefObject, useEffect, useRef } from "react";
 import { CafeMarkerClusterer } from "@/components/map/CafeMarkerClusterer";
 import { cafePinHtml } from "@/components/map/markerIcons";
+import { orderCafesForCluster } from "@/components/map/markerOrdering";
 import { MarkerWithMutableMeta } from "@/types/naverMap";
 import { CafeMarker } from "@/types/db";
+
+// z-index 정책: 사용자 마커(useUserMarker)는 100으로 항상 최상단.
+// 카페 마커는 그 아래에서 active(선택/호버)와 inactive를 구분.
+const INACTIVE_MARKER_Z_INDEX = 1;
+const ACTIVE_MARKER_Z_INDEX = 100;
 
 interface UseCafeMarkersOptions {
   ready: boolean;
@@ -71,16 +77,19 @@ export function useCafeMarkers({
     clustererRef.current.setMarkers(ordered);
   }, [ready, cafes, onSelect, onHover, clustererRef]);
 
-  // 선택/호버 상태 변경 시 핀 아이콘 + z-order 갱신.
-  // cafes를 한 번 순회하며 setIcon과 active/inactive 분할을 동시에 수행 → O(n).
-  // active 정렬은 sort 대신 2-way partition으로 처리.
+  // 선택/호버 상태 변경 시 핀 아이콘 + z-index 갱신.
+  // 책임 분리:
+  //  - orderCafesForCluster (partition): clusterer의 30개 표시 한도 안에 active를
+  //    포함시키기 위해 active를 array 앞에 둠
+  //  - setZIndex: DOM 추가 순서에 의존하지 않고 active 마커가 시각적 위에 오게 함
+  //    (clusterer의 setMap 순서는 partition을 따라 active가 먼저 그려져 가려지기 때문)
   useEffect(() => {
     if (!ready || !clustererRef.current) return;
 
-    const active: naver.maps.Marker[] = [];
-    const inactive: naver.maps.Marker[] = [];
+    const ordered = orderCafesForCluster(cafes, selectedId, hoveredId);
+    const orderedMarkers: naver.maps.Marker[] = [];
 
-    for (const cafe of cafes) {
+    for (const cafe of ordered) {
       const marker = markers.current.get(cafe.id);
       if (!marker) continue;
       const isActive = cafe.id === selectedId || cafe.id === hoveredId;
@@ -88,10 +97,13 @@ export function useCafeMarkers({
         content: cafePinHtml(cafe, isActive),
         anchor: new naver.maps.Point(0, 14),
       });
-      (isActive ? active : inactive).push(marker);
+      (marker as MarkerWithMutableMeta).setZIndex(
+        isActive ? ACTIVE_MARKER_Z_INDEX : INACTIVE_MARKER_Z_INDEX,
+      );
+      orderedMarkers.push(marker);
     }
 
-    clustererRef.current.setMarkers([...active, ...inactive]);
+    clustererRef.current.setMarkers(orderedMarkers);
   }, [ready, selectedId, hoveredId, cafes, clustererRef]);
 
   // unmount 시 로컬 마커 store만 비움 (clusterer.destroy는 useNaverMap이 담당)

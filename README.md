@@ -70,13 +70,7 @@
 
 ### 4. AI 자동 제보 — 어드민 PC ↔ 클라우드 협업
 
-`/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 [`docs/AUTO_SUBMIT.md`](docs/AUTO_SUBMIT.md).
-
-### 5. 거대 컴포넌트 리팩토링 + 알고리즘 최적화
-
-300줄+ 파일 4개를 책임 단위로 분리, props drilling 제거, 지도 마커 갱신 로직 **O(n² log n) → O(n)** 개선 (200카페 기준 ~300k → ~200 ops). 분리 도구 선택 기준(컴포넌트 vs 훅), 동작 보존 원칙 등 의사결정 근거는 [`docs/REFACTORING.md`](docs/REFACTORING.md).
-
----
+## `/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 [`docs/AUTO_SUBMIT.md`](docs/AUTO_SUBMIT.md).
 
 ## 시작하기
 
@@ -299,3 +293,4 @@ kagongmap/
 | [`docs/DB_SCHEMA.md`](docs/DB_SCHEMA.md)       | Supabase 테이블 스키마 & SQL                   |
 | [`docs/MILESTONES.md`](docs/MILESTONES.md)     | 주차별 개발 목표                               |
 | [`docs/AUTO_SUBMIT.md`](docs/AUTO_SUBMIT.md)   | 어드민 AI 자동 제보 (브릿지 + Claude CLI) 상세 |
+| [`docs/TESTING.md`](docs/TESTING.md)           | 테스트 전략·작성 기록                          |
