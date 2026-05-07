@@ -21,6 +21,7 @@
 | ➕ 카페 등록      | 3단계 폼 (기본정보 → 카공태그 → 사진 업로드)                           |
 | 📄 카페 상세      | 카공 태그, 사진 갤러리, 평균 별점, 후기 목록                           |
 | ⭐ 후기 & 별점    | 방문 기반 별점 + 카공 태그 + 후기 본문 작성                            |
+| ❤️ 좋아요         | 비로그인도 가능 — localStorage로 중복 방지, 서버 카운트는 RPC로 즉시 누적 |
 | 🔖 즐겨찾기       | 자주 가는 카공 카페 북마크 (낙관적 업데이트)                           |
 | 👤 마이페이지     | 즐겨찾기 / 내가 등록한 카페 / 내 후기 관리                             |
 | 🤖 AI 자동 제보   | (어드민 전용) 본인 PC Claude CLI 로 카페 정보 자동 조사 → 검수 후 등록 |
@@ -46,7 +47,7 @@
 | Styling         | Tailwind CSS                       |
 | 지도            | 네이버 지도 API                    |
 | Backend & Auth  | Supabase (PostgreSQL + Auth + RLS) |
-| 이미지 스토리지 | Supabase Storage                   |
+| 이미지 스토리지 | Cloudflare                         |
 | 배포            | Vercel                             |
 
 ---
@@ -72,6 +73,16 @@
 ### 4. AI 자동 제보 — 어드민 PC ↔ 클라우드 협업
 
 `/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 [docs/AUTO_SUBMIT.md](docs/AUTO_SUBMIT.md).
+
+### 5. 비로그인 좋아요 — 카운트와 개인 기록 분리
+
+좋아요는 **누가 눌렀는지(`cafe_likes` 테이블)** 와 **표시용 카운트(`cafes.like_count`)** 를 분리해서 관리한다. 비로그인 사용자도 좋아요 가능 → 카운트가 즉시 늘어 사회적 증명이 바로 발생.
+
+- **비로그인**: `localStorage`가 source-of-truth (동일 브라우저 중복 클릭 차단). 서버는 `bump_cafe_like_count` RPC로 카운트만 ±1 — 누가 눌렀는지는 기록 안 함.
+- **로그인**: `cafe_likes` 테이블에 `(user_id, cafe_id)` upsert/delete가 source-of-truth. 익명 좋아요는 식별 불가능하므로 머지하지 않음 — 카운트는 이미 반영돼 있어 이중집계 우려도 없음.
+- 양쪽 모두 낙관적 업데이트 + 마커·상세 캐시의 `like_count`만 부분 패치 (전체 refetch 회피). 실패 시 롤백은 [hooks/useLikes.ts](hooks/useLikes.ts) 의 `onError` 분기.
+
+→ "참여는 로그인" 원칙을 깨지 않으면서 비로그인 트래픽도 데이터 누적에 기여하게 한 절충안.
 
 ## 시작하기
 
@@ -185,7 +196,7 @@ cafe_submissions INSERT (status='pending')
 
 브릿지는 별도 깃허브 레포로 관리됩니다. 자세한 셋업은 브릿지 레포의 README 를 참고:
 
-> **브릿지 레포**: `https://github.com/<OWNER>/kagongmap-auto-submit-bridge`
+> **브릿지 레포**: `https://github.com/ChanGeunPark/auto-submit-bridge`
 
 요약:
 
