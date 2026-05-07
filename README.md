@@ -1,5 +1,9 @@
 # 카공맵 (KaGongMap)
 
+<p align="center">
+  <img src="./public/kagongmap_landing_img.png" alt="KaGongMap 랜딩 이미지" width="900" />
+</p>
+
 > 카공족이 직접 만드는 카페 지도 커뮤니티
 
 콘센트, 와이파이, 소음 수준, 시간 제한 여부 등 **카공 특화 정보**를 지도 위에서 함께 공유합니다.  
