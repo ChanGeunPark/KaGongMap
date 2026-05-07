@@ -50,6 +50,34 @@
 
 ---
 
+## 기술적 의사결정
+
+### 1. Tier 기반 데이터 로딩
+
+마커용 가벼운 페이로드(`CafeMarker` — 이름·좌표·태그·like_count)와 상세 모달용 무거운 페이로드(`CafeWithDetail` — 이미지·후기·영업시간 등)를 [`lib/api/cafes.ts`](lib/api/cafes.ts)에서 분리. 첫 렌더는 마커 정보만 fetch하고, 상세는 핀 클릭 시점에 lazy fetch. 마커 수가 늘어도 초기 페이로드 일정.
+
+### 2. 다층 보안 (RLS + service-role API + NextAuth 가드)
+
+- **DB**: Supabase RLS 정책으로 row-level 권한 강제 ([`docs/DB_SCHEMA.md`](docs/DB_SCHEMA.md))
+- **API**: 모든 mutation을 service-role API route 경유 → 클라이언트는 anon-key로 read-only
+- **라우트**: 어드민 라우트는 [`lib/adminAuth.ts`](lib/adminAuth.ts)의 `requireAdminApiAccess()` 통과 필수
+
+→ anon-key가 노출돼도 mutation 불가능. service-role-key는 서버에만 존재.
+
+### 3. 모달 기반 UX (라우트 폭발 방지)
+
+카페 등록·상세·수정·후기는 별도 페이지 없이 메인 지도 위 모달로 처리. [`stores/modalStore.ts`](stores/modalStore.ts)에 모달 상태를 Zustand로 관리. 라우트 변경 없이 인터랙션이 끝나서 지도 컨텍스트(viewport·선택 상태)가 그대로 보존됨.
+
+### 4. AI 자동 제보 — 어드민 PC ↔ 클라우드 협업
+
+`/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 [`docs/AUTO_SUBMIT.md`](docs/AUTO_SUBMIT.md).
+
+### 5. 거대 컴포넌트 리팩토링 + 알고리즘 최적화
+
+300줄+ 파일 4개를 책임 단위로 분리, props drilling 제거, 지도 마커 갱신 로직 **O(n² log n) → O(n)** 개선 (200카페 기준 ~300k → ~200 ops). 분리 도구 선택 기준(컴포넌트 vs 훅), 동작 보존 원칙 등 의사결정 근거는 [`docs/REFACTORING.md`](docs/REFACTORING.md).
+
+---
+
 ## 시작하기
 
 ### 사전 요구사항
