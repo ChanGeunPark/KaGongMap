@@ -3,6 +3,7 @@
 <p align="center">
   <img src="./public/kagongmap_landing_img.png" alt="KaGongMap 랜딩 이미지" width="900" />
 </p>
+🌐 **실서비스 바로가기**: [https://www.xn--ob0bo0wy3p.com/]
 
 > 카공족이 직접 만드는 카페 지도 커뮤니티
 
