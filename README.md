@@ -71,7 +71,7 @@
 
 ### 4. AI 자동 제보 — 어드민 PC ↔ 클라우드 협업
 
-## `/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 `[docs/AUTO_SUBMIT.md](docs/AUTO_SUBMIT.md)`.
+`/admin/auto-submit`은 어드민 본인 PC에서 도는 로컬 브릿지(`localhost:7332`)를 호출 → 브릿지가 `claude` CLI를 spawn해 카페 정보 조사 → JSON으로 응답 → 검수 후 클라우드 DB에 `pending`으로 등록. LLM 비용/실행을 클라우드와 분리하고 오프라인 검수 단계를 둔 설계. 상세는 [docs/AUTO_SUBMIT.md](docs/AUTO_SUBMIT.md).
 
 ## 시작하기
 
