@@ -97,8 +97,6 @@ export default function MyPage() {
           </section>
         )}
 
-        <DevTestPushButton />
-
         <section className="mt-4 rounded-2xl border border-border-subtle bg-bg p-5 shadow-card">
           {isAuthenticated ? <AccountSection /> : <LoginSection />}
         </section>
