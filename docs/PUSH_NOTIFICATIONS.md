@@ -1,6 +1,6 @@
 # 카공맵 — 푸시 알림 (FCM)
 
-> Firebase Cloud Messaging 기반 웹 푸시. 어드민에게 신고·제보 알림을 자동 전송하기 위해 구축됨. 추후 일반 유저 알림(즐겨찾기 카페 신규 후기 등)에도 확장 가능.
+> Firebase Cloud Messaging 기반 웹 푸시. 어드민에게 신고·제보 알림을 자동 전송하고, 어드민이 제보를 승인/반려하면 제보자에게도 결과를 통보. 타입 카탈로그(`lib/notifications/`) + transport(`lib/firebase/sendPush.ts`) 2계층으로 분리.
 
 ---
 
@@ -38,18 +38,29 @@ localStorage에 토큰 저장 (동일 디바이스 재방문 시 상태 표시)
 ### 발송
 
 ```
-사용자 액션 (제보/신고) → API route 진입
+사용자/어드민 액션 → API route 진입
    ↓
-INSERT (cafe_submissions / review_reports / ...)
+INSERT or UPDATE (cafe_submissions / review_reports / status='approved' ...)
    ↓
-sendPushToAdmins(payload) — fire-and-forget
+after(async () => { notifyAdmins(type, payload) ...  })   ← fire-and-forget
+   또는 notifyUserByOAuth(oauthId, type, payload)
+   ↓ (lib/notifications/catalog.ts)
+타입별 빌더가 PushPayload 생성 ({ title, body, link, data.type })
+   ↓ (lib/firebase/sendPush.ts)
+sendPushToAdmins / sendPushToUser → fcm_tokens 조회
    ↓
-ADMIN_USER_IDS env(OAuth ID) → users.id(UUID) lookup
-   ↓
-fcm_tokens 조회 → sendEachForMulticast (500개 청크)
-   ↓
-무효 토큰 자동 정리 (registration-token-not-registered)
+sendEachForMulticast (500개 청크) → 무효 토큰 자동 정리
 ```
+
+**ID 키 매핑 (중요)**:
+
+| 위치                     | 값          | 키 종류                  |
+| ------------------------ | ----------- | ------------------------ |
+| `cafe_submissions.user_id` 등 제보 테이블 | NextAuth `session.user.id` | **OAuth ID** (TEXT)      |
+| `fcm_tokens.user_id`     | `users.id`  | **Supabase PK** (UUID)   |
+| `ADMIN_USER_IDS` env     | OAuth ID 콤마 구분 | OAuth ID                 |
+
+→ 제보 행에서 바로 push 보내려면 `notifyUserByOAuth`가 내부에서 `users` 테이블 lookup으로 PK 변환. 직접 `notifyUser`는 PK가 손에 있을 때만 사용.
 
 ---
 
@@ -107,11 +118,16 @@ CREATE POLICY "fcm_tokens_delete_own" ON fcm_tokens
 ## 파일 구조
 
 ```
-lib/firebase/
-├── firebase.ts          # 클라이언트 Firebase App 싱글톤
-├── fcm.ts               # 토큰 발급·등록·해제 (클라이언트)
-├── admin.ts             # Admin SDK 싱글톤 (서버 전용, server-only)
-└── sendPush.ts          # 발송 헬퍼 (서버 전용, server-only)
+lib/notifications/        # 도메인 카탈로그 (타입 안전 푸시 발송 entrypoint)
+├── catalog.ts            # NotificationType 유니온 + 타입별 빌더
+├── send.ts               # notifyUser / notifyUsers / notifyAdmins / notifyAll / notifyUserByOAuth
+└── index.ts              # 재노출 — 호출부에서 `@/lib/notifications` 한 줄 import
+
+lib/firebase/             # FCM transport 계층
+├── firebase.ts           # 클라이언트 Firebase App 싱글톤
+├── fcm.ts                # 토큰 발급·등록·해제 (클라이언트)
+├── admin.ts              # Admin SDK 싱글톤 (서버 전용, server-only)
+└── sendPush.ts           # sendPushToUser / sendPushToUsers / sendPushToAdmins / sendPushToAll
 
 components/
 ├── layout/
@@ -125,11 +141,18 @@ public/
 └── firebase-messaging-sw.js      # 백그라운드 메시지 처리 SW
 
 app/api/
-├── fcm-tokens/route.ts                       # POST/DELETE — 토큰 등록/해제
-├── cafes/submissions/route.ts                # 새 카페 제보 (+ 어드민 푸시)
-├── cafes/[id]/image-submissions/route.ts     # 사진 제보 (+ 어드민 푸시)
-├── cafes/[id]/edit-submissions/route.ts      # 정보 수정 제안 (+ 어드민 푸시)
-└── reviews/[id]/reports/route.ts             # 후기 신고 (+ 어드민 푸시)
+├── fcm-tokens/route.ts                                   # POST/DELETE — 토큰 등록/해제
+├── cafes/submissions/route.ts                            # 새 카페 제보 (+ 어드민 알림)
+├── cafes/[id]/image-submissions/route.ts                 # 사진 제보 (+ 어드민 알림)
+├── cafes/[id]/edit-submissions/route.ts                  # 정보 수정 제안 (+ 어드민 알림)
+├── reviews/[id]/reports/route.ts                         # 후기 신고 (+ 어드민 알림)
+└── admin/
+    ├── submissions/[id]/approve/route.ts                 # 카페 제보 승인 (+ 제보자 알림)
+    ├── submissions/[id]/route.ts                         # 카페 제보 반려 (+ 제보자 알림)
+    ├── image-submissions/[id]/approve/route.ts           # 사진 제보 승인 (+ 제보자 알림)
+    ├── image-submissions/[id]/route.ts                   # 사진 제보 반려 (+ 제보자 알림)
+    ├── edit-submissions/[id]/approve/route.ts            # 수정 제안 승인 (+ 제보자 알림)
+    └── edit-submissions/[id]/route.ts                    # 수정 제안 반려 (+ 제보자 알림)
 ```
 
 ---
@@ -152,7 +175,9 @@ app/api/
 
 ---
 
-## 서버 API (`lib/firebase/sendPush.ts`)
+## Transport 계층 (`lib/firebase/sendPush.ts`)
+
+> **호출부는 직접 쓰지 말 것** — 도메인 의미 없이 raw title/body만 받는 dumb sender. 새 알림 추가 시 카탈로그 통해서 호출.
 
 ```ts
 type PushPayload = {
@@ -163,12 +188,12 @@ type PushPayload = {
 };
 ```
 
-| Export                                | 용도                                        |
-| ------------------------------------- | ------------------------------------------- |
-| `sendPushToUser(userId, payload)`     | 한 유저의 모든 디바이스. 가장 자주 쓸 것    |
-| `sendPushToUsers(userIds[], payload)` | 여러 유저 일괄 (즐겨찾기 카페 신규 후기 등) |
-| `sendPushToAdmins(payload)`           | `ADMIN_USER_IDS` 전체                       |
-| `sendPushToAll(payload)`              | 알림 켠 모든 유저. 공지용                   |
+| Export                                | 용도                                                                 |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| `sendPushToUser(userId, payload)`     | `users.id` PK 기준. 한 유저의 모든 디바이스                          |
+| `sendPushToUsers(userIds[], payload)` | 여러 PK 일괄                                                         |
+| `sendPushToAdmins(payload)`           | `ADMIN_USER_IDS` env → users.id PK lookup → 전체 어드민              |
+| `sendPushToAll(payload)`              | 알림 켠 모든 유저. 공지용                                            |
 
 내부 동작:
 
@@ -178,20 +203,114 @@ type PushPayload = {
 
 ---
 
-## 어드민 알림 트리거 포인트
+## 알림 카탈로그 (`lib/notifications/`)
 
-| 이벤트              | API Route                                | 푸시 제목                | 본문                                     |
-| ------------------- | ---------------------------------------- | ------------------------ | ---------------------------------------- |
-| 새 카페 제보        | `POST /api/cafes/submissions`            | "새 카페 제보"           | `${카페명} 카페 제보가 들어왔어요.`      |
-| 사진 제보           | `POST /api/cafes/[id]/image-submissions` | "새 사진 제보"           | `${카페명}에 사진이 제보되었어요.`       |
-| 카페 정보 수정 제안 | `POST /api/cafes/[id]/edit-submissions`  | "새 카페 정보 수정 제안" | `${카페명} 정보 수정 제안이 들어왔어요.` |
-| 후기 신고           | `POST /api/reviews/[id]/reports`         | "새 후기 신고"           | `사유: ${사유라벨}`                      |
+> **호출부의 entrypoint**. 알림 타입을 키 + payload 형태로 정의해 카피·링크·`data.type`을 단일 소스에서 관리. 새 알림 추가 시 카탈로그만 수정하면 호출부 코드 변경 없음.
 
-**모든 트리거 공통**:
+### 카탈로그 정의
 
-- INSERT 성공 후 `void sendPushToAdmins(...).catch(...)` — fire-and-forget
-- 푸시 실패해도 본 응답은 정상 (사용자 액션은 항상 성공)
-- `link: "/admin"` — 알림 클릭 시 어드민 콘솔로 이동
+```ts
+// lib/notifications/catalog.ts
+export type NotificationCatalog = {
+  // 어드민 대상
+  admin_new_cafe_submission: { cafeName: string };
+  admin_new_image_submission: { cafeName: string };
+  admin_new_edit_submission: { cafeName: string };
+  admin_new_review_report: { reasonLabel: string };
+
+  // 유저 대상 (제보자에게 결과 통보)
+  cafe_submission_approved: { cafeName: string };
+  cafe_submission_rejected: { cafeName: string };
+  image_submission_approved: { cafeName: string; cafeId: string };
+  image_submission_rejected: { cafeName: string };
+  edit_submission_approved: { cafeName: string; cafeId: string };
+  edit_submission_rejected: { cafeName: string };
+};
+```
+
+### 발송 헬퍼
+
+```ts
+// lib/notifications/send.ts
+notifyUser(userPk, type, payload)         // users.id (PK) 기준
+notifyUsers(userPks, type, payload)       // PK 배열
+notifyAdmins(type, payload)               // ADMIN_USER_IDS env 기반
+notifyAll(type, payload)                  // 알림 켠 전체
+notifyUserByOAuth(oauthId, type, payload) // OAuth ID → PK 변환 후 발송 (제보 테이블 호환)
+```
+
+모든 헬퍼는 카탈로그 빌더를 통해 `PushPayload`를 만들고 transport로 위임. `data.type`은 자동 주입되어 클라이언트에서 알림 라우팅·트래킹 키로 사용 가능.
+
+### 새 알림 타입 추가하는 법
+
+1. `catalog.ts`의 `NotificationCatalog`에 타입 키 + payload shape 추가
+2. `builders`에 해당 키의 빌더 함수 추가 (title/body/link 카피 정의)
+3. 호출부에서 `notifyXxx("<type>", { ... })` — 타입스크립트가 payload 검증
+
+---
+
+## 트리거 포인트
+
+### 어드민 대상 (유저 액션 → 어드민에게 통보)
+
+| 이벤트              | API Route                                | 카탈로그 타입                | 본문                                     |
+| ------------------- | ---------------------------------------- | ---------------------------- | ---------------------------------------- |
+| 새 카페 제보        | `POST /api/cafes/submissions`            | `admin_new_cafe_submission`  | `${카페명} 카페 제보가 들어왔어요.`      |
+| 사진 제보           | `POST /api/cafes/[id]/image-submissions` | `admin_new_image_submission` | `${카페명}에 사진이 제보되었어요.`       |
+| 카페 정보 수정 제안 | `POST /api/cafes/[id]/edit-submissions`  | `admin_new_edit_submission`  | `${카페명} 정보 수정 제안이 들어왔어요.` |
+| 후기 신고           | `POST /api/reviews/[id]/reports`         | `admin_new_review_report`    | `사유: ${사유라벨}`                      |
+
+호출 패턴:
+
+```ts
+after(async () => {
+  try {
+    await notifyAdmins("admin_new_cafe_submission", { cafeName });
+  } catch (err) {
+    console.error("[cafe-submissions] push 실패", err);
+  }
+});
+```
+
+### 유저 대상 (어드민 액션 → 제보자에게 결과 통보)
+
+| 이벤트              | API Route                                              | 카탈로그 타입                  | 본문                                            |
+| ------------------- | ------------------------------------------------------ | ------------------------------ | ----------------------------------------------- |
+| 카페 제보 승인      | `POST /api/admin/submissions/[id]/approve`             | `cafe_submission_approved`     | `${카페명} 제보가 승인되었어요...`              |
+| 카페 제보 반려      | `DELETE /api/admin/submissions/[id]`                   | `cafe_submission_rejected`     | `${카페명} 제보가 반려되었어요.`                |
+| 사진 제보 승인      | `POST /api/admin/image-submissions/[id]/approve`       | `image_submission_approved`    | `${카페명}에 올린 사진이 반영되었어요.`         |
+| 사진 제보 반려      | `DELETE /api/admin/image-submissions/[id]`             | `image_submission_rejected`    | `${카페명}에 올린 사진이 반려되었어요.`         |
+| 수정 제안 승인      | `POST /api/admin/edit-submissions/[id]/approve`        | `edit_submission_approved`     | `${카페명} 정보 수정 제안이 반영되었어요.`      |
+| 수정 제안 반려      | `DELETE /api/admin/edit-submissions/[id]`              | `edit_submission_rejected`     | `${카페명} 정보 수정 제안이 반려되었어요.`      |
+
+호출 패턴 (제보 행에서 OAuth ID 가져와서 변환):
+
+```ts
+const { data: submission } = await supabase
+  .from("cafe_image_submissions")
+  .select("user_id, cafe_id, cafes(name)")
+  .eq("id", id)
+  .maybeSingle();
+
+// ... update/delete ...
+
+if (submission.user_id && submission.cafes?.name) {
+  after(async () => {
+    await notifyUserByOAuth(submission.user_id, "image_submission_approved", {
+      cafeName: submission.cafes.name,
+      cafeId: submission.cafe_id,
+    });
+  });
+}
+```
+
+### 공통 규칙
+
+- DB 작업(`INSERT`/`UPDATE`/`DELETE`) 성공 후 `after(async () => { ... })`로 fire-and-forget
+- 푸시 실패해도 본 응답은 항상 정상 (사용자/어드민 액션은 차단되지 않음)
+- 비로그인 제보(`user_id IS NULL`)는 `if (submitterOAuthId)` 가드로 자연스럽게 noop
+- 어드민 알림은 `link: "/admin"`, 유저 알림은 `link: "/mypage"` 또는 `/?cafe=${id}` (cafe_id가 손에 있을 때만)
+- **카페 제보 승인**은 트리거가 만든 새 `cafe.id`를 라우트에서 못 가져와서 link가 `/mypage` 고정 (이슈로 남겨둠)
 
 ---
 
@@ -285,10 +404,13 @@ listenForegroundMessages((payload) => {
 
 ## 남은 작업
 
-### 일반 유저 알림 확장
+### 알려진 이슈
 
-어드민 외 시나리오:
+- **`webpush.fcmOptions.link` 가 상대 경로** — FCM 규약상 HTTPS 절대 URL을 요구하므로 일부 토큰이 `messaging/invalid-argument`로 거절될 가능성. [sendPush.ts](../lib/firebase/sendPush.ts) 빌더에서 `siteUrl()` prefix 적용 필요.
+- **카페 제보 승인 후 새 `cafe.id`** — `handle_submission_approved` 트리거가 새 cafes 행을 INSERT하지만 ID를 제보 행에 다시 적지 않아 라우트가 모름. 현재 `cafe_submission_approved` 알림 link는 `/mypage` 고정. 트리거 수정으로 `cafe_submissions.approved_cafe_id` 같은 컬럼에 backfill하면 `/?cafe=${id}` 로 이동 가능.
 
-- 카페 제보 승인 시 제보자에게 "카페가 등록되었습니다" → `sendPushToUser(submitterId, ...)`
-- 즐겨찾기 카페 신규 후기 → `sendPushToUsers(bookmarkUserIds, ...)`
-- 내 후기에 신고 누적 → 작성자에게 알림
+### 확장 시나리오
+
+- 즐겨찾기 카페 신규 후기 → `notifyUsers(bookmarkUserPks, "bookmark_new_review", { cafeName, reviewSnippet })`
+- 내 후기에 신고 누적 → `notifyUser(authorPk, "my_review_reported", { ... })`
+- 후기 신고 처리(dismiss/reject 후기) 결과 → 신고자에게 통보 (`notification` 테이블 추가하면 인앱 알림함까지 확장 가능)

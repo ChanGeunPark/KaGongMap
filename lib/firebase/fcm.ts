@@ -49,30 +49,34 @@ export async function requestFcmToken() {
   return token || null;
 }
 
-export async function registerFcmToken(): Promise<string | null> {
-  const token = await requestFcmToken();
-  if (!token) return null;
-
+/** 토큰 생성 없이 서버 저장만. WebView 모드에서 Flutter 가 준 토큰을 직접 등록할 때 사용. */
+export async function saveFcmTokenToServer(token: string): Promise<boolean> {
   try {
     const res = await fetch("/api/fcm-tokens", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         token,
-        userAgent: navigator.userAgent,
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       }),
     });
 
     if (!res.ok) {
-      console.error("[registerFcmToken] 서버 저장 실패", await res.text());
-      return null;
+      console.error("[saveFcmTokenToServer] 서버 저장 실패", await res.text());
+      return false;
     }
+    return true;
   } catch (err) {
-    console.error("[registerFcmToken] 네트워크 오류", err);
-    return null;
+    console.error("[saveFcmTokenToServer] 네트워크 오류", err);
+    return false;
   }
+}
 
-  return token;
+export async function registerFcmToken(): Promise<string | null> {
+  const token = await requestFcmToken();
+  if (!token) return null;
+  const ok = await saveFcmTokenToServer(token);
+  return ok ? token : null;
 }
 
 export async function unregisterFcmToken(token: string): Promise<boolean> {

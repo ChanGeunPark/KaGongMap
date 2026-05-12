@@ -12,6 +12,7 @@ import FirebaseAnalytics from "@/components/layout/FirebaseAnalytics";
 import RouteChangeTracker from "@/components/layout/RouteChangeTracker";
 import AnalyticsIdentity from "@/components/layout/AnalyticsIdentity";
 import ForegroundFcmListener from "@/components/notifications/ForegroundFcmListener";
+import NativeBridgeInit from "@/components/native/NativeBridgeInit";
 
 export const viewport: Viewport = {
   themeColor: "#16a34a",
@@ -108,6 +109,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <NativeBridgeInit />
         <ServiceWorkerRegister />
         <FirebaseAnalytics />
         <Suspense fallback={null}>

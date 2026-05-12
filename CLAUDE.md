@@ -161,5 +161,6 @@ kagongmap/
 - `docs/DB_SCHEMA.md` — Supabase 테이블 스키마 & SQL
 - `docs/MILESTONES.md` — 주차별 개발 목표
 - `docs/PUSH_NOTIFICATIONS.md` — FCM 푸시 알림 설정 & 발송 헬퍼
+- `docs/WEBVIEW_BRIDGE.md` — Flutter WebView ↔ Web 메시지 브릿지 (`lib/native/`)
 - `docs/ANALYTICS.md` — Firebase Analytics 이벤트 목록 & GA4 콘솔 설정
 - `docs/AUTO_SUBMIT.md` — 어드민 AI 자동 제보 (`/admin/auto-submit` + `tools/auto-submit-bridge`)

@@ -17,6 +17,8 @@ import SettingsSection from "./_components/SettingsSection";
 import BookmarkTab from "./_components/BookmarkTab";
 import MyCafesTab from "./_components/MyCafesTab";
 import EmptyPanel from "./_components/EmptyPanel";
+import { isWebView } from "@/lib/native/isWebView";
+import DevTestPushButton from "@/components/notifications/DevTestPushButton";
 
 type MyPageTab = "bookmarks" | "cafes" | "reviews";
 
@@ -37,8 +39,7 @@ export default function MyPage() {
     queryFn: fetchMyBookmarkedCafes,
     enabled: isAuthenticated,
   });
-  const { data: submissionsSummary } =
-    useMySubmissionsSummary(isAuthenticated);
+  const { data: submissionsSummary } = useMySubmissionsSummary(isAuthenticated);
   const myCafeSubmissionCount = submissionsSummary
     ? submissionsSummary.cafes_registered +
       submissionsSummary.cafe_submissions.pending
@@ -90,9 +91,13 @@ export default function MyPage() {
           </div>
         </section>
 
-        <section>
-          <PwaInstallBanner />
-        </section>
+        {!isWebView() && (
+          <section>
+            <PwaInstallBanner />
+          </section>
+        )}
+
+        <DevTestPushButton />
 
         <section className="mt-4 rounded-2xl border border-border-subtle bg-bg p-5 shadow-card">
           {isAuthenticated ? <AccountSection /> : <LoginSection />}
