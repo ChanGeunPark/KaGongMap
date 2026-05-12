@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
-import { sendPushToAdmins } from "@/lib/firebase/sendPush";
+import { notifyAdmins } from "@/lib/notifications";
 import type { ReviewReportReason } from "@/types/db";
 
 const REASON_LABEL: Record<ReviewReportReason, string> = {
@@ -104,10 +104,8 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
 
   after(async () => {
     try {
-      await sendPushToAdmins({
-        title: "새 후기 신고",
-        body: `사유: ${REASON_LABEL[reason]}`,
-        link: "/admin",
+      await notifyAdmins("admin_new_review_report", {
+        reasonLabel: REASON_LABEL[reason],
       });
     } catch (err) {
       console.error("[review-reports] push 실패", err);

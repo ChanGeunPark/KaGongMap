@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/server";
+import { getAdminOAuthIds } from "@/lib/adminAuth";
 import { adminMessaging } from "./admin";
 
 const FCM_BATCH_SIZE = 500;
@@ -140,15 +141,13 @@ export async function sendPushToUsers(
 export async function sendPushToAdmins(
   payload: PushPayload,
 ): Promise<PushResult> {
-  const oauthIds = (process.env.ADMIN_USER_IDS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
+  const oauthIds = getAdminOAuthIds();
   if (oauthIds.length === 0) {
+    console.error("[sendPushToAdmins] ADMIN_USER_IDS env 미설정");
     return { successCount: 0, failureCount: 0, invalidTokens: [] };
   }
 
+  // fcm_tokens.user_id 는 users.id (PK) 라서 OAuth ID → PK 변환 후 발송
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("users")
@@ -156,12 +155,17 @@ export async function sendPushToAdmins(
     .in("user_id", oauthIds);
 
   if (error) {
-    console.error("[sendPushToAdmins] 어드민 user_pk 조회 실패", error);
+    console.error("[sendPushToAdmins] users 조회 실패", error);
     return { successCount: 0, failureCount: 0, invalidTokens: [] };
   }
 
-  const userPks = (data ?? []).map((row) => row.id as string);
-  return sendPushToUsers(userPks, payload);
+  const adminPks = (data ?? []).map((row) => row.id as string);
+  if (adminPks.length === 0) {
+    console.warn("[sendPushToAdmins] 매칭되는 어드민 user 행 없음", oauthIds);
+    return { successCount: 0, failureCount: 0, invalidTokens: [] };
+  }
+
+  return sendPushToUsers(adminPks, payload);
 }
 
 /** 알림을 켠 모든 유저에게 발송 (공지용) */

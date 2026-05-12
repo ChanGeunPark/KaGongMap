@@ -25,6 +25,14 @@ export default function LoginSection() {
         카카오로 로그인
       </button>
 
+      <button
+        type="button"
+        onClick={() => signIn("google", { callbackUrl: "/mypage" })}
+        className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-main px-5 text-[14px] font-bold text-gray-900 transition-colors hover:bg-main-deep"
+      >
+        구글로 로그인
+      </button>
+
       <p className="mt-4 text-[12px] leading-5 text-fg-4">
         로그인하면 카공맵의{" "}
         <Link href="/privacy" className="font-semibold text-fg-2 underline">

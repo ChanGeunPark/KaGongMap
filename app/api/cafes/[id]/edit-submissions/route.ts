@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { sendPushToAdmins } from "@/lib/firebase/sendPush";
+import { notifyAdmins } from "@/lib/notifications";
 
 export async function POST(
   req: NextRequest,
@@ -58,11 +58,7 @@ export async function POST(
 
   after(async () => {
     try {
-      await sendPushToAdmins({
-        title: "새 카페 정보 수정 제안",
-        body: `${cafe.name} 정보 수정 제안이 들어왔어요.`,
-        link: "/admin",
-      });
+      await notifyAdmins("admin_new_edit_submission", { cafeName: cafe.name });
     } catch (err) {
       console.error("[edit-submissions] push 실패", err);
     }

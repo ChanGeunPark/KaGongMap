@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { sendPushToAdmins } from "@/lib/firebase/sendPush";
+import { notifyAdmins } from "@/lib/notifications";
 
 export async function POST(
   req: NextRequest,
@@ -51,11 +51,7 @@ export async function POST(
 
   after(async () => {
     try {
-      await sendPushToAdmins({
-        title: "새 사진 제보",
-        body: `${cafe.name}에 사진이 제보되었어요.`,
-        link: "/admin",
-      });
+      await notifyAdmins("admin_new_image_submission", { cafeName: cafe.name });
     } catch (err) {
       console.error("[image-submissions] push 실패", err);
     }
