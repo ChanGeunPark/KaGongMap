@@ -3,12 +3,23 @@
 <p align="center">
   <img src="./public/kagongmap_landing_img.png" alt="KaGongMap 랜딩 이미지" width="900" />
 </p>
-🌐 **실서비스 바로가기**: [https://www.xn--ob0bo0wy3p.com/]
 
-> 카공족이 직접 만드는 카페 지도 커뮤니티
+🌐 **실서비스 바로가기**: <https://www.xn--ob0bo0wy3p.com/>
 
-콘센트, 와이파이, 소음 수준, 시간 제한 여부 등 **카공 특화 정보**를 지도 위에서 함께 공유합니다.  
-네이버 지도·카카오맵에선 볼 수 없는, 카공족 시점의 실용 정보를 제공합니다.
+> 카공족이 직접 만드는 카페 지도 커뮤니티 — 콘센트·와이파이·소음·시간제한 등 **카공 특화 정보**를 지도 위에 공유합니다.
+
+|             |                                                       |
+| ----------- | ----------------------------------------------------- |
+| **개발 방식** | 단독 개발 (기획 · 디자인 · 개발 · 배포 전부)             |
+| **기간**      | 2026.04 ~ 운영 중                                       |
+| **스택**      | Next.js 16 · TypeScript · Tailwind · Supabase · 네이버 지도 |
+| **카테고리**  | PWA · 위치 기반 · 커뮤니티 · LLM 통합                    |
+
+### 🔑 이 프로젝트에서 풀어낸 3가지 — 한눈에
+
+1. **비로그인 좋아요 — 카운트와 개인 기록 분리** · 익명 트래픽도 사회적 증명에 기여시키되 이중집계를 회피한 설계. `RPC + localStorage + 낙관적 부분 캐시 패치`. → [회고](docs/RETROSPECTIVE.md#1-비로그인-좋아요-카운트와-개인-기록-분리) · [의사결정](#5-비로그인-좋아요--카운트와-개인-기록-분리)
+2. **AI 자동 제보 — 로컬 PC ↔ 클라우드 협업** · 어드민 본인 PC의 `claude` CLI 를 브릿지로 spawn 해, LLM 비용·실행을 클라우드와 분리하고 검수 단계를 둔 구조. → [회고](docs/RETROSPECTIVE.md#2-ai-자동-제보-로컬-pc--클라우드-협업) · [의사결정](#4-ai-자동-제보--어드민-pc--클라우드-협업)
+3. **Tier 페이로드 분리 — 지도 초기 로딩 일정화** · 마커용 7컬럼 view 와 상세용 lazy fetch 를 분리해, 카페가 늘어나도 첫 페인트 페이로드는 고정. → [회고](docs/RETROSPECTIVE.md#3-tier-페이로드-분리-지도-초기-로딩-일정화) · [의사결정](#1-tier-기반-데이터-로딩)
 
 ---
 
@@ -309,3 +320,4 @@ kagongmap/
 | `[docs/MILESTONES.md](docs/MILESTONES.md)`     | 주차별 개발 목표                               |
 | `[docs/AUTO_SUBMIT.md](docs/AUTO_SUBMIT.md)`   | 어드민 AI 자동 제보 (브릿지 + Claude CLI) 상세 |
 | `[docs/TESTING.md](docs/TESTING.md)`           | 테스트 전략·작성 기록                          |
+| `[docs/RETROSPECTIVE.md](docs/RETROSPECTIVE.md)` | 회고·트러블슈팅 — 비로그인 좋아요 · AI 자동 제보 · Tier 페이로드 분리 |
