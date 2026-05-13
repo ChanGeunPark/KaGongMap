@@ -3,45 +3,31 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import KGIcon from "@/components/ui/KGIcon";
-
-type Status = "checking" | "granted" | "prompt" | "denied" | "unsupported";
+import {
+  LocationPermission,
+  watchLocationPermissionStatus,
+} from "@/lib/locationPermission";
+import { useNativeStore } from "@/stores/nativeStore";
 
 export default function LocationPermissionStatus() {
-  const [status, setStatus] = useState<Status>("checking");
+  const [status, setStatus] = useState<LocationPermission>("checking");
   const [busy, setBusy] = useState(false);
+  const isWebView = useNativeStore((s) => s.isWebView);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setStatus("unsupported");
-      return;
-    }
-    if (!navigator.permissions?.query) {
-      setStatus("prompt");
-      return;
-    }
-
-    let permissionStatus: PermissionStatus | null = null;
-    let cancelled = false;
-
-    navigator.permissions
-      .query({ name: "geolocation" })
-      .then((s) => {
-        if (cancelled) return;
-        permissionStatus = s;
-        setStatus(s.state);
-        s.onchange = () => setStatus(s.state);
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("prompt");
-      });
-
-    return () => {
-      cancelled = true;
-      if (permissionStatus) permissionStatus.onchange = null;
-    };
-  }, []);
+    return watchLocationPermissionStatus(
+      ({ status: nextStatus }) => setStatus(nextStatus),
+      { isWebView },
+    );
+  }, [isWebView]);
 
   const requestPermission = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setStatus("unsupported");
+      toast.error("위치 서비스를 지원하지 않습니다.");
+      return;
+    }
+
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       () => {
@@ -55,7 +41,7 @@ export default function LocationPermissionStatus() {
         setBusy(false);
         if (denied) {
           toast.error(
-            "권한이 거부되었어요. 브라우저 설정에서 직접 허용해주세요.",
+            `권한이 거부되었어요. ${isWebView ? "앱" : "브라우저"} 설정에서 직접 허용해주세요.`,
           );
         }
       },
@@ -86,7 +72,8 @@ export default function LocationPermissionStatus() {
           </p>
           {status === "denied" && (
             <p className="mt-2 text-mono leading-5 text-red-500">
-              브라우저(또는 앱) 설정에서 위치 권한을 직접 허용해주세요.
+              {isWebView ? "앱" : "브라우저"} 설정에서 위치 권한을 직접
+              허용해주세요.
             </p>
           )}
         </div>
@@ -96,7 +83,7 @@ export default function LocationPermissionStatus() {
             허용됨
           </span>
         )}
-        {status === "prompt" && (
+        {(status === "prompt" || status === "unknown") && (
           <button
             type="button"
             onClick={requestPermission}

@@ -21,9 +21,20 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-export function userPinHtml() {
+export const USER_MARKER_HEADING_ID = "kg-user-marker-heading";
+
+export function userPinHtml(heading?: number | null) {
+  const headingStyle =
+    heading == null
+      ? "display:none;"
+      : `transform: translate(-50%, -50%) rotate(${heading}deg);`;
   return `
     <div class="kg-user-marker" aria-hidden="true">
+      <div
+        id="${USER_MARKER_HEADING_ID}"
+        class="kg-user-marker__heading"
+        style="${headingStyle}"
+      ></div>
       <div class="kg-user-marker__pulse"></div>
       <img
         class="kg-user-marker__cat"
