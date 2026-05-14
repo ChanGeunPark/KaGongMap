@@ -47,8 +47,7 @@ const CONTENT_MAX = 2000;
 export default function ContactPage() {
   const { data: session } = useSession();
   const defaultEmail = useMemo(() => session?.user?.email ?? "", [session]);
-  const [category, setCategory] =
-    useState<ContactInquiryCategory>("service");
+  const [category, setCategory] = useState<ContactInquiryCategory>("service");
   const [email, setEmail] = useState(defaultEmail);
   const [content, setContent] = useState("");
   const createMut = useCreateContactInquiry();
@@ -99,7 +98,7 @@ export default function ContactPage() {
       </header>
 
       <div className="mx-auto w-full max-w-[760px] px-5 py-8">
-        <section className="rounded-2xl border border-border-subtle bg-white p-6 shadow-card sm:p-7">
+        <section className="rounded-md border border-border-subtle bg-white p-6 shadow-card sm:p-7">
           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.5px] text-kg-amber-deep">
             Help
           </p>
@@ -112,7 +111,7 @@ export default function ContactPage() {
           </p>
         </section>
 
-        <section className="mt-4 rounded-2xl border border-border-subtle bg-bg p-5 shadow-card sm:p-6">
+        <section className="mt-4 rounded-md border border-border-subtle bg-bg p-5 shadow-card sm:p-6">
           <div>
             <label className="text-[13px] font-semibold text-fg-2">
               문의 유형
@@ -124,7 +123,7 @@ export default function ContactPage() {
                   type="button"
                   onClick={() => setCategory(option.value)}
                   className={cls(
-                    "rounded-xl border px-4 py-3 text-left transition-colors",
+                    "rounded-md border px-4 py-3 text-left transition-colors",
                     category === option.value
                       ? "border-kg-amber-soft bg-kg-amber-light text-kg-amber-deep"
                       : "border-border-subtle bg-bg text-fg-2 hover:bg-gray-50",
@@ -154,7 +153,7 @@ export default function ContactPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-2 w-full rounded-xl border border-border-medium bg-bg px-4 py-3 text-caption"
+              className="mt-2 w-full rounded-md border border-border-medium bg-bg px-4 py-3 text-caption"
             />
           </div>
 
@@ -172,7 +171,7 @@ export default function ContactPage() {
               rows={8}
               maxLength={CONTENT_MAX}
               placeholder="문의 내용을 자세히 적어주세요."
-              className="mt-2 w-full resize-none rounded-xl border border-border-medium bg-bg px-4 py-3 text-caption leading-6"
+              className="mt-2 w-full resize-none rounded-md border border-border-medium bg-bg px-4 py-3 text-caption leading-6"
             />
             <div className="mt-1 text-right text-mono text-fg-4">
               {content.length}/{CONTENT_MAX}
@@ -191,7 +190,7 @@ export default function ContactPage() {
           </div>
         </section>
 
-        <p className="mt-4 rounded-xl border border-border-subtle bg-bg-muted px-4 py-3 text-mono leading-6 text-fg-3">
+        <p className="mt-4 rounded-md border border-border-subtle bg-bg-muted px-4 py-3 text-mono leading-6 text-fg-3">
           문의는 앱 내부에 접수되며, 운영자가 확인 여부와 처리 상태를 관리할 수
           있습니다.
         </p>
