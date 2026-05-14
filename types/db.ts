@@ -140,6 +140,39 @@ export interface CreateReviewReportPayload {
   detail?: string;
 }
 
+// ── cafe_reports ────────────────────────────────────────────────────────────
+export type CafeReportReason =
+  | "photo_issue"
+  | "closed"
+  | "wrong_info"
+  | "inappropriate_place"
+  | "duplicate"
+  | "other";
+
+export type CafeReportStatus = "pending" | "dismissed" | "resolved";
+
+export interface CafeReport {
+  id: string;
+  cafe_id: string;
+  reporter_id: string | null;
+  reason: CafeReportReason;
+  detail: string | null;
+  status: CafeReportStatus;
+  created_at: string;
+}
+
+// 어드민 화면용 — 카페 단위로 신고 묶음
+export interface CafeReportGroup {
+  cafe: CafeWithDetail;
+  pending_count: number;
+  reports: CafeReport[];
+}
+
+export interface CreateCafeReportPayload {
+  reason: CafeReportReason;
+  detail?: string;
+}
+
 export interface DbBookmark {
   id: string;
   cafe_id: string;

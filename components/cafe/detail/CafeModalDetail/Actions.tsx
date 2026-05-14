@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import BookmarkButton from "@/components/button/BookmarkButton";
+import CafeReportModal from "@/components/cafe/detail/CafeReportModal";
 import KaGongButton from "@/components/button/KaGongButton";
 import LikeButton from "@/components/button/LikeButton";
 import { useBookmarks } from "@/hooks/useBookmarks";
@@ -76,35 +78,39 @@ export default function Actions({ cafe, detail, loading }: ActionsProps) {
   };
 
   return (
-    <div className="flex gap-2 justify-between">
-      <KaGongButton
-        buttonStyle="OUTLINED"
-        buttonSize="LARGE"
-        onClick={handleEdit}
-        disabled={!detail || loading}
-      >
-        수정하기
-      </KaGongButton>
+    <>
+      <div className="flex gap-2 justify-between">
+        <div className="flex gap-2">
+          <KaGongButton
+            buttonStyle="OUTLINED"
+            buttonSize="LARGE"
+            onClick={handleEdit}
+            disabled={!detail || loading}
+          >
+            수정제안
+          </KaGongButton>
+        </div>
 
-      <div className="flex gap-2">
-        <KaGongButton
-          buttonStyle="PRIMARY"
-          buttonSize="LARGE"
-          onClick={handleNavigate}
-        >
-          길찾기
-        </KaGongButton>
-        <BookmarkButton
-          bookmarked={bookmarked}
-          onClick={handleBookmark}
-          disabled={bookmarkPending}
-        />
-        <LikeButton
-          liked={liked}
-          disabled={likePending}
-          onClick={handleLike}
-        />
+        <div className="flex gap-2">
+          <KaGongButton
+            buttonStyle="PRIMARY"
+            buttonSize="LARGE"
+            onClick={handleNavigate}
+          >
+            길찾기
+          </KaGongButton>
+          <BookmarkButton
+            bookmarked={bookmarked}
+            onClick={handleBookmark}
+            disabled={bookmarkPending}
+          />
+          <LikeButton
+            liked={liked}
+            disabled={likePending}
+            onClick={handleLike}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -9,7 +9,7 @@ export default function LoginSection() {
       <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.5px] text-main-deep">
         Sign in
       </p>
-      <h2 className="mt-2 text-[20px] font-semibold tracking-[-0.3px] text-fg">
+      <h2 className="mt-2 text-h3 font-semibold tracking-[-0.3px] text-fg">
         로그인
       </h2>
       <p className="mt-2 text-[13px] leading-6 text-fg-3">
@@ -20,7 +20,7 @@ export default function LoginSection() {
       <button
         type="button"
         onClick={() => signIn("kakao", { callbackUrl: "/mypage" })}
-        className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-main px-5 text-[14px] font-bold text-gray-900 transition-colors hover:bg-main-deep"
+        className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-main px-5 text-caption font-bold text-gray-900 transition-colors hover:bg-main-deep"
       >
         카카오로 로그인
       </button>
@@ -28,13 +28,17 @@ export default function LoginSection() {
       <button
         type="button"
         onClick={() => signIn("google", { callbackUrl: "/mypage" })}
-        className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-main px-5 text-[14px] font-bold text-gray-900 transition-colors hover:bg-main-deep"
+        className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-main px-5 text-caption font-bold text-gray-900 transition-colors hover:bg-main-deep"
       >
         구글로 로그인
       </button>
 
-      <p className="mt-4 text-[12px] leading-5 text-fg-4">
+      <p className="mt-4 text-mono leading-5 text-fg-4">
         로그인하면 카공맵의{" "}
+        <Link href="/terms" className="font-semibold text-fg-2 underline">
+          이용약관
+        </Link>
+        과{" "}
         <Link href="/privacy" className="font-semibold text-fg-2 underline">
           개인정보 처리방침
         </Link>

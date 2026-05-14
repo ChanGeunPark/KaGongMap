@@ -16,6 +16,7 @@ export type NotificationCatalog = {
   admin_new_image_submission: { cafeName: string };
   admin_new_edit_submission: { cafeName: string };
   admin_new_review_report: { reasonLabel: string };
+  admin_new_cafe_report: { cafeName: string; reasonLabel: string };
 
   // ── 유저 대상 (제보자에게 결과 통보) ──
   // 카페 제보 승인 시 트리거가 새 cafe.id를 만들지만 제보 행에는 적히지 않아
@@ -53,6 +54,11 @@ const builders: { [K in NotificationType]: Builder<K> } = {
   admin_new_review_report: (p) => ({
     title: "새 후기 신고",
     body: `사유: ${p.reasonLabel}`,
+    link: "/admin",
+  }),
+  admin_new_cafe_report: (p) => ({
+    title: "새 카페 신고",
+    body: `${p.cafeName} · 사유: ${p.reasonLabel}`,
     link: "/admin",
   }),
 

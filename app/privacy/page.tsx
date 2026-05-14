@@ -162,7 +162,7 @@ export default function PrivacyPage() {
             {["최소 수집", "광고 추적 없음", "삭제 요청 가능"].map((item) => (
               <div
                 key={item}
-                className="rounded-xl border border-border-subtle bg-bg-muted px-4 py-3"
+                className="rounded-md border border-border-subtle bg-bg-muted px-4 py-3"
               >
                 <span className="text-sm font-semibold text-fg">{item}</span>
               </div>
@@ -190,7 +190,7 @@ export default function PrivacyPage() {
             ))}
           </div>
 
-          <p className="mt-6 rounded-xl border border-kg-amber/25 bg-kg-amber-light px-4 py-3 text-xs leading-6 text-kg-amber-deep">
+          <p className="mt-6 rounded-md border border-kg-amber/25 bg-kg-amber-light px-4 py-3 text-xs leading-6 text-kg-amber-deep">
             본 문서는 카공맵 MVP 운영을 위한 기본 개인정보 처리방침입니다. 정식
             출시, 문의 채널 확정, 광고 또는 통계 도구 도입 시 실제 운영 내용에
             맞게 업데이트해야 합니다.

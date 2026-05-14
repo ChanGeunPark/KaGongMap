@@ -13,7 +13,9 @@ import {
   editSubmissionKeys,
 } from "@/lib/api/editSubmissions";
 import Image from "next/image";
+import { useAdminCafeReports } from "@/lib/api/cafeReports";
 import { useAdminReviewReports } from "@/lib/api/reviewReports";
+import CafeReportsTab from "@/app/admin/_components/CafeReportsTab";
 import ReviewReportsTab from "@/app/admin/_components/ReviewReportsTab";
 import Link from "next/link";
 import SubmissionCard from "./SubmissionCard";
@@ -22,17 +24,24 @@ import ImageSubmissionCard from "./ImageSubmissionCard";
 import EditSubmissionCard from "./EditSubmissionCard";
 import { useAdminMutations } from "@/app/admin/_hooks/useAdminMutations";
 
-type FilterTab = "pending" | "registered" | "images" | "edits" | "reports";
+type FilterTab =
+  | "pending"
+  | "registered"
+  | "images"
+  | "edits"
+  | "cafeReports"
+  | "reports";
 
 const TAB_LABEL: Record<FilterTab, string> = {
   pending: "대기 중",
   registered: "등록됨",
   images: "사진 제보",
   edits: "수정 제보",
+  cafeReports: "카페 신고",
   reports: "후기 신고",
 };
 
-const EMPTY_LABEL: Record<Exclude<FilterTab, "reports">, string> = {
+const EMPTY_LABEL: Record<Exclude<FilterTab, "cafeReports" | "reports">, string> = {
   pending: "대기 중인 제보가 없습니다.",
   registered: "등록된 카페가 없습니다.",
   images: "사진 제보가 없습니다.",
@@ -59,6 +68,7 @@ export default function AdminDashboard() {
     queryFn: fetchEditSubmissions,
   });
   const { data: reportGroups = [] } = useAdminReviewReports();
+  const { data: cafeReportGroups = [] } = useAdminCafeReports();
 
   const submissions = submissionsQuery.data ?? [];
   const cafes = cafesQuery.data ?? [];
@@ -80,9 +90,13 @@ export default function AdminDashboard() {
   const imageSubmissionCount = imageSubmissions.length;
   const editSubmissionCount = editSubmissions.length;
   const reportCount = reportGroups.reduce((sum, g) => sum + g.pending_count, 0);
+  const cafeReportCount = cafeReportGroups.reduce(
+    (sum, g) => sum + g.pending_count,
+    0,
+  );
 
   const TAB_QUERY: Record<
-    Exclude<FilterTab, "reports">,
+    Exclude<FilterTab, "cafeReports" | "reports">,
     { isLoading: boolean; isError: boolean; isEmpty: boolean }
   > = {
     pending: {
@@ -107,7 +121,8 @@ export default function AdminDashboard() {
     },
   };
 
-  const currentTab = filter !== "reports" ? TAB_QUERY[filter] : null;
+  const currentTab =
+    filter !== "cafeReports" && filter !== "reports" ? TAB_QUERY[filter] : null;
   const filteredSubmissions =
     filter === "pending"
       ? submissions.filter((s) => s.status === "pending")
@@ -178,6 +193,12 @@ export default function AdminDashboard() {
               loading: editSubmissionsQuery.isLoading,
             },
             {
+              label: "카페 신고",
+              value: cafeReportCount,
+              color: "text-orange-600",
+              loading: false,
+            },
+            {
               label: "후기 신고",
               value: reportCount,
               color: "text-red-600",
@@ -198,7 +219,12 @@ export default function AdminDashboard() {
 
         <div className="flex gap-1 mb-5 bg-white border border-gray-200 rounded-xl p-1 w-fit shadow-sm">
           {(Object.keys(TAB_LABEL) as FilterTab[]).map((tab) => {
-            const badge = tab === "reports" ? reportCount : 0;
+            const badge =
+              tab === "cafeReports"
+                ? cafeReportCount
+                : tab === "reports"
+                  ? reportCount
+                  : 0;
             return (
               <button
                 key={tab}
@@ -226,6 +252,7 @@ export default function AdminDashboard() {
           })}
         </div>
 
+        {filter === "cafeReports" && <CafeReportsTab />}
         {filter === "reports" && <ReviewReportsTab />}
 
         {currentTab?.isLoading && <SkeletonList />}
@@ -244,7 +271,11 @@ export default function AdminDashboard() {
             <div className="flex flex-col items-center py-24 text-gray-400">
               <span className="text-4xl mb-3">📭</span>
               <p className="text-sm">
-                {EMPTY_LABEL[filter as Exclude<FilterTab, "reports">]}
+                {
+                  EMPTY_LABEL[
+                    filter as Exclude<FilterTab, "cafeReports" | "reports">
+                  ]
+                }
               </p>
             </div>
           )}
