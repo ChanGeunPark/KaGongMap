@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { CafeMarker } from "@/types/db";
 import { useCafeMarkers } from "@/hooks/useCafeMarkers";
 import { useMapGeolocation } from "@/hooks/useMapGeolocation";
 import { useMapMorphTo } from "@/hooks/useMapMorphTo";
 import { useNaverMap } from "@/hooks/useNaverMap";
 import { useUserMarker } from "@/hooks/useUserMarker";
+import { useUserHeading } from "@/hooks/useUserHeading";
+import { useNativeStore } from "@/stores/nativeStore";
 import { MapWithMorph } from "@/types/naverMap";
 import { MapControls } from "./MapControls";
 import { TRANSITION } from "./mapConfig";
@@ -46,11 +48,19 @@ export default function MapCanvas({
     userLocation,
   } = useMapGeolocation(mapRef);
 
-  // 지도 부트스트랩 직후 1회 현재 위치로 recenter (low-accuracy, 빠른 fix)
+  const isWebView = useNativeStore((s) => s.isWebView);
+  const initialRecenterDoneRef = useRef(false);
+
+  // 브라우저: 권한이 granted 일 때 1회 현재 위치로 recenter (low-accuracy, 빠른 fix).
+  // 권한이 아직 prompt/denied 면 자동 다이얼로그를 띄우지 않고 사용자 액션 대기.
   useEffect(() => {
+    if (isWebView) return;
     if (!ready || !mapRef.current || !navigator.geolocation) return;
+    if (locationPermission !== "granted") return;
+    if (initialRecenterDoneRef.current) return;
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
+        initialRecenterDoneRef.current = true;
         setUserLocation({
           lat: coords.latitude,
           lng: coords.longitude,
@@ -64,7 +74,20 @@ export default function MapCanvas({
       () => {},
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 5_000 },
     );
-  }, [ready, mapRef, setUserLocation]);
+  }, [ready, mapRef, setUserLocation, isWebView, locationPermission]);
+
+  // WebView: navigator.geolocation 이 동작하지 않으니, Flutter 가 push 한 첫 좌표가
+  // store 에 들어오면 그때 1회 recenter.
+  useEffect(() => {
+    if (!isWebView) return;
+    if (!ready || !mapRef.current || !userLocation) return;
+    if (initialRecenterDoneRef.current) return;
+    initialRecenterDoneRef.current = true;
+    mapRef.current.setCenter(
+      new naver.maps.LatLng(userLocation.lat, userLocation.lng),
+    );
+    mapRef.current.setZoom(16);
+  }, [isWebView, ready, mapRef, userLocation]);
 
   useCafeMarkers({
     ready,
@@ -78,7 +101,10 @@ export default function MapCanvas({
 
   useMapMorphTo({ mapRef, cafes, selectedId });
 
-  useUserMarker({ mapRef, userLocation });
+  // 위치 권한이 있을 때만 컴퍼스 구독 — 지도 화면 떠나면 자동 STOP (배터리 보호)
+  const heading = useUserHeading(isLocationEnabled);
+
+  useUserMarker({ mapRef, ready, userLocation, heading });
 
   const handleZoom = (delta: number) => {
     const map = mapRef.current as MapWithMorph | null;

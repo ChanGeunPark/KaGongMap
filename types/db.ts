@@ -140,6 +140,67 @@ export interface CreateReviewReportPayload {
   detail?: string;
 }
 
+// ── cafe_reports ────────────────────────────────────────────────────────────
+export type CafeReportReason =
+  | "photo_issue"
+  | "closed"
+  | "wrong_info"
+  | "inappropriate_place"
+  | "duplicate"
+  | "other";
+
+export type CafeReportStatus = "pending" | "dismissed" | "resolved";
+
+export interface CafeReport {
+  id: string;
+  cafe_id: string;
+  reporter_id: string | null;
+  reason: CafeReportReason;
+  detail: string | null;
+  status: CafeReportStatus;
+  created_at: string;
+}
+
+// 어드민 화면용 — 카페 단위로 신고 묶음
+export interface CafeReportGroup {
+  cafe: CafeWithDetail;
+  pending_count: number;
+  reports: CafeReport[];
+}
+
+export interface CreateCafeReportPayload {
+  reason: CafeReportReason;
+  detail?: string;
+}
+
+// ── contact_inquiries ───────────────────────────────────────────────────────
+export type ContactInquiryCategory =
+  | "service"
+  | "report"
+  | "account"
+  | "privacy"
+  | "other";
+
+export type ContactInquiryStatus = "pending" | "read" | "resolved";
+
+export interface ContactInquiry {
+  id: string;
+  user_id: string | null;
+  category: ContactInquiryCategory;
+  email: string;
+  content: string;
+  status: ContactInquiryStatus;
+  created_at: string;
+  read_at: string | null;
+  resolved_at: string | null;
+}
+
+export interface CreateContactInquiryPayload {
+  category: ContactInquiryCategory;
+  email: string;
+  content: string;
+}
+
 export interface DbBookmark {
   id: string;
   cafe_id: string;

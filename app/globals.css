@@ -323,6 +323,49 @@ a:hover {
   height: 55px;
   pointer-events: none;
 }
+.kg-user-marker__heading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  /* 12시 방향 peak, ±45° 부채꼴. 7-stop 으로 부드러운 fade in/out */
+  background: conic-gradient(
+    from -45deg at 50% 50%,
+    rgba(15, 167, 111, 0) 0deg,
+    rgba(15, 167, 111, 0.12) 15deg,
+    rgba(15, 167, 111, 0.55) 40deg,
+    rgba(15, 167, 111, 0.6) 50deg,
+    rgba(15, 167, 111, 0.12) 75deg,
+    rgba(15, 167, 111, 0) 90deg,
+    rgba(15, 167, 111, 0) 360deg
+  );
+  /* 안쪽 도려내고 바깥쪽도 soft fade — 가장자리 끊김 없이 자연스럽게 */
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 18px,
+    rgba(0, 0, 0, 0.4) 24px,
+    black 32px,
+    black 60px,
+    rgba(0, 0, 0, 0.4) 78px,
+    transparent 95px
+  );
+  mask: radial-gradient(
+    circle,
+    transparent 18px,
+    rgba(0, 0, 0, 0.4) 24px,
+    black 32px,
+    black 60px,
+    rgba(0, 0, 0, 0.4) 78px,
+    transparent 95px
+  );
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  /* ease-out 으로 회전 감속 자연스럽게 (linear 보다 멈춤이 부드러움) */
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
 .kg-user-marker__pulse {
   position: absolute;
   left: 50%;

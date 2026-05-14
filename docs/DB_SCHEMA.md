@@ -9,6 +9,7 @@
 | 테이블                    | 설명                                                       |
 | ------------------------- | ---------------------------------------------------------- |
 | `users`                   | 사용자 프로필 (NextAuth → Supabase users 동기화)           |
+| `account_deletion_feedback` | 회원 탈퇴 사유 피드백 (탈퇴 후 user_id는 NULL 처리)       |
 | `cafes`                   | 어드민이 승인한 카페 (지도에 표시). `user_id`는 등록자(승인 시 제보자에서 복사) |
 | `cafe_tags`               | 카페별 카공 태그 (다대다)                                  |
 | `cafe_submissions`        | 사용자 카페 제보. 승인 시 cafes로 이동(행 삭제), 거절 시 status='rejected'로 보존 |
@@ -17,6 +18,8 @@
 | `cafe_likes`              | 카페 좋아요 (로그인 유저 기록 — 익명 좋아요는 카운트만)    |
 | `reviews`                 | 카페 후기 (텍스트 전용)                                    |
 | `review_reports`          | 후기 신고 (pending 3개 이상 시 클라 자동 숨김)             |
+| `cafe_reports`            | 카페 자체 신고 (사진 문제·폐업·정보 오류·중복 등)          |
+| `contact_inquiries`       | 사용자 문의 (운영자 확인 여부와 처리 상태 관리)            |
 | `bookmarks`               | 즐겨찾기 (로그인 필요)                                     |
 | `fcm_tokens`              | 디바이스별 FCM 푸시 토큰 (스키마는 `docs/PUSH_NOTIFICATIONS.md`) |
 | `posts`                   | 카공 팁 게시글 (V2, 스키마만 정의 — 운영 미사용)            |
@@ -154,6 +157,88 @@ CREATE INDEX idx_users_user_id ON users (user_id);
 ```
 
 > 트리거 없음. `auth.users` 와 무관 (Supabase Auth 미사용).
+
+### account_deletion_feedback
+
+회원 탈퇴 사유 피드백. 탈퇴 처리 직전에 저장하고, `users` 행 삭제 시 `user_id`는 `NULL`로 남겨 개인 식별자를 제거한다. 탈퇴 기능 자체는 피드백 저장 실패로 막지 않는다.
+
+```sql
+CREATE TABLE account_deletion_feedback (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+  reason      TEXT NOT NULL,                         -- not_useful/missing_features/privacy_concern/too_many_notifications/using_other_service/temporary/other
+  detail      TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT account_deletion_feedback_reason_check CHECK (
+    reason IN (
+      'not_useful',
+      'missing_features',
+      'privacy_concern',
+      'too_many_notifications',
+      'using_other_service',
+      'temporary',
+      'other'
+    )
+  )
+);
+
+CREATE INDEX idx_account_deletion_feedback_created_at
+ON account_deletion_feedback (created_at DESC);
+
+CREATE INDEX idx_account_deletion_feedback_reason
+ON account_deletion_feedback (reason);
+
+ALTER TABLE account_deletion_feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage account deletion feedback"
+ON account_deletion_feedback
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+```
+
+### contact_inquiries
+
+사용자 문의. 비로그인도 문의 가능하며, 로그인 상태라면 `user_id`를 함께 저장한다. 운영자는 `/admin`의 "문의" 탭에서 `pending`(읽지 않음), `read`(확인함), `resolved`(처리 완료) 상태를 관리한다.
+
+```sql
+CREATE TABLE contact_inquiries (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID REFERENCES users(id) ON DELETE SET NULL,
+  category     TEXT NOT NULL,                         -- service/report/account/privacy/other
+  email        TEXT NOT NULL,                         -- 답변 받을 이메일
+  content      TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending',       -- pending/read/resolved
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  read_at      TIMESTAMPTZ,
+  resolved_at  TIMESTAMPTZ,
+  CONSTRAINT contact_inquiries_category_check CHECK (
+    category IN ('service','report','account','privacy','other')
+  ),
+  CONSTRAINT contact_inquiries_status_check CHECK (
+    status IN ('pending','read','resolved')
+  )
+);
+
+CREATE INDEX idx_contact_inquiries_status
+ON contact_inquiries (status);
+
+CREATE INDEX idx_contact_inquiries_created_at
+ON contact_inquiries (created_at DESC);
+
+CREATE INDEX idx_contact_inquiries_user_id
+ON contact_inquiries (user_id);
+
+ALTER TABLE contact_inquiries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage contact inquiries"
+ON contact_inquiries
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+```
 
 ### cafes
 
@@ -448,7 +533,51 @@ CREATE INDEX idx_review_reports_review ON review_reports (review_id);
 CREATE INDEX idx_review_reports_status ON review_reports (status);
 ```
 
-#### 처리 흐름
+### cafe_reports
+
+카페 자체 신고. **누구나(비로그인 포함) 신고 가능**, 본인이 등록한 카페는 차단(로그인 본인 매칭 시). 사진 문제, 폐업/가게 없어짐, 정보 오류, 부적절한 장소, 중복 등록 등을 어드민이 검토한다.
+
+```sql
+CREATE TABLE cafe_reports (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cafe_id      UUID NOT NULL REFERENCES cafes(id) ON DELETE CASCADE,
+  reporter_id  UUID REFERENCES users(id) ON DELETE SET NULL,    -- 비로그인 신고는 NULL
+  reason       TEXT NOT NULL,                                    -- photo_issue/closed/wrong_info/inappropriate_place/duplicate/other
+  detail       TEXT,                                             -- 자유 입력 (other는 필수)
+  status       TEXT NOT NULL DEFAULT 'pending',                  -- pending/dismissed/resolved
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT cafe_reports_reason_check CHECK (
+    reason IN ('photo_issue','closed','wrong_info','inappropriate_place','duplicate','other')
+  ),
+  CONSTRAINT cafe_reports_status_check CHECK (
+    status IN ('pending','dismissed','resolved')
+  )
+);
+
+CREATE INDEX idx_cafe_reports_cafe ON cafe_reports (cafe_id);
+CREATE INDEX idx_cafe_reports_status ON cafe_reports (status);
+CREATE INDEX idx_cafe_reports_created_at ON cafe_reports (created_at DESC);
+
+ALTER TABLE cafe_reports ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can create cafe reports"
+ON cafe_reports
+FOR INSERT
+TO anon, authenticated
+WITH CHECK (
+  status = 'pending'
+  AND reporter_id IS NULL
+);
+
+CREATE POLICY "Admins can manage cafe reports"
+ON cafe_reports
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+```
+
+#### 후기 신고 처리 흐름
 
 ```
 [사용자] 후기 신고 → POST /api/reviews/[id]/reports
@@ -462,6 +591,19 @@ CREATE INDEX idx_review_reports_status ON review_reports (status);
    ├ 후기 단위로 그룹핑 (pending_count + reasons[])
    ├ 전체 무시 → 모든 pending 신고 → 'dismissed' (후기 다시 노출됨)
    └ 후기 삭제 → DELETE /api/admin/reviews/[id] → CASCADE로 reports도 정리
+```
+
+#### 카페 신고 처리 흐름
+
+```
+[사용자] 카페 신고 → POST /api/cafes/[id]/reports
+                       ↓ (본인 등록 카페면 403 차단)
+                       cafe_reports INSERT (status='pending')
+
+[어드민] /admin → "카페 신고" 탭
+   ├ 전체 무시 → 모든 pending 신고 → 'dismissed'
+   ├ 처리 완료 → 모든 pending 신고 → 'resolved'
+   └ 카페 삭제 → DELETE /api/admin/cafes/[id] → CASCADE로 reports도 정리
 ```
 
 #### 닉네임 정책

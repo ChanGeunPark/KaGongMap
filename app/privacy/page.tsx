@@ -36,6 +36,8 @@ const sections = [
     title: "3. 보유 및 이용 기간",
     body: [
       "회원 정보는 회원 탈퇴 또는 개인정보 삭제 요청 시 지체 없이 파기합니다.",
+      "회원 탈퇴 시 즐겨찾기, 로그인 기반 좋아요, 푸시 토큰 등 계정에 직접 연결된 개인 데이터는 삭제됩니다.",
+      "카페 제보, 사진 제보, 정보 수정 제안 등 서비스 운영 기록은 개인 식별자를 제거하거나 익명화한 뒤 보관될 수 있습니다.",
       "이용자가 작성한 후기, 카페 제보, 사진 제보 등 공개 콘텐츠는 서비스 운영과 커뮤니티 기록 유지를 위해 별도 삭제 요청 전까지 보관될 수 있습니다.",
       "법령에 따라 보관이 필요한 정보는 해당 법령에서 정한 기간 동안 보관합니다.",
     ],
@@ -76,6 +78,7 @@ const sections = [
     title: "8. 이용자의 권리",
     body: [
       "이용자는 자신의 개인정보에 대해 열람, 정정, 삭제, 처리정지를 요청할 수 있습니다.",
+      "회원은 마이페이지에서 직접 회원 탈퇴를 요청할 수 있습니다.",
       "서비스 내 계정 관리 기능 또는 운영자 문의를 통해 요청할 수 있으며, 카공맵은 본인 확인 후 필요한 조치를 진행합니다.",
     ],
   },
@@ -89,8 +92,8 @@ const sections = [
   {
     title: "10. 개인정보 보호 문의",
     body: [
-      "개인정보 관련 문의, 삭제 요청, 권리 행사 요청은 서비스 내 안내되는 문의 채널을 통해 접수할 수 있습니다.",
-      "정식 출시 전까지 문의 채널이 변경될 수 있으며, 확정되는 즉시 본 처리방침에 반영합니다.",
+      "개인정보 관련 문의, 삭제 요청, 권리 행사 요청은 앱의 문의하기 페이지를 통해 접수할 수 있습니다.",
+      "문의 채널이 변경되는 경우 본 처리방침에 반영합니다.",
     ],
   },
   {
@@ -151,7 +154,7 @@ export default function PrivacyPage() {
             <h2 className="mt-5 text-[26px] font-semibold leading-tight tracking-[-0.5px] sm:text-[34px]">
               광고 목적의 개인정보 처리는 아직 하지 않습니다.
             </h2>
-            <p className="mt-4 max-w-[680px] text-sm leading-7 text-fg-3 sm:text-[15px]">
+            <p className="mt-4 max-w-[680px] text-sm leading-7 text-fg-3 sm:text-btn">
               현재 카공맵은 로그인, 카페 제보, 후기, 좋아요, 즐겨찾기 등 서비스
               기능 제공에 필요한 정보만 사용합니다. 광고나 맞춤형 광고 추적을
               시작하게 되면 처리방침을 먼저 업데이트하겠습니다.
@@ -162,7 +165,7 @@ export default function PrivacyPage() {
             {["최소 수집", "광고 추적 없음", "삭제 요청 가능"].map((item) => (
               <div
                 key={item}
-                className="rounded-xl border border-border-subtle bg-bg-muted px-4 py-3"
+                className="rounded-md border border-border-subtle bg-bg-muted px-4 py-3"
               >
                 <span className="text-sm font-semibold text-fg">{item}</span>
               </div>
@@ -190,7 +193,7 @@ export default function PrivacyPage() {
             ))}
           </div>
 
-          <p className="mt-6 rounded-xl border border-kg-amber/25 bg-kg-amber-light px-4 py-3 text-xs leading-6 text-kg-amber-deep">
+          <p className="mt-6 rounded-md border border-kg-amber/25 bg-kg-amber-light px-4 py-3 text-xs leading-6 text-kg-amber-deep">
             본 문서는 카공맵 MVP 운영을 위한 기본 개인정보 처리방침입니다. 정식
             출시, 문의 채널 확정, 광고 또는 통계 도구 도입 시 실제 운영 내용에
             맞게 업데이트해야 합니다.

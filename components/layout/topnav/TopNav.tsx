@@ -63,7 +63,7 @@ export default function TopNav({ onSelectCafe }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-[140] border-b border-border-subtle bg-white/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-200 border-b border-border-subtle bg-white/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-14 md:h-16 flex items-center gap-3 md:gap-5">
           <Logo />
 

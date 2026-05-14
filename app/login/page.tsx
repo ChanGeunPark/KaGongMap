@@ -66,13 +66,17 @@ export default function LoginPage() {
 
           <p className="mt-4 text-center text-xs leading-5 text-gray-500">
             로그인하면 카공맵의{" "}
+            <Link href="/terms" className="font-medium text-gray-700 underline">
+              이용약관
+            </Link>
+            과{" "}
             <Link
               href="/privacy"
               className="font-medium text-gray-700 underline"
             >
               개인정보 처리방침
             </Link>
-            을 확인한 것으로 간주됩니다.
+            을 확인하고 동의한 것으로 간주됩니다.
           </p>
         </>
       )}

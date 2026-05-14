@@ -13,10 +13,22 @@ export default function SettingsSection() {
 
       <div className="mt-5 divide-y divide-border-subtle">
         <SettingsLink
+          href="/terms"
+          icon="info"
+          title="이용약관"
+          description="카공맵 이용 규칙과 커뮤니티 운영 기준을 확인해요."
+        />
+        <SettingsLink
           href="/privacy"
           icon="info"
           title="개인정보 처리방침"
           description="카공맵이 개인정보를 다루는 방식을 확인해요."
+        />
+        <SettingsLink
+          href="/contact"
+          icon="info"
+          title="문의하기"
+          description="서비스 이용, 신고, 개인정보 관련 문의를 남겨요."
         />
         <SettingsLink
           href="/"
@@ -49,7 +61,7 @@ function SettingsLink({
         <KGIcon name={icon} size={20} stroke={2} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-semibold text-fg">{title}</span>
+        <span className="block text-caption font-semibold text-fg">{title}</span>
         <span className="mt-0.5 block truncate text-[12.5px] text-fg-3">
           {description}
         </span>
