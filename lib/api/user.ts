@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
 import { useUserStore } from "@/stores/userStore";
 import { DbUser } from "@/types/db";
 
@@ -63,12 +62,30 @@ export async function updateNickname(nickname: string): Promise<DbUser> {
   return json.user;
 }
 
-export async function deleteUser(userId: string) {
-  const supabase = createClient();
-  const { error } = await supabase.from("users").delete().eq("user_id", userId);
+export type DeleteAccountReason =
+  | "not_useful"
+  | "missing_features"
+  | "privacy_concern"
+  | "too_many_notifications"
+  | "using_other_service"
+  | "temporary"
+  | "other";
 
-  if (error) throw new Error(error.message);
-  return null;
+export interface DeleteAccountPayload {
+  reason: DeleteAccountReason;
+  detail?: string;
+}
+
+export async function deleteMe(payload: DeleteAccountPayload): Promise<void> {
+  const res = await fetch("/api/users/me", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}) as { message?: string });
+    throw new Error(json.message ?? "회원 탈퇴 중 오류가 발생했습니다.");
+  }
 }
 
 // ── React Query Hooks ───────────────────────────────────────────────────────
@@ -114,13 +131,15 @@ export function useUpdateNickname() {
   });
 }
 
-export function useDeleteUser() {
+export function useDeleteMe() {
   const queryClient = useQueryClient();
+  const clearUser = useUserStore((s) => s.clearUser);
 
   return useMutation({
-    mutationFn: (userId: string) => deleteUser(userId),
-    onSuccess: (_, userId) => {
-      queryClient.invalidateQueries({ queryKey: userKeys.detail(userId) });
+    mutationFn: (payload: DeleteAccountPayload) => deleteMe(payload),
+    onSuccess: () => {
+      clearUser();
+      queryClient.clear();
     },
   });
 }

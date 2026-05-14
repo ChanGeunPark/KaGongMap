@@ -9,6 +9,7 @@
 | 테이블                    | 설명                                                       |
 | ------------------------- | ---------------------------------------------------------- |
 | `users`                   | 사용자 프로필 (NextAuth → Supabase users 동기화)           |
+| `account_deletion_feedback` | 회원 탈퇴 사유 피드백 (탈퇴 후 user_id는 NULL 처리)       |
 | `cafes`                   | 어드민이 승인한 카페 (지도에 표시). `user_id`는 등록자(승인 시 제보자에서 복사) |
 | `cafe_tags`               | 카페별 카공 태그 (다대다)                                  |
 | `cafe_submissions`        | 사용자 카페 제보. 승인 시 cafes로 이동(행 삭제), 거절 시 status='rejected'로 보존 |
@@ -155,6 +156,46 @@ CREATE INDEX idx_users_user_id ON users (user_id);
 ```
 
 > 트리거 없음. `auth.users` 와 무관 (Supabase Auth 미사용).
+
+### account_deletion_feedback
+
+회원 탈퇴 사유 피드백. 탈퇴 처리 직전에 저장하고, `users` 행 삭제 시 `user_id`는 `NULL`로 남겨 개인 식별자를 제거한다. 탈퇴 기능 자체는 피드백 저장 실패로 막지 않는다.
+
+```sql
+CREATE TABLE account_deletion_feedback (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+  reason      TEXT NOT NULL,                         -- not_useful/missing_features/privacy_concern/too_many_notifications/using_other_service/temporary/other
+  detail      TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT account_deletion_feedback_reason_check CHECK (
+    reason IN (
+      'not_useful',
+      'missing_features',
+      'privacy_concern',
+      'too_many_notifications',
+      'using_other_service',
+      'temporary',
+      'other'
+    )
+  )
+);
+
+CREATE INDEX idx_account_deletion_feedback_created_at
+ON account_deletion_feedback (created_at DESC);
+
+CREATE INDEX idx_account_deletion_feedback_reason
+ON account_deletion_feedback (reason);
+
+ALTER TABLE account_deletion_feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage account deletion feedback"
+ON account_deletion_feedback
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+```
 
 ### cafes
 

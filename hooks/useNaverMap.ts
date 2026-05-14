@@ -30,7 +30,7 @@ export function useNaverMap({
       mapRef.current = new naver.maps.Map(containerId, {
         center: new naver.maps.LatLng(defaultCenter.lat, defaultCenter.lng),
         zoom: defaultZoom,
-        minZoom: 12,
+        minZoom: 10,
         maxZoom: 19,
         logoControl: true,
         logoControlOptions: { position: naver.maps.Position.BOTTOM_LEFT },
