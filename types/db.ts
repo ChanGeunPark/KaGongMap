@@ -173,6 +173,34 @@ export interface CreateCafeReportPayload {
   detail?: string;
 }
 
+// ── contact_inquiries ───────────────────────────────────────────────────────
+export type ContactInquiryCategory =
+  | "service"
+  | "report"
+  | "account"
+  | "privacy"
+  | "other";
+
+export type ContactInquiryStatus = "pending" | "read" | "resolved";
+
+export interface ContactInquiry {
+  id: string;
+  user_id: string | null;
+  category: ContactInquiryCategory;
+  email: string;
+  content: string;
+  status: ContactInquiryStatus;
+  created_at: string;
+  read_at: string | null;
+  resolved_at: string | null;
+}
+
+export interface CreateContactInquiryPayload {
+  category: ContactInquiryCategory;
+  email: string;
+  content: string;
+}
+
 export interface DbBookmark {
   id: string;
   cafe_id: string;

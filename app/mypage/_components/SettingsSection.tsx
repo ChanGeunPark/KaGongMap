@@ -25,6 +25,12 @@ export default function SettingsSection() {
           description="카공맵이 개인정보를 다루는 방식을 확인해요."
         />
         <SettingsLink
+          href="/contact"
+          icon="info"
+          title="문의하기"
+          description="서비스 이용, 신고, 개인정보 관련 문의를 남겨요."
+        />
+        <SettingsLink
           href="/"
           icon="mapIcon"
           title="지도 홈"

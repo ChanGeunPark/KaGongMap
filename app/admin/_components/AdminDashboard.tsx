@@ -14,8 +14,10 @@ import {
 } from "@/lib/api/editSubmissions";
 import Image from "next/image";
 import { useAdminCafeReports } from "@/lib/api/cafeReports";
+import { useAdminContactInquiries } from "@/lib/api/contactInquiries";
 import { useAdminReviewReports } from "@/lib/api/reviewReports";
 import CafeReportsTab from "@/app/admin/_components/CafeReportsTab";
+import ContactInquiriesTab from "@/app/admin/_components/ContactInquiriesTab";
 import ReviewReportsTab from "@/app/admin/_components/ReviewReportsTab";
 import Link from "next/link";
 import SubmissionCard from "./SubmissionCard";
@@ -29,6 +31,7 @@ type FilterTab =
   | "registered"
   | "images"
   | "edits"
+  | "inquiries"
   | "cafeReports"
   | "reports";
 
@@ -37,11 +40,15 @@ const TAB_LABEL: Record<FilterTab, string> = {
   registered: "등록됨",
   images: "사진 제보",
   edits: "수정 제보",
+  inquiries: "문의",
   cafeReports: "카페 신고",
   reports: "후기 신고",
 };
 
-const EMPTY_LABEL: Record<Exclude<FilterTab, "cafeReports" | "reports">, string> = {
+const EMPTY_LABEL: Record<
+  Exclude<FilterTab, "inquiries" | "cafeReports" | "reports">,
+  string
+> = {
   pending: "대기 중인 제보가 없습니다.",
   registered: "등록된 카페가 없습니다.",
   images: "사진 제보가 없습니다.",
@@ -69,6 +76,7 @@ export default function AdminDashboard() {
   });
   const { data: reportGroups = [] } = useAdminReviewReports();
   const { data: cafeReportGroups = [] } = useAdminCafeReports();
+  const { data: contactInquiries = [] } = useAdminContactInquiries();
 
   const submissions = submissionsQuery.data ?? [];
   const cafes = cafesQuery.data ?? [];
@@ -94,9 +102,12 @@ export default function AdminDashboard() {
     (sum, g) => sum + g.pending_count,
     0,
   );
+  const unreadInquiryCount = contactInquiries.filter(
+    (inquiry) => inquiry.status === "pending",
+  ).length;
 
   const TAB_QUERY: Record<
-    Exclude<FilterTab, "cafeReports" | "reports">,
+    Exclude<FilterTab, "inquiries" | "cafeReports" | "reports">,
     { isLoading: boolean; isError: boolean; isEmpty: boolean }
   > = {
     pending: {
@@ -122,7 +133,9 @@ export default function AdminDashboard() {
   };
 
   const currentTab =
-    filter !== "cafeReports" && filter !== "reports" ? TAB_QUERY[filter] : null;
+    filter !== "inquiries" && filter !== "cafeReports" && filter !== "reports"
+      ? TAB_QUERY[filter]
+      : null;
   const filteredSubmissions =
     filter === "pending"
       ? submissions.filter((s) => s.status === "pending")
@@ -193,6 +206,12 @@ export default function AdminDashboard() {
               loading: editSubmissionsQuery.isLoading,
             },
             {
+              label: "읽지 않은 문의",
+              value: unreadInquiryCount,
+              color: "text-sky-600",
+              loading: false,
+            },
+            {
               label: "카페 신고",
               value: cafeReportCount,
               color: "text-orange-600",
@@ -220,7 +239,9 @@ export default function AdminDashboard() {
         <div className="flex gap-1 mb-5 bg-white border border-gray-200 rounded-xl p-1 w-fit shadow-sm">
           {(Object.keys(TAB_LABEL) as FilterTab[]).map((tab) => {
             const badge =
-              tab === "cafeReports"
+              tab === "inquiries"
+                ? unreadInquiryCount
+                : tab === "cafeReports"
                 ? cafeReportCount
                 : tab === "reports"
                   ? reportCount
@@ -252,6 +273,7 @@ export default function AdminDashboard() {
           })}
         </div>
 
+        {filter === "inquiries" && <ContactInquiriesTab />}
         {filter === "cafeReports" && <CafeReportsTab />}
         {filter === "reports" && <ReviewReportsTab />}
 
@@ -273,7 +295,10 @@ export default function AdminDashboard() {
               <p className="text-sm">
                 {
                   EMPTY_LABEL[
-                    filter as Exclude<FilterTab, "cafeReports" | "reports">
+                    filter as Exclude<
+                      FilterTab,
+                      "inquiries" | "cafeReports" | "reports"
+                    >
                   ]
                 }
               </p>

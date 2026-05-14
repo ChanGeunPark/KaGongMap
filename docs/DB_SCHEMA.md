@@ -19,6 +19,7 @@
 | `reviews`                 | 카페 후기 (텍스트 전용)                                    |
 | `review_reports`          | 후기 신고 (pending 3개 이상 시 클라 자동 숨김)             |
 | `cafe_reports`            | 카페 자체 신고 (사진 문제·폐업·정보 오류·중복 등)          |
+| `contact_inquiries`       | 사용자 문의 (운영자 확인 여부와 처리 상태 관리)            |
 | `bookmarks`               | 즐겨찾기 (로그인 필요)                                     |
 | `fcm_tokens`              | 디바이스별 FCM 푸시 토큰 (스키마는 `docs/PUSH_NOTIFICATIONS.md`) |
 | `posts`                   | 카공 팁 게시글 (V2, 스키마만 정의 — 운영 미사용)            |
@@ -191,6 +192,48 @@ ALTER TABLE account_deletion_feedback ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can manage account deletion feedback"
 ON account_deletion_feedback
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+```
+
+### contact_inquiries
+
+사용자 문의. 비로그인도 문의 가능하며, 로그인 상태라면 `user_id`를 함께 저장한다. 운영자는 `/admin`의 "문의" 탭에서 `pending`(읽지 않음), `read`(확인함), `resolved`(처리 완료) 상태를 관리한다.
+
+```sql
+CREATE TABLE contact_inquiries (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID REFERENCES users(id) ON DELETE SET NULL,
+  category     TEXT NOT NULL,                         -- service/report/account/privacy/other
+  email        TEXT NOT NULL,                         -- 답변 받을 이메일
+  content      TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending',       -- pending/read/resolved
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  read_at      TIMESTAMPTZ,
+  resolved_at  TIMESTAMPTZ,
+  CONSTRAINT contact_inquiries_category_check CHECK (
+    category IN ('service','report','account','privacy','other')
+  ),
+  CONSTRAINT contact_inquiries_status_check CHECK (
+    status IN ('pending','read','resolved')
+  )
+);
+
+CREATE INDEX idx_contact_inquiries_status
+ON contact_inquiries (status);
+
+CREATE INDEX idx_contact_inquiries_created_at
+ON contact_inquiries (created_at DESC);
+
+CREATE INDEX idx_contact_inquiries_user_id
+ON contact_inquiries (user_id);
+
+ALTER TABLE contact_inquiries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage contact inquiries"
+ON contact_inquiries
 FOR ALL
 TO service_role
 USING (true)
