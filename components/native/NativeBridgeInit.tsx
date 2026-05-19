@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { nativeBridge } from "@/lib/native/bridge";
 import { useNativeStore } from "@/stores/nativeStore";
 import { isWebView } from "@/lib/native/isWebView";
-import { pushHeading } from "@/hooks/useUserHeading";
+import { pushHeading } from "@/hooks/map/useUserHeading";
 
 export default function NativeBridgeInit() {
   useEffect(() => {

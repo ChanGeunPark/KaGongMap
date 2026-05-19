@@ -1,7 +1,7 @@
 import { RefObject, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { TRANSITION } from "@/components/map/mapConfig";
-import { useLocationPermission } from "@/hooks/useLocationPermission";
+import { useLocationPermission } from "@/hooks/geolocation/useLocationPermission";
 import { MapWithMorph } from "@/types/naverMap";
 import type { UserLocation } from "./useMapGeolocation";
 

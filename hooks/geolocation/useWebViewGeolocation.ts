@@ -2,7 +2,7 @@ import { RefObject, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
 import { TRANSITION } from "@/components/map/mapConfig";
 import { nativeBridge } from "@/lib/native/bridge";
-import { useLocationPermission } from "@/hooks/useLocationPermission";
+import { useLocationPermission } from "@/hooks/geolocation/useLocationPermission";
 import { useNativeStore } from "@/stores/nativeStore";
 import { MapWithMorph } from "@/types/naverMap";
 import type { UserLocation } from "./useMapGeolocation";

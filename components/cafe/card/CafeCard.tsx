@@ -2,7 +2,7 @@
 
 import { CafeMarker } from "@/types/db";
 import { cls } from "@/lib/utils";
-import { useLikes } from "@/hooks/useLikes";
+import { useLikes } from "@/hooks/user/useLikes";
 import LikeButton from "@/components/button/LikeButton";
 
 interface CafeCardProps {
