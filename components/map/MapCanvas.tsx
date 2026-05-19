@@ -91,6 +91,7 @@ export default function MapCanvas({
 
   useCafeMarkers({
     ready,
+    mapRef,
     cafes,
     selectedId,
     hoveredId,
