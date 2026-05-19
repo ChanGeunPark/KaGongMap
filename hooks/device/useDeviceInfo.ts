@@ -23,10 +23,14 @@ const INITIAL: DeviceInfo = {
   isIosBrowser: false,
 };
 
+let cachedSnapshot: DeviceInfo | null = null;
+
 function readDeviceInfo(): DeviceInfo {
   if (typeof window === "undefined") {
     return INITIAL;
   }
+
+  if (cachedSnapshot) return cachedSnapshot;
 
   const ua = navigator.userAgent;
   const isIos = /iPhone|iPad|iPod/i.test(ua);
@@ -37,7 +41,7 @@ function readDeviceInfo(): DeviceInfo {
     (window.navigator as Navigator & { standalone?: boolean }).standalone ===
       true;
 
-  return {
+  cachedSnapshot = {
     isReady: true,
     isMobile,
     isIos,
@@ -45,6 +49,11 @@ function readDeviceInfo(): DeviceInfo {
     isStandalonePwa,
     isIosBrowser: isIos && !isStandalonePwa,
   };
+  return cachedSnapshot;
+}
+
+function getServerSnapshot(): DeviceInfo {
+  return INITIAL;
 }
 
 function subscribe(): () => void {
@@ -52,5 +61,5 @@ function subscribe(): () => void {
 }
 
 export function useDeviceInfo(): DeviceInfo {
-  return useSyncExternalStore(subscribe, readDeviceInfo, () => INITIAL);
+  return useSyncExternalStore(subscribe, readDeviceInfo, getServerSnapshot);
 }
