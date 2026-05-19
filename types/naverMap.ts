@@ -20,4 +20,6 @@ export type MarkerWithMutableMeta = naver.maps.Marker & {
   setPosition(position: naver.maps.Coord | naver.maps.CoordLiteral): void;
   setTitle(title: string): void;
   setZIndex(zIndex: number): void;
+  __kgActive?: boolean;
+  __kgListeners?: naver.maps.MapEventListener[];
 };
