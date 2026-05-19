@@ -4,7 +4,7 @@ import {
   USER_MARKER_HEADING_ID,
   userPinHtml,
 } from "@/components/map/markerIcons";
-import type { UserLocation } from "./useMapGeolocation";
+import type { UserLocation } from "@/hooks/geolocation/useMapGeolocation";
 
 const ACCURACY_CIRCLE_STYLE = {
   fillColor: "#3772cf",

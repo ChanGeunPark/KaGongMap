@@ -9,7 +9,7 @@ import {
   unregisterFcmToken,
 } from "@/lib/firebase/fcm";
 import { track } from "@/lib/firebase/analytics";
-import { useDeviceInfo } from "@/hooks/useDeviceInfo";
+import { useDeviceInfo } from "@/hooks/device/useDeviceInfo";
 import { useNativeStore } from "@/stores/nativeStore";
 import { nativeBridge } from "@/lib/native/bridge";
 import { cls } from "@/lib/utils";
@@ -213,7 +213,8 @@ export default function PushNotificationToggle() {
             permission === "denied" &&
             !enabled && (
               <p className="mt-2 text-mono leading-5 text-red-500">
-                브라우저에서 알림이 차단된 상태예요. 사이트 설정에서 허용해주세요.
+                브라우저에서 알림이 차단된 상태예요. 사이트 설정에서
+                허용해주세요.
               </p>
             )}
         </div>

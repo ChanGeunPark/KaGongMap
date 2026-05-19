@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { CafeMarker } from "@/types/db";
-import { useCafeMarkers } from "@/hooks/useCafeMarkers";
-import { useMapGeolocation } from "@/hooks/useMapGeolocation";
-import { useMapMorphTo } from "@/hooks/useMapMorphTo";
-import { useNaverMap } from "@/hooks/useNaverMap";
-import { useUserMarker } from "@/hooks/useUserMarker";
-import { useUserHeading } from "@/hooks/useUserHeading";
+import { useCafeMarkers } from "@/hooks/map/useCafeMarkers";
+import { useMapGeolocation } from "@/hooks/geolocation/useMapGeolocation";
+import { useMapMorphTo } from "@/hooks/map/useMapMorphTo";
+import { useNaverMap } from "@/hooks/map/useNaverMap";
+import { useUserMarker } from "@/hooks/map/useUserMarker";
+import { useUserHeading } from "@/hooks/map/useUserHeading";
 import { useNativeStore } from "@/stores/nativeStore";
 import { MapWithMorph } from "@/types/naverMap";
 import { MapControls } from "./MapControls";
@@ -91,6 +91,7 @@ export default function MapCanvas({
 
   useCafeMarkers({
     ready,
+    mapRef,
     cafes,
     selectedId,
     hoveredId,

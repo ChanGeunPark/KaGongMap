@@ -17,14 +17,14 @@ import BottomSheetModal from "./modal/BottomSheetModal";
 import { CafeModalDetail } from "./cafe/detail/CafeModalDetail";
 import { useCafeSelectionStore } from "@/stores/cafeSelectionStore";
 import { DEFAULT_TWEAKS, Tweaks, TweaksPanel } from "@/components/tweaks";
-import { useEditModeBridge } from "@/hooks/useEditModeBridge";
-import { useFilteredCafes } from "@/hooks/useFilteredCafes";
+import { useEditModeBridge } from "@/hooks/device/useEditModeBridge";
+import { useFilteredCafes } from "@/hooks/map/useFilteredCafes";
 import { track } from "@/lib/firebase/analytics";
 import { nativeBridge } from "@/lib/native/bridge";
 import {
   setBrowserLocationPermission,
   useLocationPermission,
-} from "@/hooks/useLocationPermission";
+} from "@/hooks/geolocation/useLocationPermission";
 import { useNativeStore } from "@/stores/nativeStore";
 import { toast } from "react-toastify";
 

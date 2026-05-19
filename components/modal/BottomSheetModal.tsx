@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 
-import { useWindowSize } from "@/hooks/useWindowSize";
-import useDragTracker from "@/hooks/useDragTracker";
+import { useWindowSize } from "@/hooks/ui/useWindowSize";
+import useDragTracker from "@/hooks/ui/useDragTracker";
 import { cls } from "@/lib/utils";
 import { TbX } from "react-icons/tb";
 

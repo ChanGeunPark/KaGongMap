@@ -1,6 +1,6 @@
 import { RefObject } from "react";
-import { useBrowserGeolocation } from "@/hooks/useBrowserGeolocation";
-import { useWebViewGeolocation } from "@/hooks/useWebViewGeolocation";
+import { useBrowserGeolocation } from "@/hooks/geolocation/useBrowserGeolocation";
+import { useWebViewGeolocation } from "@/hooks/geolocation/useWebViewGeolocation";
 import { useNativeStore, type NativeUserLocation } from "@/stores/nativeStore";
 
 export type UserLocation = NativeUserLocation;
